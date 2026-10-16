@@ -1,24 +1,49 @@
-# คู่มือใช้งานผู้จัดงาน — CCR Dinner Voting
+# คู่มือใช้งานผู้จัดงาน — CCR After Hours 2026
 
-## ก่อนเปิดโหวตจริง
-1. ตรวจเว็บ Public และ Admin URL จากอุปกรณ์ภายนอก
-2. เปลี่ยน Password ที่เคยเปิดเผย
-3. อนุมัติ Auth User ที่ต้องการเป็น Admin แล้วเพิ่ม UUID เข้า `public.admin_users`
-4. สร้างรหัสเชิญจริงตามจำนวนผู้มีสิทธิ์
-5. ดาวน์โหลด CSV รหัสเชิญและเก็บเป็นความลับ
-6. ตรวจ Ballot จริง = 0 และ Campaign = CLOSED
-7. ได้รับคำสั่งเจ้าของโครงการ `อนุมัติเปิดโหวตจริง` แล้วจึงเปิด
+## 1. ก่อนเปิดโหวตจริง
+1. ตรวจหน้า Home / Venue / Party / Food Vote / Guide / Admin จากอุปกรณ์ภายนอก
+2. ตรวจบัญชี Admin ว่า Login ได้และ UUID อยู่ใน `public.admin_users`
+3. เปลี่ยนรหัสผ่านเดิมทันทีถ้าเคยถูกเปิดเผย
+4. ยืนยันจำนวนผู้มีสิทธิ์เข้าร่วม
+5. สร้าง Invitation Code จริงตามจำนวนที่อนุมัติ
+6. ดาวน์โหลด CSV รหัสเชิญและเก็บเป็นความลับ
+7. ตรวจ Ballots = 0, Event Preferences = 0, Campaign = CLOSED
+8. ได้รับคำสั่งเจ้าของโครงการ **“อนุมัติเปิดโหวตจริง”** แล้วจึงเปิด
 
-## ระหว่างโหวต
-- พนักงานเปิด Public URL/QR ได้ทันที ไม่ต้อง Login
-- เลือก A-H ให้ครบ แล้วใส่ Invitation Code ตอน Submit
-- รหัสเดิมแก้ใบโหวตเดิมได้จนปิด Campaign
-- Dashboard แสดง Aggregate Results เฉพาะ Admin
+## 2. ระหว่างเปิดรับคำตอบ
+พนักงาน:
+- เปิดลิงก์งานได้โดยไม่ Login
+- RSVP / Gift / Theme ที่ `party.html`
+- Food Vote ที่ `vote.html`
+- ใช้ Invitation Code เดียวกันตอนบันทึก
+- ส่งซ้ำด้วยรหัสเดิม = อัปเดตคำตอบเดิม ไม่เพิ่มจำนวนคน
 
-## ปิดโหวต
-1. กดปิดรับโหวต
-2. ตรวจจำนวน Ballots/Invites
-3. Freeze ผลหากต้องการล็อก Catalog/ผลขั้นสุดท้าย
-4. เปรียบเทียบ Popularity / Standard ≤ 2,000 / Premium ≤ 2,200
-5. Export CSV/JSON
-6. ยืนยันราคา/ปริมาณกับร้านก่อนอนุมัติรายการสั่งจริง
+ผู้จัดงาน:
+- Login ที่ `admin.html`
+- ดูจำนวนใบโหวต / Invite / Participation
+- ดู Aggregate RSVP / Gift / Theme
+- ดูอันดับอาหาร 8 หมวด
+- ยกเลิกรหัสเชิญที่ต้องการได้
+
+## 3. หลังปิดโหวต
+1. ปิด Campaign
+2. ตรวจจำนวน Ballots / Event Preferences / Invites
+3. Freeze ผลเมื่อพร้อมล็อกผล
+4. Food Decision Engine:
+   - Popularity Winner
+   - Standard Budget Optimized ≤ 2,000 บาท
+   - Premium Budget Optimized ≤ 2,200 บาท
+5. สรุป Gift / Dress Mood
+6. ยืนยันรายชื่อผู้ร่วมงานจริงก่อนทำ Gift Pairing
+7. ยืนยันราคาอาหาร ปริมาณ โต๊ะ เวลา และ availability กับร้าน
+8. Export CSV / JSON ที่จำเป็น
+9. Owner อนุมัติรายการสั่งจริงแยกจากผลโหวต
+
+## 4. ข้อมูลที่ยัง Pending
+- เวลาเริ่มงาน Final
+- จำนวนโต๊ะ Final
+- ที่จอดรถ / การจัดโต๊ะเฉพาะวันงาน
+- ราคาและ availability อาหารวันจริง
+- Gift Pairing รายบุคคล (ทำหลังยืนยันผู้ร่วมงาน)
+
+อย่าใส่ข้อมูลสมมติลงเว็บแทนข้อมูลที่ยังไม่ยืนยัน
