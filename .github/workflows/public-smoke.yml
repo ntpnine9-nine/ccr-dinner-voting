@@ -16,7 +16,7 @@ jobs:
         run: |
           set -euo pipefail
           curl --fail --location --silent --show-error "https://vjvptuecwewmqhkedybs.supabase.co/functions/v1/ccr-app/" -o /tmp/index.html
-          grep -Fq "CCR&TABLE" /tmp/index.html
+          grep -Fq "CCR Dinner Voting" /tmp/index.html
           grep -Fq "8 หมวด" /tmp/index.html
       - name: Check public assets
         run: |
