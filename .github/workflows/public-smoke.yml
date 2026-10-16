@@ -12,34 +12,36 @@ jobs:
   smoke:
     runs-on: ubuntu-latest
     steps:
-      - name: Check public voter page
+      - name: Verify event portal through stable gateway
         run: |
           set -euo pipefail
-          curl --fail --location --silent --show-error -D /tmp/index.headers "https://vjvptuecwewmqhkedybs.supabase.co/functions/v1/ccr-app/" -o /tmp/index.html
+          BASE="https://vjvptuecwewmqhkedybs.supabase.co/functions/v1/ccr-app"
+          curl --fail --location --silent --show-error -D /tmp/index.headers "$BASE/" -o /tmp/index.html
           grep -Eiq '^content-type: text/html(;|$)' /tmp/index.headers
-          grep -Fq "CCR Dinner Voting" /tmp/index.html
-          grep -Fq "8 หมวด" /tmp/index.html
-      - name: Check public assets
+          grep -Fq "CCR After Hours" /tmp/index.html
+          grep -Fq "18" /tmp/index.html
+          for page in vote.html party.html venue.html guide.html admin.html; do
+            curl --fail --location --silent --show-error "$BASE/$page" -o "/tmp/$page"
+          done
+          grep -Fq "FOOD VOTE" /tmp/vote.html
+          grep -Fq "GIFT EXCHANGE" /tmp/party.html
+          grep -Fq "Google Maps" /tmp/venue.html
+          grep -Fq "THE COMPLETE NIGHT GUIDE" /tmp/guide.html
+          grep -Fq "แดชบอร์ดผู้จัดงาน" /tmp/admin.html
+      - name: Verify public assets
         run: |
           set -euo pipefail
-          curl --fail --location --silent --show-error -D /tmp/css.headers "https://vjvptuecwewmqhkedybs.supabase.co/functions/v1/ccr-app/styles.css" -o /tmp/styles.css
-          curl --fail --location --silent --show-error -D /tmp/js.headers "https://vjvptuecwewmqhkedybs.supabase.co/functions/v1/ccr-app/vote.js" -o /tmp/vote.js
+          BASE="https://vjvptuecwewmqhkedybs.supabase.co/functions/v1/ccr-app"
+          curl --fail --location --silent --show-error -D /tmp/css.headers "$BASE/event.css" -o /tmp/event.css
+          curl --fail --location --silent --show-error -D /tmp/js.headers "$BASE/party.js" -o /tmp/party.js
+          curl --fail --location --silent --show-error -D /tmp/img.headers "$BASE/assets/menu-cover.jpg" -o /tmp/menu.jpg
           grep -Eiq '^content-type: text/css(;|$)' /tmp/css.headers
           grep -Eiq '^content-type: (text|application)/javascript(;|$)' /tmp/js.headers
-          test -s /tmp/styles.css
-          grep -Fq "getCatalog" /tmp/vote.js
-      - name: Check admin page
+          grep -Eiq '^content-type: image/jpeg(;|$)' /tmp/img.headers
+          test -s /tmp/menu.jpg
+      - name: Verify backend remains closed before owner launch
         run: |
           set -euo pipefail
-          curl --fail --location --silent --show-error "https://vjvptuecwewmqhkedybs.supabase.co/functions/v1/ccr-app/admin.html" -o /tmp/admin.html
-          grep -Fq "แดชบอร์ดผู้จัดงาน" /tmp/admin.html
-      - name: Check public backend status
-        run: |
-          set -euo pipefail
-          curl --fail --silent --show-error "https://vjvptuecwewmqhkedybs.supabase.co/functions/v1/vote" \
-            -H "Content-Type: application/json" \
-            -H "apikey: sb_publishable_NrWLBu3I0QUioXj4rnon5Q_LbLYhsXR" \
-            --data '{"op":"status","campaign":"ccr-2026"}' \
-            | tee /tmp/status.json
+          curl --fail --silent --show-error             "https://vjvptuecwewmqhkedybs.supabase.co/functions/v1/vote"             -H "Origin: https://raw.githack.com"             -H "Content-Type: application/json"             -H "apikey: sb_publishable_NrWLBu3I0QUioXj4rnon5Q_LbLYhsXR"             --data '{"op":"status","campaign":"ccr-2026"}'             -o /tmp/status.json
           grep -Fq '"ok":true' /tmp/status.json
           grep -Fq '"open":false' /tmp/status.json
