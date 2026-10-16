@@ -1,0 +1,10 @@
+{
+  "name": "ccr-dinner-voting",
+  "private": true,
+  "version": "3.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "node tests/release1.test.mjs",
+    "check": "node scripts/check.mjs"
+  }
+}
