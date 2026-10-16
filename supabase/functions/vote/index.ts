@@ -6,7 +6,7 @@ if(!url||!secret||!publishable)throw Error('Supabase environment missing');
 const admin=createClient(url,secret,{auth:{persistSession:false}});
 const auth=createClient(url,publishable,{auth:{persistSession:false}});
 const CAMP='ccr-2026';
-const ALLOWED_ORIGINS=new Set(['https://ntpnine9-nine.github.io','https://vjvptuecwewmqhkedybs.supabase.co','http://localhost:8000','http://127.0.0.1:8000']);
+const ALLOWED_ORIGINS=new Set(['https://ntpnine9-nine.github.io','https://vjvptuecwewmqhkedybs.supabase.co','https://raw.githack.com','https://rawcdn.githack.com','http://localhost:8000','http://127.0.0.1:8000']);
 const buckets=new Map<string,{count:number,reset:number}>();
 function cors(req:Request){const origin=req.headers.get('origin')||'';return {'Access-Control-Allow-Origin':ALLOWED_ORIGINS.has(origin)?origin:'https://ntpnine9-nine.github.io','Vary':'Origin','Access-Control-Allow-Headers':'authorization, apikey, content-type','Access-Control-Allow-Methods':'POST, OPTIONS','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'};}
 function json(req:Request,data:unknown,status=200){return new Response(JSON.stringify(data),{status,headers:{...cors(req),'Content-Type':'application/json;charset=utf-8'}})}
