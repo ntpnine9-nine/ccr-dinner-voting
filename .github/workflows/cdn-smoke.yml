@@ -12,27 +12,32 @@ jobs:
   smoke:
     runs-on: ubuntu-latest
     steps:
-      - name: Verify public voter page renders as HTML
+      - name: Verify event portal HTML pages
         run: |
           set -euo pipefail
           BASE="https://raw.githack.com/ntpnine9-nine/ccr-dinner-voting/main"
-          curl --fail --location --silent --show-error -D /tmp/index.headers "$BASE/index.html" -o /tmp/index.html
-          cat /tmp/index.headers
-          grep -Eiq '^content-type: text/html(;|$)' /tmp/index.headers
-          grep -Fq "CCR Dinner Voting" /tmp/index.html
-          grep -Fq "8 หมวด" /tmp/index.html
-      - name: Verify CSS JS and Admin
+          for page in index.html vote.html party.html venue.html guide.html admin.html; do
+            curl --fail --location --silent --show-error -D "/tmp/$page.headers" "$BASE/$page" -o "/tmp/$page"
+            grep -Eiq '^content-type: text/html(;|$)' "/tmp/$page.headers"
+          done
+          grep -Fq "CCR After Hours" /tmp/index.html
+          grep -Fq "GIFT EXCHANGE" /tmp/party.html
+          grep -Fq "Google Maps" /tmp/venue.html
+          grep -Fq "THE COMPLETE NIGHT GUIDE" /tmp/guide.html
+      - name: Verify styles scripts and authentic menu assets
         run: |
           set -euo pipefail
           BASE="https://raw.githack.com/ntpnine9-nine/ccr-dinner-voting/main"
-          curl --fail --location --silent --show-error -D /tmp/css.headers "$BASE/styles.css" -o /tmp/styles.css
-          curl --fail --location --silent --show-error -D /tmp/js.headers "$BASE/vote.js" -o /tmp/vote.js
-          curl --fail --location --silent --show-error -D /tmp/admin.headers "$BASE/admin.html" -o /tmp/admin.html
+          curl --fail --location --silent --show-error -D /tmp/css.headers "$BASE/event.css" -o /tmp/event.css
+          curl --fail --location --silent --show-error -D /tmp/js.headers "$BASE/party.js" -o /tmp/party.js
+          curl --fail --location --silent --show-error -D /tmp/cover.headers "$BASE/assets/menu-cover.jpg" -o /tmp/cover.jpg
+          curl --fail --location --silent --show-error "$BASE/assets/menu-spread.jpg" -o /tmp/spread.jpg
           grep -Eiq '^content-type: text/css(;|$)' /tmp/css.headers
           grep -Eiq '^content-type: (text|application)/javascript(;|$)' /tmp/js.headers
-          grep -Eiq '^content-type: text/html(;|$)' /tmp/admin.headers
-          grep -Fq "แดชบอร์ดผู้จัดงาน" /tmp/admin.html
-      - name: Verify backend CORS and closed campaign
+          grep -Eiq '^content-type: image/jpeg(;|$)' /tmp/cover.headers
+          test -s /tmp/cover.jpg
+          test -s /tmp/spread.jpg
+      - name: Verify API CORS and closed campaign
         run: |
           set -euo pipefail
           curl --fail --silent --show-error -D /tmp/api.headers             "https://vjvptuecwewmqhkedybs.supabase.co/functions/v1/vote"             -H "Origin: https://raw.githack.com"             -H "Content-Type: application/json"             -H "apikey: sb_publishable_NrWLBu3I0QUioXj4rnon5Q_LbLYhsXR"             --data '{"op":"status","campaign":"ccr-2026"}'             -o /tmp/status.json
