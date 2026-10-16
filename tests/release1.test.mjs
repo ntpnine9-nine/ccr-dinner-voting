@@ -14,6 +14,11 @@ const p2=optimizeMenuSet(d.categories,counts,2000),p22=optimizeMenuSet(d.categor
 const tie=Object.fromEntries(options.map(o=>[o.id,1]));const t1=optimizeMenuSet(d.categories,tie,2000),t2=optimizeMenuSet(d.categories,tie,2000);assert.deepEqual(t1,t2,'deterministic tie');
 assert.ok(Array.isArray(comparePlans(pop,p2,counts)));
 const edge=fs.readFileSync(new URL('../supabase/functions/vote/index.ts',import.meta.url),'utf8');
-for(const required of ["op==='catalog'","admin.invites.revoke","CATALOG_VERSION_MISMATCH","admin.freeze","TOO_MANY_REQUESTS"])assert.ok(edge.includes(required),required);
+for(const required of ["op==='catalog'","preferences.submit","admin.preferences.results","admin.invites.revoke","CATALOG_VERSION_MISMATCH","admin.freeze","TOO_MANY_REQUESTS"])assert.ok(edge.includes(required),required);
 for(const forbidden of ['SERVICE_ROLE_KEY =','sb_secret_','postgresql://']) assert.ok(!edge.includes(forbidden),'no privileged secret literal');
-console.log('PASS · Release 1 static/data/decision-engine checks');
+for(const file of ['index.html','vote.html','party.html','venue.html','guide.html','event.css','event.js','party.js']) assert.ok(fs.existsSync(new URL('../'+file,import.meta.url)),file+' exists');
+const party=fs.readFileSync(new URL('../party.html',import.meta.url),'utf8');
+for(const value of ['gift_300','gift_500','gift_300_500','gift_none','midnight_gold','forest_champagne','retro_future','come_as_you_are']) assert.ok(party.includes(value),value);
+const landing=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');assert.ok(landing.includes('18'));assert.ok(landing.includes('CCR After Hours'));
+const venue=fs.readFileSync(new URL('../venue.html',import.meta.url),'utf8');assert.ok(venue.includes('13.6776392'));assert.ok(!venue.includes('13.6692272'),'must not expose owner route origin');
+console.log('PASS · Release 1 + event portal static/data/decision-engine checks');
