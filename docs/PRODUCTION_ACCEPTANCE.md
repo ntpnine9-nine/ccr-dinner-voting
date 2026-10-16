@@ -1,35 +1,43 @@
-# Production Acceptance — Current Checkpoint
+# Production Acceptance — CCR After Hours 2026
 
 ## Verified PASS
-- [x] Dedicated public GitHub repository exists and production source has been uploaded.
+- [x] Dedicated public GitHub repository and canonical source.
 - [x] Supabase project ACTIVE_HEALTHY.
-- [x] Database contains 8 categories × 7 options = 56.
-- [x] Real campaign remains CLOSED.
-- [x] Invitation/ballot tables clean: 0 real invites, 0 real ballots at checkpoint.
-- [x] Vote Edge Function v2 ACTIVE.
-- [x] GitHub Edge Function source exactly matches deployed v2 source.
-- [x] Forward migrations recorded in GitHub and Supabase migration history.
-- [x] Atomic database ballot test passed.
-- [x] Same-invite update test passed: one ballot, two audit events, latest choices retained.
-- [x] Catalog/Decision Engine static test passed.
-- [x] DOM element reference audit passed for voter/admin pages.
-- [x] No missing FK-index advisory remains.
-- [x] No privileged secret literal intentionally committed to public frontend.
+- [x] Auth Admin user exists and application Admin authorization exists.
+- [x] Campaign event date = 2026-12-18.
+- [x] Campaign remains CLOSED.
+- [x] Food catalog = 8 categories × 7 options = 56.
+- [x] Invitation / ballot / event-preference production data clean at current checkpoint.
+- [x] Food voting backend is active.
+- [x] RSVP / Gift / Dress preference backend is active.
+- [x] Public event portal pages exist: Home / Venue / Party / Food Vote / Guide.
+- [x] Admin Dashboard includes aggregate Food + RSVP + Gift + Dress results.
+- [x] Authentic organizer-supplied menu imagery is deployed.
+- [x] Google Maps venue embed and destination-only directions are implemented.
+- [x] Gift poll has exactly 4 owner-requested choices.
+- [x] Dress Mood poll has 4 non-forced options including Come As You Are.
+- [x] Same-invite submissions are designed to update existing records.
+- [x] Decision Engine supports Popularity / ≤2,000 / ≤2,200 scenarios.
+- [x] Automated repository verification passes.
+- [x] Automated public gateway HTML/assets smoke tests pass.
+- [x] Automated backend closed-campaign smoke test passes.
+- [x] Missing FK-index issue was addressed.
+- [x] No privileged server secret is intentionally committed to public frontend.
 
-## Awaiting external/owner gate
-- [ ] GitHub Pages publishing source enabled and public URL externally verified.
-- [ ] Previously exposed Auth password rotated by owner.
-- [ ] Owner explicitly approves current Auth user for `public.admin_users`.
-- [ ] Admin login + authorization tested through live browser.
-- [ ] Controlled Edge Function HTTP E2E test through live website.
-- [ ] Android external-device test.
-- [ ] iOS Safari external-device test or explicitly accepted as pending.
-- [ ] Real launch eligible-voter count confirmed.
-- [ ] Real invitation codes generated/distributed after approval.
-- [ ] QR generated from verified production URL.
+## Launch gates intentionally NOT completed yet
+These are not software defects; they depend on final event decisions or explicit owner authorization:
+- [ ] Final event start time confirmed.
+- [ ] Final attendee / eligible-voter count confirmed.
+- [ ] Real invitation codes generated and distributed.
+- [ ] Controlled real submission test after launch authorization.
+- [ ] Restaurant confirms current price / quantity / table layout / parking / availability.
+- [ ] Gift Pairing generated only if Gift Exchange wins and attendee list is final.
 - [ ] Owner explicitly authorizes opening real campaign.
 
-## Advisor note
-Supabase currently reports Leaked Password Protection disabled. Consider enabling it in Auth security settings where available. Direct public table access remains intentionally deny-by-default via RLS with no anon/auth policies; application data access is mediated through Edge Function server logic.
+## Security advisor
+- RLS-with-no-public-policy notices are expected for the deny-by-default server-mediated architecture.
+- Supabase currently reports Leaked Password Protection disabled; enable it in Auth settings if available for the project plan.
 
-Do not label the product LIVE until the remaining gates pass.
+## Definition
+The application baseline is technically deployable and externally smoke-tested while CLOSED.  
+Do **not** call the real voting campaign OPEN/LIVE until the owner explicitly approves launch.
