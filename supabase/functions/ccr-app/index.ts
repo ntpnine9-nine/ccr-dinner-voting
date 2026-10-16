@@ -3,18 +3,24 @@ const REPO='ccr-dinner-voting';
 const BRANCH='main';
 const allowed=new Set(['index.html','admin.html','styles.css','config.js','common.js','decision-engine.js','vote.js','admin.js']);
 const types={html:'text/html; charset=utf-8',css:'text/css; charset=utf-8',js:'text/javascript; charset=utf-8'};
-Deno.serve(async(req:Request)=>{
-  if(req.method!=='GET'&&req.method!=='HEAD')return new Response('Method Not Allowed',{status:405,headers:{Allow:'GET, HEAD'}});
-  const u=new URL(req.url);
-  const marker='/functions/v1/ccr-app';
-  let p=u.pathname.startsWith(marker)?u.pathname.slice(marker.length):u.pathname;
+function assetPath(pathname:string){
+  let p=pathname||'/';
+  const tag='/ccr-app';
+  const i=p.lastIndexOf(tag);
+  if(i>=0)p=p.slice(i+tag.length);
   p=p.replace(/^\/+|\/+$/g,'');
   if(!p)p='index.html';
   if(p==='admin')p='admin.html';
-  if(!allowed.has(p))return new Response('Not Found',{status:404,headers:{'Cache-Control':'no-store'}});
+  return p;
+}
+Deno.serve(async(req:Request)=>{
+  if(req.method!=='GET'&&req.method!=='HEAD')return new Response('Method Not Allowed',{status:405,headers:{Allow:'GET, HEAD'}});
+  const u=new URL(req.url);
+  const p=assetPath(u.pathname);
+  if(!allowed.has(p))return new Response('Not Found',{status:404,headers:{'Cache-Control':'no-store','X-CCR-Asset':p}});
   const raw='https://raw.githubusercontent.com/'+OWNER+'/'+REPO+'/'+BRANCH+'/'+p;
   const upstream=await fetch(raw,{headers:{'User-Agent':'CCR-Dinner-Voting-Edge/1.0'}});
-  if(!upstream.ok)return new Response('Application asset unavailable',{status:502,headers:{'Cache-Control':'no-store'}});
+  if(!upstream.ok)return new Response('Application asset unavailable',{status:502,headers:{'Cache-Control':'no-store','X-CCR-Upstream':String(upstream.status)}});
   const ext=p.split('.').pop()||'html';
   const headers=new Headers({
     'Content-Type':types[ext as keyof typeof types]||'text/plain; charset=utf-8',
