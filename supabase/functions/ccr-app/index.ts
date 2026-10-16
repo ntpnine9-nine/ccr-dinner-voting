@@ -6,6 +6,13 @@ const allowed=new Set([
   'styles.css','event.css','config.js','common.js','decision-engine.js','vote.js','admin.js','event.js','party.js',
   'assets/menu-cover.jpg','assets/menu-spread.jpg'
 ]);
+const types:Record<string,string>={
+  html:'text/html; charset=utf-8',
+  css:'text/css; charset=utf-8',
+  js:'text/javascript; charset=utf-8',
+  jpg:'image/jpeg',
+  jpeg:'image/jpeg'
+};
 function assetPath(pathname:string){
   let p=pathname||'/';
   const tag='/ccr-app';
@@ -16,10 +23,29 @@ function assetPath(pathname:string){
   if(p==='admin')p='admin.html';
   return p;
 }
-Deno.serve((req:Request)=>{
-  if(req.method!=='GET'&&req.method!=='HEAD')return new Response('Method Not Allowed',{status:405,headers:{Allow:'GET, HEAD'}});
+function contentType(path:string){
+  const ext=(path.split('.').pop()||'').toLowerCase();
+  return types[ext]||'application/octet-stream';
+}
+Deno.serve(async(req:Request)=>{
+  if(req.method!=='GET'&&req.method!=='HEAD')return new Response('Method Not Allowed',{status:405,headers:{'Allow':'GET, HEAD','Cache-Control':'no-store'}});
   const p=assetPath(new URL(req.url).pathname);
-  if(!allowed.has(p))return new Response('Not Found',{status:404,headers:{'cache-control':'no-store'}});
-  const target='https://raw.githack.com/'+OWNER+'/'+REPO+'/'+BRANCH+'/'+p;
-  return Response.redirect(target,302);
+  if(!allowed.has(p))return new Response('Not Found',{status:404,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
+  try{
+    const upstream='https://raw.githubusercontent.com/'+OWNER+'/'+REPO+'/'+BRANCH+'/'+p;
+    const r=await fetch(upstream,{headers:{'User-Agent':'CCR-After-Hours/1.0','Accept':'*/*'}});
+    if(!r.ok)return new Response('Upstream unavailable',{status:502,headers:{'Cache-Control':'no-store'}});
+    const headers=new Headers();
+    headers.set('Content-Type',contentType(p));
+    headers.set('Cache-Control',p.endsWith('.html')?'public, max-age=60, s-maxage=60':'public, max-age=300, s-maxage=300');
+    headers.set('X-Content-Type-Options','nosniff');
+    headers.set('Referrer-Policy','no-referrer');
+    headers.set('X-CCR-Source','github-main');
+    if(req.method==='HEAD')return new Response(null,{status:200,headers});
+    const body=await r.arrayBuffer();
+    return new Response(body,{status:200,headers});
+  }catch(e){
+    console.error('ccr-app proxy failure',e);
+    return new Response('Gateway unavailable',{status:503,headers:{'Cache-Control':'no-store'}});
+  }
 });
