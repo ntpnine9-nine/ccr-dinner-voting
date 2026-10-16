@@ -5,12 +5,17 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0d2f29">
   <meta name="robots" content="noindex,nofollow">
-  <meta name="description" content="CCR After Hours 2026 — Digital invitation, event hub, food voting, gift exchange, theme poll and venue guide.">
+  <meta name="description" content="CCR After Hours 2026 — Digital invitation, RSVP, food voting, gift exchange, dress mood, venue map and live event guide.">
+  <meta property="og:title" content="CCR After Hours 2026 · Year-End Celebration">
+  <meta property="og:description" content="18 DEC 2026 · ครัวซอย 11 · One team, one table, one night.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://vjvptuecwewmqhkedybs.supabase.co/functions/v1/ccr-app/assets/menu-cover.jpg">
   <title>CCR After Hours 2026 · Year-End Celebration</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css">\n  <link rel="stylesheet" href="./event.css">
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./event.css">
 </head>
 <body class="event-page">
 <a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
@@ -51,6 +56,12 @@
           <div><span>VENUE</span><strong>ครัวซอย 11 · ประเวศ</strong></div>
           <div><span>TIME</span><strong>รอยืนยันเวลา</strong></div>
         </div>
+        <div class="event-utility-row" aria-label="เครื่องมือคำเชิญ">
+          <button type="button" id="shareEvent" class="event-utility-btn">แชร์คำเชิญ <span>↗</span></button>
+          <button type="button" id="addCalendar" class="event-utility-btn">เพิ่มลงปฏิทิน <span>＋</span></button>
+          <a class="event-utility-btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=13.6776392%2C100.6522394&travelmode=driving">นำทาง <span>⌖</span></a>
+        </div>
+        <p id="shareStatus" class="event-share-status" aria-live="polite"></p>
       </div>
 
       <div class="event-visual" aria-label="ภาพเมนูร้านจริงที่ใช้เป็นข้อมูล">
@@ -162,6 +173,21 @@
       <div><span>04</span><b>GIFT</b><p>กิจกรรมจับของขวัญ หากทีมเลือกเล่น</p></div>
       <div><span>05</span><b>MOMENTS</b><p>รูปทีม · เกมเบา ๆ · โมเมนต์ของปี</p></div>
       <div><span>06</span><b>WRAP</b><p>สรุปค่ำคืน · กลับบ้านโดยสวัสดิภาพ</p></div>
+    </div>
+  </section>
+
+  <section class="event-wrap event-quickfacts reveal">
+    <div class="event-section-head">
+      <div><span class="event-section-label">07 / EVERYTHING IN ONE LINK</span><h2>ข้อมูลที่ต้องรู้<br><em>อยู่ครบ แต่ไม่ยัดทุกอย่างไว้หน้าเดียว</em></h2></div>
+      <p>หน้าแรกแสดงเฉพาะสิ่งสำคัญ ส่วนรายละเอียดเปิดดูต่อเมื่อจำเป็น — เพื่อให้เว็บยังดูสะอาดและใช้งานเร็วบนมือถือ</p>
+    </div>
+    <div class="event-quickfacts-grid">
+      <article><span>RSVP</span><b>ไป / ยังไม่แน่ใจ / ไม่สะดวก</b><p>รวมสถานะผู้ร่วมงานไว้กับแบบเลือก Gift & Theme</p></article>
+      <article><span>FOOD</span><b>8 หมวด · 56 เมนู</b><p>โหวตจริงผ่านรหัสเชิญและบันทึกฐานข้อมูลกลาง</p></article>
+      <article><span>GIFT</span><b>4 ตัวเลือกงบ</b><p>฿300 / ฿500 / ฿300–500 / ปีนี้ไม่จับ</p></article>
+      <article><span>DRESS</span><b>4 Visual Moods</b><p>มี Direction แต่ไม่บังคับ Costume</p></article>
+      <article><span>VENUE</span><b>Map + Directions</b><p>กดนำทางจากตำแหน่งของผู้ใช้โดยไม่เผยพิกัดต้นทางในเว็บ</p></article>
+      <article><span>UPDATES</span><b>Live Event Guide</b><p>ข้อมูลที่ยังไม่ Final แสดงสถานะชัดและอัปเดตที่ลิงก์เดิม</p></article>
     </div>
   </section>
 
