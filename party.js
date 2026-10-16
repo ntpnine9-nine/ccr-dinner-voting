@@ -5,9 +5,9 @@ const maps={attendance:{yes:'ไปแน่นอน',maybe:'ยังไม่
 try{Object.assign(state,JSON.parse(sessionStorage.getItem('ccr_party_choices_v1')||'{}'))}catch{}
 function saveLocal(){try{sessionStorage.setItem('ccr_party_choices_v1',JSON.stringify(state))}catch{}}
 function render(){
-  document.querySelectorAll('[data-group="attendance"] [data-value]').forEach(b=>b.classList.toggle('selected',b.dataset.value===state.attendance));
-  document.querySelectorAll('[data-group="gift"] [data-value]').forEach(b=>b.classList.toggle('selected',b.dataset.value===state.giftChoice));
-  document.querySelectorAll('[data-group="theme"] [data-value]').forEach(b=>b.classList.toggle('selected',b.dataset.value===state.themeChoice));
+  document.querySelectorAll('[data-group="attendance"] [data-value]').forEach(b=>{const on=b.dataset.value===state.attendance;b.classList.toggle('selected',on);b.setAttribute('aria-pressed',String(on))});
+  document.querySelectorAll('[data-group="gift"] [data-value]').forEach(b=>{const on=b.dataset.value===state.giftChoice;b.classList.toggle('selected',on);b.setAttribute('aria-pressed',String(on))});
+  document.querySelectorAll('[data-group="theme"] [data-value]').forEach(b=>{const on=b.dataset.value===state.themeChoice;b.classList.toggle('selected',on);b.setAttribute('aria-pressed',String(on))});
   const complete=state.attendance&&state.giftChoice&&state.themeChoice;
   $('savePreferences').disabled=!configured||!isOpen||!complete||saving;
   $('savePreferences').textContent=saving?'กำลังบันทึก…':'บันทึกตัวเลือกของฉัน ↗';
