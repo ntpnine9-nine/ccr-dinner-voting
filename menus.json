@@ -1,0 +1,742 @@
+{
+  "categories": [
+    {
+      "key": "A",
+      "desc": "อาหารน้ำร้อน 1 ชนิดบนโต๊ะ",
+      "icon": "🍲",
+      "label": "ต้ม / แกง / อาหารน้ำ",
+      "options": [
+        {
+          "id": "A1",
+          "qty": 2,
+          "name": "ต้มจืดเต้าหู้หมูสับสาหร่าย",
+          "note": "",
+          "price": 119,
+          "source": "71517_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "A2",
+          "qty": 2,
+          "name": "ต้มยำทะเล (น้ำข้น/น้ำใส)",
+          "note": "",
+          "price": 129,
+          "source": "71517_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "A3",
+          "qty": 2,
+          "name": "ต้มยำโป๊ะแตก",
+          "note": "",
+          "price": 129,
+          "source": "71517_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "A4",
+          "qty": 2,
+          "name": "ต้มแซ่บหมูตุ๋น",
+          "note": "",
+          "price": 129,
+          "source": "71517_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "A5",
+          "qty": 2,
+          "name": "แกงส้มผักรวมกุ้ง",
+          "note": "",
+          "price": 149,
+          "source": "71517_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "A6",
+          "qty": 2,
+          "name": "ต้มยำไข่ปลาหมึก",
+          "note": "",
+          "price": 149,
+          "source": "71517_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "A7",
+          "qty": 1,
+          "name": "เย็นตาโฟทะเลเดือดหม้อไฟ",
+          "note": "",
+          "price": 199,
+          "source": "71517_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": true,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        }
+      ]
+    },
+    {
+      "key": "B",
+      "desc": "เลือกปลาหรือจานหลักจากปลา 1 แบบ",
+      "icon": "🐟",
+      "label": "ปลา / อาหารทะเลจานหลัก",
+      "options": [
+        {
+          "id": "B1",
+          "qty": 2,
+          "name": "ปลากะพงทอดน้ำปลา",
+          "note": "",
+          "price": 139,
+          "source": "71516_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "B2",
+          "qty": 2,
+          "name": "ปลากะพงทอดกระเทียม",
+          "note": "",
+          "price": 139,
+          "source": "71516_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "B3",
+          "qty": 2,
+          "name": "ปลากะพงนึ่งซีอิ๊ว",
+          "note": "",
+          "price": 149,
+          "source": "71516_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "B4",
+          "qty": 2,
+          "name": "ปลากะพงราดซอสมะขาม",
+          "note": "",
+          "price": 149,
+          "source": "71516_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "B5",
+          "qty": 2,
+          "name": "ปลากะพงผัดฉ่า",
+          "note": "",
+          "price": 139,
+          "source": "71516_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "B6",
+          "qty": 2,
+          "name": "ปลากะพงผัดขึ้นฉ่าย",
+          "note": "",
+          "price": 149,
+          "source": "71516_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "B7",
+          "qty": 1,
+          "name": "ปลากะพงนึ่งมะนาว (เนื้อล้วน)",
+          "note": "",
+          "price": 250,
+          "source": "71516_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": true,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        }
+      ]
+    },
+    {
+      "key": "C",
+      "desc": "เมนูโปรตีนหรือกับข้าวคู่ข้าวสวย",
+      "icon": "🍳",
+      "label": "ผัดเนื้อสัตว์ / กับข้าว",
+      "options": [
+        {
+          "id": "C1",
+          "qty": 2,
+          "name": "หมูกระเทียม",
+          "note": "",
+          "price": 119,
+          "source": "71518_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "C2",
+          "qty": 2,
+          "name": "ไก่ผัดเม็ดมะม่วง",
+          "note": "",
+          "price": 129,
+          "source": "71518_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "C3",
+          "qty": 2,
+          "name": "ผัดฉ่าทะเล",
+          "note": "",
+          "price": 129,
+          "source": "71518_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "C4",
+          "qty": 2,
+          "name": "กะเพราหมูกรอบ",
+          "note": "",
+          "price": 149,
+          "source": "71518_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "C5",
+          "qty": 2,
+          "name": "ปลาหมึกผัดไข่เค็ม",
+          "note": "",
+          "price": 149,
+          "source": "71518_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "C6",
+          "qty": 2,
+          "name": "ผัดผงกะหรี่ทะเล",
+          "note": "",
+          "price": 149,
+          "source": "71518_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "C7",
+          "qty": 2,
+          "name": "สามชั้นผัดพริกเกลือ",
+          "note": "",
+          "price": 149,
+          "source": "71518_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        }
+      ]
+    },
+    {
+      "key": "D",
+      "desc": "อาหารจานผักเพื่อเพิ่มสมดุลของโต๊ะ",
+      "icon": "🥬",
+      "label": "ผัก / อาหารจานผัก",
+      "options": [
+        {
+          "id": "D1",
+          "qty": 2,
+          "name": "ผัดผักรวม",
+          "note": "",
+          "price": 89,
+          "source": "71518_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "D2",
+          "qty": 2,
+          "name": "คะน้าน้ำมันหอย",
+          "note": "",
+          "price": 89,
+          "source": "71518_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "D3",
+          "qty": 2,
+          "name": "ผักบุ้งไฟแดง",
+          "note": "",
+          "price": 69,
+          "source": "71518_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "D4",
+          "qty": 2,
+          "name": "กะหล่ำปลีผัดน้ำปลา",
+          "note": "",
+          "price": 89,
+          "source": "71518_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "D5",
+          "qty": 2,
+          "name": "กระเฉดไฟแดง",
+          "note": "",
+          "price": 89,
+          "source": "71518_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "D6",
+          "qty": 1,
+          "name": "ยำผักบุ้งกรอบ",
+          "note": "เมนูยำ ไม่ใช่ผัดผักรสกลาง",
+          "price": 129,
+          "source": "71518_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "D7",
+          "qty": 1,
+          "name": "ยำผักกระเฉดทรงเครื่อง",
+          "note": "เมนูยำ ไม่ใช่ผัดผักรสกลาง",
+          "price": 149,
+          "source": "71518_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        }
+      ]
+    },
+    {
+      "key": "E",
+      "desc": "ของทอดหรือย่างสำหรับแชร์กลางโต๊ะ",
+      "icon": "🔥",
+      "label": "ทอด / ย่าง",
+      "options": [
+        {
+          "id": "E1",
+          "qty": 2,
+          "name": "ปีกไก่ทอดเกลือ",
+          "note": "",
+          "price": 99,
+          "source": "71515_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "E2",
+          "qty": 2,
+          "name": "หมูย่างจิ้มแจ่ว",
+          "note": "",
+          "price": 109,
+          "source": "71515_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "E3",
+          "qty": 2,
+          "name": "หมูแดดเดียว",
+          "note": "",
+          "price": 119,
+          "source": "71515_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "E4",
+          "qty": 2,
+          "name": "ปีกไก่คลุกซอสเห็ดทรัฟเฟิล",
+          "note": "",
+          "price": 129,
+          "source": "71515_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "E5",
+          "qty": 2,
+          "name": "หมูกรอบทอดสมุนไพร",
+          "note": "",
+          "price": 149,
+          "source": "71515_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "E6",
+          "qty": 2,
+          "name": "เนื้อย่างซอย 11",
+          "note": "",
+          "price": 149,
+          "source": "71515_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "E7",
+          "qty": 2,
+          "name": "ทะเลชุบแป้งทอด",
+          "note": "",
+          "price": 149,
+          "source": "71515_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        }
+      ]
+    },
+    {
+      "key": "F",
+      "desc": "ยำ ตำ หรือลาบสำหรับตัดเลี่ยนและเพิ่มรสจัด",
+      "icon": "🌶️",
+      "label": "ยำ / ส้มตำ / ลาบ",
+      "options": [
+        {
+          "id": "F1",
+          "qty": 1,
+          "name": "ตำไทย",
+          "note": "",
+          "price": 69,
+          "source": "71517_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "F2",
+          "qty": 1,
+          "name": "ลาบหมู",
+          "note": "",
+          "price": 99,
+          "source": "71517_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "F3",
+          "qty": 1,
+          "name": "ยำไข่ดาว",
+          "note": "",
+          "price": 119,
+          "source": "71517_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "F4",
+          "qty": 1,
+          "name": "ยำหมูยอ",
+          "note": "",
+          "price": 119,
+          "source": "71517_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "F5",
+          "qty": 1,
+          "name": "ยำวุ้นเส้นรวมมิตร",
+          "note": "",
+          "price": 129,
+          "source": "71517_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "F6",
+          "qty": 1,
+          "name": "ยำทะเล",
+          "note": "",
+          "price": 129,
+          "source": "71517_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "F7",
+          "qty": 1,
+          "name": "ยำซอย 11",
+          "note": "",
+          "price": 149,
+          "source": "71517_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        }
+      ]
+    },
+    {
+      "key": "G",
+      "desc": "ไข่หรือเมนูพิเศษ/เมนูน่าลอง",
+      "icon": "✨",
+      "label": "ไข่ / เมนูพิเศษ / เมนูน่าลอง",
+      "options": [
+        {
+          "id": "G1",
+          "qty": 1,
+          "name": "ไข่เจียวหมูสับ",
+          "note": "",
+          "price": 89,
+          "source": "71518_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "G2",
+          "qty": 1,
+          "name": "ไข่เจียวกุ้งสับ",
+          "note": "",
+          "price": 119,
+          "source": "71518_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "G3",
+          "qty": 1,
+          "name": "ไข่เยี่ยวม้ากะเพรากรอบ",
+          "note": "",
+          "price": 129,
+          "source": "71518_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "G4",
+          "qty": 1,
+          "name": "ปลาหมึกพี่ก้อง",
+          "note": "ยืนยันชื่อเมนูกับร้าน",
+          "price": 149,
+          "source": "71518_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "G5",
+          "qty": 1,
+          "name": "เต้าหู้ทรงเครื่องน้ำแดง",
+          "note": "",
+          "price": 149,
+          "source": "71518_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "G6",
+          "qty": 1,
+          "name": "กุ้งพี่เก๋",
+          "note": "ยืนยันชื่อเมนูกับร้าน",
+          "price": 149,
+          "source": "71518_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "G7",
+          "qty": 1,
+          "name": "ห่อหมกทะเล",
+          "note": "",
+          "price": 159,
+          "source": "71518_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": false,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        }
+      ]
+    },
+    {
+      "key": "H",
+      "desc": "ข้าวผัดเป็นหนึ่งใน 8 เมนู ส่วนข้าวสวยคิดแยก",
+      "icon": "🍚",
+      "label": "ข้าวผัด",
+      "options": [
+        {
+          "id": "H1",
+          "qty": 2,
+          "name": "ข้าวผัดหมู",
+          "note": "ตรวจขนาดจานก่อนเปิดโหวต",
+          "price": 60,
+          "source": "71514_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": true,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "H2",
+          "qty": 2,
+          "name": "ข้าวผัดไก่",
+          "note": "ตรวจขนาดจานก่อนเปิดโหวต",
+          "price": 60,
+          "source": "71514_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": true,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "H3",
+          "qty": 2,
+          "name": "ข้าวผัดโบราณหมู",
+          "note": "ตรวจขนาดจานก่อนเปิดโหวต",
+          "price": 60,
+          "source": "71514_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": true,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "H4",
+          "qty": 2,
+          "name": "ข้าวผัดแหนม",
+          "note": "ตรวจขนาดจานก่อนเปิดโหวต",
+          "price": 69,
+          "source": "71514_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": true,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "H5",
+          "qty": 2,
+          "name": "ข้าวผัดปู",
+          "note": "ตรวจขนาดจานก่อนเปิดโหวต",
+          "price": 79,
+          "source": "71514_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": true,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "H6",
+          "qty": 2,
+          "name": "ข้าวผัดกุ้ง",
+          "note": "ตรวจขนาดจานก่อนเปิดโหวต",
+          "price": 79,
+          "source": "71514_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": true,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        },
+        {
+          "id": "H7",
+          "qty": 2,
+          "name": "ข้าวผัดทะเล",
+          "note": "ตรวจขนาดจานก่อนเปิดโหวต",
+          "price": 79,
+          "source": "71514_0.jpg",
+          "priceStatus": "reference",
+          "portionCheck": true,
+          "catalogVersion": 1,
+          "availabilityStatus": "unknown"
+        }
+      ]
+    }
+  ],
+  "campaign_id": "ccr-2026",
+  "catalog_version": 1
+}
