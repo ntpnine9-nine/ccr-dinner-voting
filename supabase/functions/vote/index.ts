@@ -44,6 +44,21 @@ Deno.serve(async(req:Request)=>{try{
     const c=await catalog();if(c.categories.length!==8||c.categories.some((x:any)=>x.options.length!==7))return fail(req,'CATALOG_INVALID',503);
     return json(req,{ok:true,catalogVersion:c.campaign.catalog_version,status:c.campaign.status,targetBudget:c.campaign.target_budget,considerationBudget:c.campaign.consideration_budget,categories:c.categories});
   }
+  if(op==='preferences.submit'){
+    if(typeof body.code!=='string'||body.code.length>80)return fail(req,'INVALID_CODE');
+    const code=normalized(body.code);if(!/^CCR26[A-Z2-9]{20}$/.test(code))return fail(req,'INVALID_CODE');
+    const attendance=String(body.attendance||''),giftChoice=String(body.giftChoice||''),themeChoice=String(body.themeChoice||'');
+    const {data,error}=await admin.rpc('submit_event_preferences',{
+      p_campaign_id:CAMP,
+      p_token_hash:await sha(code),
+      p_attendance:attendance,
+      p_gift_choice:giftChoice,
+      p_theme_choice:themeChoice
+    });
+    if(error){const e=error.message;return fail(req,e.includes('VOTING_CLOSED')?'ปิดรับการตอบแบบสำรวจแล้ว':e.includes('INVALID_INVITE')?'รหัสเชิญไม่ถูกต้องหรือถูกยกเลิก':'PREFERENCE_SAVE_REJECTED',400)}
+    if(!data?.[0]?.saved_at)return fail(req,'PREFERENCE_SAVE_NOT_CONFIRMED',503);
+    return json(req,{ok:true,saved_at:data[0].saved_at});
+  }
   if(op==='submit'){
     if(typeof body.code!=='string'||body.code.length>80)return fail(req,'INVALID_CODE');
     const code=normalized(body.code);if(!/^CCR26[A-Z2-9]{20}$/.test(code))return fail(req,'INVALID_CODE');
@@ -69,6 +84,18 @@ Deno.serve(async(req:Request)=>{try{
     ]);
     if(allInvites.error||activeInvites.error)return fail(req,'READ_FAILURE',503);
     return json(req,{ok:true,count:rows.length,invites:allInvites.count||0,activeInvites:activeInvites.count||0,status:campaign.status,eligibleVoters:campaign.eligible_voters,catalogVersion:campaign.catalog_version,resultsFrozenAt:campaign.results_frozen_at,tallies});
+  }
+  if(op==='admin.preferences.results'){
+    const {data,error}=await admin.from('event_preferences').select('attendance,gift_choice,theme_choice').eq('campaign_id',CAMP);
+    if(error)return fail(req,'READ_FAILURE',503);
+    const rows=data||[];
+    const attendance={yes:0,maybe:0,no:0},gift={gift_300:0,gift_500:0,gift_300_500:0,gift_none:0},theme={midnight_gold:0,forest_champagne:0,retro_future:0,come_as_you_are:0};
+    for(const row of rows){
+      if(row.attendance in attendance)attendance[row.attendance as keyof typeof attendance]++;
+      if(row.gift_choice in gift)gift[row.gift_choice as keyof typeof gift]++;
+      if(row.theme_choice in theme)theme[row.theme_choice as keyof typeof theme]++;
+    }
+    return json(req,{ok:true,count:rows.length,attendance,gift,theme});
   }
   if(op==='admin.invites.list'){
     const [inv,ballots]=await Promise.all([
