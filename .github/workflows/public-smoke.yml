@@ -25,7 +25,7 @@ jobs:
           curl --fail --location --silent --show-error -D /tmp/css.headers "https://vjvptuecwewmqhkedybs.supabase.co/functions/v1/ccr-app/styles.css" -o /tmp/styles.css
           curl --fail --location --silent --show-error -D /tmp/js.headers "https://vjvptuecwewmqhkedybs.supabase.co/functions/v1/ccr-app/vote.js" -o /tmp/vote.js
           grep -Eiq '^content-type: text/css(;|$)' /tmp/css.headers
-          grep -Eiq '^content-type: text/javascript(;|$)' /tmp/js.headers
+          grep -Eiq '^content-type: (text|application)/javascript(;|$)' /tmp/js.headers
           test -s /tmp/styles.css
           grep -Fq "getCatalog" /tmp/vote.js
       - name: Check admin page
