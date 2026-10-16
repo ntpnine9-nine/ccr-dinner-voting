@@ -34,8 +34,8 @@ jobs:
           curl --fail --location --silent --show-error "$BASE/assets/menu-spread.jpg" -o /tmp/spread.jpg
           grep -Eiq '^content-type: text/css(;|$)' /tmp/css.headers
           grep -Eiq '^content-type: (text|application)/javascript(;|$)' /tmp/js.headers
-          grep -Eiq '^content-type: image/jpeg(;|$)' /tmp/cover.headers
           test -s /tmp/cover.jpg
+          file --mime-type /tmp/cover.jpg | grep -Fq 'image/jpeg'
           test -s /tmp/spread.jpg
       - name: Verify API CORS and closed campaign
         run: |
