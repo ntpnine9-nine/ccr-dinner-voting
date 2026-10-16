@@ -1,25 +1,37 @@
-# CCR Dinner Voting — คู่มือโครงการ
+# CCR After Hours 2026 — คู่มือโครงการ
 
-ระบบโหวตอาหารงานเลี้ยง CCR สำหรับร้านครัวซอย 11
+เว็บไซต์งานเลี้ยงปลายปี CCR วันที่ **ศุกร์ 18 ธันวาคม 2026** ที่ **ครัวซอย 11 เขตประเวศ กรุงเทพฯ**
 
-## Release 1
-- ผู้โหวตเปิดเว็บไซต์ได้โดยไม่ต้องสร้างบัญชี
-- เลือก 1 เมนูจากแต่ละหมวด A–H รวม 8 หมวด
-- ใช้ Invitation Code ส่วนตัวตอนกดส่งคะแนน
-- รหัสเดิมแก้ใบโหวตเดิมได้ก่อนปิด Campaign
-- คะแนนเก็บใน Supabase PostgreSQL
-- Admin ใช้ Supabase Auth + `admin_users` allowlist
-- Dashboard แสดงคะแนนรวมและ Decision Engine
-- งบหลัก ≤ 2,000 บาท / พิจารณาพรีเมียม ≤ 2,200 บาท
+## เว็บไซต์นี้ทำอะไร
+แทนการกระจายข้อมูลหลายไฟล์ PDF / PowerPoint ระบบรวมไว้ในลิงก์เดียว:
+- บัตรเชิญดิจิทัล / Save the Date
+- สถานที่ แผนที่ และปุ่มนำทาง Google Maps
+- Event Guide / Flow ของค่ำคืน / FAQ
+- RSVP: ไปแน่นอน / ยังไม่แน่ใจ / ไม่สะดวก
+- โหวตจับของขวัญ 4 ตัวเลือก
+- โหวต Dress Mood 4 แบบ
+- โหวตอาหาร 8 หมวด × 7 เมนู = 56 ตัวเลือก
+- Dashboard ผู้จัดงาน
+- Decision Engine เปรียบเทียบ Popularity / งบ 2,000 / งบ 2,200 บาท
+
+## หน้าใช้งาน
+- `index.html` — หน้าเชิญและศูนย์รวมงาน
+- `venue.html` — ร้านจริง แผนที่จริง ภาพเมนูจริงที่ผู้จัดมี
+- `party.html` — RSVP + ของขวัญ + Theme
+- `vote.html` — โหวตอาหาร
+- `guide.html` — คู่มืองานแบบ Live Document
+- `admin.html` — Dashboard เฉพาะผู้จัดงานที่ได้รับสิทธิ์
+
+## หลักความปลอดภัย
+- พนักงานไม่ต้องสร้าง Account
+- การส่งคำตอบต้องใช้ Invitation Code ส่วนตัว
+- ระบบเก็บรหัสเป็น Hash ไม่เก็บรหัสเต็ม
+- รหัสเดิมแก้คำตอบเดิมได้ก่อนปิด Campaign
+- ผล Public ไม่แสดงคำตอบรายบุคคล
+- Admin ต้องผ่าน Supabase Auth และมี UUID อยู่ใน `public.admin_users`
 
 ## สถานะ Launch
-Campaign จริงต้องอยู่ `closed` ระหว่างพัฒนาและทดสอบ
-ห้ามเปิดโหวตจริงจนเจ้าของโครงการอนุมัติ
+Campaign จริงต้องอยู่ `closed` ระหว่างพัฒนาและตรวจสอบ
+ห้ามเปิดโหวตจริงจนเจ้าของโครงการสั่ง **“อนุมัติเปิดโหวตจริง”**
 
-## URL เป้าหมาย
-- Voter: https://ntpnine9-nine.github.io/ccr-dinner-voting/
-- Admin: https://ntpnine9-nine.github.io/ccr-dinner-voting/admin.html
-
-URL เหล่านี้ต้องเปิด GitHub Pages และตรวจจากเบราว์เซอร์จริงก่อนถือว่าใช้งาน Production ได้
-
-อ่านต่อ: `docs/OPERATIONS_TH.md`, `docs/RECOVERY_TH.md`, `SECURITY.md`.
+อ่านต่อ: `docs/OPERATIONS_TH.md`, `docs/RECOVERY_TH.md`, `docs/PRODUCTION_ACCEPTANCE.md`, `SECURITY.md`.
