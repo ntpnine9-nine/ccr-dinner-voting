@@ -30,7 +30,7 @@ $('password').addEventListener('keydown',e=>{if(e.key==='Enter')$('login').click
 $('logout').addEventListener('click',async()=>{if(db)await db.auth.signOut();session=null;onSession()});
 async function refresh(){
   try{
-    const [r,inv]=await Promise.all([call('admin.results'),call('admin.invites.list')]);lastResults=r;numBallots=r.count;tallies=r.tallies||{};renderResults(r);renderInvites(inv.items||[]);
+    const [r,inv,pref]=await Promise.all([call('admin.results'),call('admin.invites.list'),call('admin.preferences.results')]);lastResults=r;numBallots=r.count;tallies=r.tallies||{};renderResults(r);renderInvites(inv.items||[]);renderPreferences(pref);
     $('state').textContent=r.status==='open'?'● เปิดรับคะแนน':'● ปิดรับคะแนน';$('state').style.background=r.status==='open'?'#eaf6ea':'#fff3e1';$('lastRefresh').textContent='อัปเดตเมื่อ '+new Date().toLocaleTimeString('th-TH');
     $('freeze').disabled=r.status==='open'||!!r.resultsFrozenAt;
     notice(r.resultsFrozenAt?'ผลถูก Freeze แล้ว · '+new Date(r.resultsFrozenAt).toLocaleString('th-TH'):'เชื่อมฐานข้อมูลกลางและโหลดผลคะแนนจริงแล้ว');
@@ -45,6 +45,32 @@ $('downloadCodes').addEventListener('click',()=>{if(latestCodes.length)download(
 function renderInvites(items){
   $('inviteList').innerHTML=items.length?items.map(x=>`<tr><td><code>${escapeHTML(String(x.id).slice(0,8))}</code></td><td>${x.active?'Active':'Revoked'}</td><td>${x.hasBallot?'✓ โหวตแล้ว':'—'}</td><td>${new Date(x.createdAt).toLocaleString('th-TH')}</td><td><button class="mini-btn" data-revoke="${x.id}" ${!x.active?'disabled':''}>ยกเลิก</button></td></tr>`).join(''):'<tr><td colspan="5" class="muted">ยังไม่มีรหัสเชิญ</td></tr>';
   document.querySelectorAll('[data-revoke]').forEach(btn=>btn.addEventListener('click',async()=>{if(!confirm('ยืนยันยกเลิกรหัสนี้?'))return;try{await call('admin.invites.revoke',{inviteId:btn.dataset.revoke});await refresh()}catch(e){notice(e.message,true)}}));
+}
+function prefRows(target,entries,total){
+  $(target).innerHTML=entries.map(([label,value])=>`<div class="rank"><div class="rank-head"><span class="rank-title">${escapeHTML(label)}</span><span class="rank-val">${value}</span></div><div class="meter"><div style="width:${total?Math.round(value/total*100):0}%"></div></div></div>`).join('');
+}
+function renderPreferences(p){
+  const total=Number(p.count||0);$('prefCount').textContent=total+' responses';
+  const attending=Number(p.attendance?.yes||0),maybe=Number(p.attendance?.maybe||0),no=Number(p.attendance?.no||0);
+  $('prefStats').innerHTML=[
+    ['ตอบแบบสำรวจแล้ว',total,'ใช้รหัสเชิญเดียวกับ Food Vote'],
+    ['ยืนยันมาร่วมงาน',attending,'RSVP = ไปแน่นอน'],
+    ['ยังไม่แน่ใจ',maybe,'รอเช็กตาราง'],
+    ['ไม่สะดวก',no,'แจ้งไม่ร่วมงาน']
+  ].map(a=>`<div class="metric-card"><span class="metric-label">${a[0]}</span><strong class="metric-number">${a[1]}</strong><span class="metric-desc">${a[2]}</span></div>`).join('');
+  prefRows('attendanceResults',[['ไปแน่นอน',attending],['ยังไม่แน่ใจ',maybe],['ไม่สะดวก',no]],total);
+  prefRows('giftResults',[
+    ['จับของขวัญ ฿300',Number(p.gift?.gift_300||0)],
+    ['จับของขวัญ ฿500',Number(p.gift?.gift_500||0)],
+    ['ช่วงงบ ฿300–500',Number(p.gift?.gift_300_500||0)],
+    ['ปีนี้ไม่จับ',Number(p.gift?.gift_none||0)]
+  ],total);
+  prefRows('themeResults',[
+    ['Midnight & Gold',Number(p.theme?.midnight_gold||0)],
+    ['Forest & Champagne',Number(p.theme?.forest_champagne||0)],
+    ['Retro Future',Number(p.theme?.retro_future||0)],
+    ['Come As You Are',Number(p.theme?.come_as_you_are||0)]
+  ],total);
 }
 function renderResults(r){
   $('stats').innerHTML=[['ผู้ส่งคะแนนแล้ว',r.count,'จำนวนใบโหวตที่บันทึก'],['รหัสเชิญทั้งหมด',r.invites,'รหัสที่ออกทั้งหมด'],['รหัสที่ยังใช้งาน',r.activeInvites,'ยังไม่ถูกยกเลิก'],['อัตราการมีส่วนร่วม',r.invites?Math.round(r.count/r.invites*100)+'%':'—','คิดจากรหัสที่ออก']].map(a=>`<div class="metric-card"><span class="metric-label">${a[0]}</span><strong class="metric-number">${a[1]}</strong><span class="metric-desc">${a[2]}</span></div>`).join('');
