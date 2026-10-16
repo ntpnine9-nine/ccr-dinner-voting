@@ -1,0 +1,39 @@
+name: Publish public website to Supabase Storage
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish canonical static assets
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --request POST             "https://vjvptuecwewmqhkedybs.supabase.co/functions/v1/publish-static"             -H "Content-Type: application/json"             --data '{}'
+      - name: Verify browser-safe public voter page
+        run: |
+          set -euo pipefail
+          URL="https://vjvptuecwewmqhkedybs.supabase.co/storage/v1/object/public/ccr-public/index.html"
+          curl --fail --location --silent --show-error -D /tmp/index.headers "$URL" -o /tmp/index.html
+          cat /tmp/index.headers
+          grep -Eiq '^content-type: text/html(;|$)' /tmp/index.headers
+          grep -Fq "CCR Dinner Voting" /tmp/index.html
+          grep -Fq "8 หมวด" /tmp/index.html
+      - name: Verify static assets and admin page
+        run: |
+          set -euo pipefail
+          BASE="https://vjvptuecwewmqhkedybs.supabase.co/storage/v1/object/public/ccr-public"
+          curl --fail --location --silent --show-error -D /tmp/css.headers "$BASE/styles.css" -o /tmp/styles.css
+          curl --fail --location --silent --show-error -D /tmp/js.headers "$BASE/vote.js" -o /tmp/vote.js
+          curl --fail --location --silent --show-error -D /tmp/admin.headers "$BASE/admin.html" -o /tmp/admin.html
+          grep -Eiq '^content-type: text/css(;|$)' /tmp/css.headers
+          grep -Eiq '^content-type: text/javascript(;|application/javascript;|$)' /tmp/js.headers
+          grep -Eiq '^content-type: text/html(;|$)' /tmp/admin.headers
+          grep -Fq "getCatalog" /tmp/vote.js
+          grep -Fq "แดชบอร์ดผู้จัดงาน" /tmp/admin.html
