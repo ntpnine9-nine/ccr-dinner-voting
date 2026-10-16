@@ -15,14 +15,17 @@ jobs:
       - name: Check public voter page
         run: |
           set -euo pipefail
-          curl --fail --location --silent --show-error "https://vjvptuecwewmqhkedybs.supabase.co/functions/v1/ccr-app/" -o /tmp/index.html
+          curl --fail --location --silent --show-error -D /tmp/index.headers "https://vjvptuecwewmqhkedybs.supabase.co/functions/v1/ccr-app/" -o /tmp/index.html
+          grep -Eiq '^content-type: text/html(;|$)' /tmp/index.headers
           grep -Fq "CCR Dinner Voting" /tmp/index.html
           grep -Fq "8 หมวด" /tmp/index.html
       - name: Check public assets
         run: |
           set -euo pipefail
-          curl --fail --location --silent --show-error "https://vjvptuecwewmqhkedybs.supabase.co/functions/v1/ccr-app/styles.css" -o /tmp/styles.css
-          curl --fail --location --silent --show-error "https://vjvptuecwewmqhkedybs.supabase.co/functions/v1/ccr-app/vote.js" -o /tmp/vote.js
+          curl --fail --location --silent --show-error -D /tmp/css.headers "https://vjvptuecwewmqhkedybs.supabase.co/functions/v1/ccr-app/styles.css" -o /tmp/styles.css
+          curl --fail --location --silent --show-error -D /tmp/js.headers "https://vjvptuecwewmqhkedybs.supabase.co/functions/v1/ccr-app/vote.js" -o /tmp/vote.js
+          grep -Eiq '^content-type: text/css(;|$)' /tmp/css.headers
+          grep -Eiq '^content-type: text/javascript(;|$)' /tmp/js.headers
           test -s /tmp/styles.css
           grep -Fq "getCatalog" /tmp/vote.js
       - name: Check admin page
