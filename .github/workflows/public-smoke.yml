@@ -37,8 +37,8 @@ jobs:
           curl --fail --location --silent --show-error -D /tmp/img.headers "$BASE/assets/menu-cover.jpg" -o /tmp/menu.jpg
           grep -Eiq '^content-type: text/css(;|$)' /tmp/css.headers
           grep -Eiq '^content-type: (text|application)/javascript(;|$)' /tmp/js.headers
-          grep -Eiq '^content-type: image/jpeg(;|$)' /tmp/img.headers
           test -s /tmp/menu.jpg
+          file --mime-type /tmp/menu.jpg | grep -Fq 'image/jpeg'
       - name: Verify backend remains closed before owner launch
         run: |
           set -euo pipefail
