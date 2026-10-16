@@ -1,27 +1,55 @@
-# CCR Dinner Voting & Menu Decision Management System
+# CCR After Hours 2026 — Event Portal & Dinner Voting
 
-Production-oriented Release 1 for CCR year-end dinner voting at ครัวซอย 11.
+Production-oriented event website for the CCR year-end celebration on **Friday, 18 December 2026** at **ครัวซอย 11, Prawet, Bangkok**.
+
+## Product
+One private-shareable event link combines:
+- Digital invitation / Save the Date
+- Live event guide and run-of-show
+- Venue information + Google Maps directions
+- Authentic menu reference imagery supplied by the organizer
+- RSVP
+- Gift Exchange budget poll
+- Dress Mood / theme poll
+- 8-category / 56-option food voting
+- Admin dashboard and menu decision engine
 
 ## Architecture
-Public GitHub Pages → Supabase Edge Function → Supabase PostgreSQL
+Static public web source → GitHub repository / public delivery gateway → Supabase Edge Functions → Supabase PostgreSQL.
 
-Admin: Supabase Auth + `public.admin_users` authorization.
+Admin access uses Supabase Auth plus application authorization through `public.admin_users`.
 
-## Product model
+## Public pages
+- `index.html` — invitation and event hub
+- `venue.html` — venue, map, public venue snapshot, authentic menu references
+- `party.html` — RSVP + Gift Exchange + Dress Mood
+- `vote.html` — 8-category food vote
+- `guide.html` — complete event guide / FAQ
+- `admin.html` — authorized organizer dashboard
+
+## Voting model
 - 8 fixed categories
-- 7 options/category
+- 7 menu options per category
 - 56 menu candidates
-- 1 option/category/ballot
-- Standard budget ≤ THB 2,000
+- 1 choice per category per ballot
+- Standard table budget ≤ THB 2,000
 - Premium consideration ≤ THB 2,200
+- Gift poll: THB 300 / THB 500 / THB 300–500 / no exchange
+- Dress Mood poll: 4 options
 
-## Public UX
-No voter account login. Link/QR → A-H selections → review → personal invitation code → submit → server receipt.
+## Security / privacy
+- Public attendees do not create Supabase accounts.
+- Personal invitation codes are high-entropy bearer credentials and stored hashed.
+- Re-submission updates the same record before campaign close.
+- Individual attendee responses are not shown on public pages.
+- Admin actions require authentication plus `admin_users` authorization.
+- Campaign remains CLOSED until explicit owner launch approval.
 
-## Deployment
-Target public URL: `https://ntpnine9-nine.github.io/ccr-dinner-voting/`
-Target admin URL: `https://ntpnine9-nine.github.io/ccr-dinner-voting/admin.html`
+## Availability
+The project maintains automated verification for:
+- repository integrity
+- public gateway HTML/assets
+- backend status / CORS
+- campaign closed launch gate
 
-The real campaign must remain CLOSED until acceptance testing passes and the owner explicitly approves launch.
-
-See `SECURITY.md` and `docs/OPERATIONS_TH.md`.
+See `SECURITY.md`, `docs/OPERATIONS_TH.md`, and `docs/PRODUCTION_ACCEPTANCE.md`.
