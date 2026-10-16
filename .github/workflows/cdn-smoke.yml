@@ -1,0 +1,41 @@
+name: Public CDN browser smoke test
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify public voter page renders as HTML
+        run: |
+          set -euo pipefail
+          BASE="https://raw.githack.com/ntpnine9-nine/ccr-dinner-voting/main"
+          curl --fail --location --silent --show-error -D /tmp/index.headers "$BASE/index.html" -o /tmp/index.html
+          cat /tmp/index.headers
+          grep -Eiq '^content-type: text/html(;|$)' /tmp/index.headers
+          grep -Fq "CCR Dinner Voting" /tmp/index.html
+          grep -Fq "8 หมวด" /tmp/index.html
+      - name: Verify CSS JS and Admin
+        run: |
+          set -euo pipefail
+          BASE="https://raw.githack.com/ntpnine9-nine/ccr-dinner-voting/main"
+          curl --fail --location --silent --show-error -D /tmp/css.headers "$BASE/styles.css" -o /tmp/styles.css
+          curl --fail --location --silent --show-error -D /tmp/js.headers "$BASE/vote.js" -o /tmp/vote.js
+          curl --fail --location --silent --show-error -D /tmp/admin.headers "$BASE/admin.html" -o /tmp/admin.html
+          grep -Eiq '^content-type: text/css(;|$)' /tmp/css.headers
+          grep -Eiq '^content-type: (text|application)/javascript(;|$)' /tmp/js.headers
+          grep -Eiq '^content-type: text/html(;|$)' /tmp/admin.headers
+          grep -Fq "แดชบอร์ดผู้จัดงาน" /tmp/admin.html
+      - name: Verify backend CORS and closed campaign
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error -D /tmp/api.headers             "https://vjvptuecwewmqhkedybs.supabase.co/functions/v1/vote"             -H "Origin: https://raw.githack.com"             -H "Content-Type: application/json"             -H "apikey: sb_publishable_NrWLBu3I0QUioXj4rnon5Q_LbLYhsXR"             --data '{"op":"status","campaign":"ccr-2026"}'             -o /tmp/status.json
+          grep -Eiq '^access-control-allow-origin: https://raw.githack.com' /tmp/api.headers
+          grep -Fq '"ok":true' /tmp/status.json
+          grep -Fq '"open":false' /tmp/status.json
