@@ -1,4 +1,5 @@
 name: Release 1 verification
+# Canonical production-source verification
 
 on:
   push:
