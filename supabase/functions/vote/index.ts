@@ -155,33 +155,7 @@ Deno.serve(async(req:Request)=>{try{
     const choices=body.choices;
     if(!choices||typeof choices!=='object'||Array.isArray(choices))return fail(req,'INVALID_CHOICES');
     const keys=Object.keys(choices),expected=['A','B','C','D','E','F','G','H'];
-    if(keys.length!==8||!expected.every(k=>typeof choices[k]==='string'&&new RegExp('^'+k+'[1-7]
-    const count=Number(body.count);if(!Number.isInteger(count)||count<1||count>200)return fail(req,'INVALID_COUNT');
-    const items=[] as {id:string,code:string,token_hash:string}[];for(let i=0;i<count;i++){const code=inviteCode();items.push({id:crypto.randomUUID(),code,token_hash:await sha(normalized(code))})}
-    const {error}=await admin.from('invite_codes').insert(items.map(x=>({id:x.id,campaign_id:CAMP,token_hash:x.token_hash})));if(error)return fail(req,'CREATE_INVITES_ERROR',503);
-    await logAdmin(user.id,'invite.generate',{count});return json(req,{ok:true,items:items.map(({id,code})=>({id,code}))});
-  }
-  if(op==='admin.invites.revoke'){
-    const inviteId=String(body.inviteId||'');if(!/^[0-9a-f-]{36}$/i.test(inviteId))return fail(req,'INVALID_INVITE_ID');
-    const {data,error}=await admin.from('invite_codes').update({active:false,revoked_at:new Date().toISOString()}).eq('campaign_id',CAMP).eq('id',inviteId).select('id').maybeSingle();if(error||!data)return fail(req,'INVITE_NOT_FOUND',404);
-    await logAdmin(user.id,'invite.revoke',{inviteId});return json(req,{ok:true});
-  }
-  if(op==='admin.status'){
-    if(body.status!=='open'&&body.status!=='closed')return fail(req,'INVALID_STATUS');
-    const {data:current,error:re}=await admin.from('campaigns').select('results_frozen_at').eq('id',CAMP).single();if(re)return fail(req,'READ_FAILURE',503);
-    if(body.status==='open'&&current.results_frozen_at)return fail(req,'RESULTS_FROZEN',409);
-    const {error}=await admin.from('campaigns').update({status:body.status,updated_at:new Date().toISOString()}).eq('id',CAMP);if(error)return fail(req,'UPDATE_FAILED',503);
-    await logAdmin(user.id,'campaign.status',{status:body.status});return json(req,{ok:true,status:body.status});
-  }
-  if(op==='admin.freeze'){
-    const {data:campaign,error:ce}=await admin.from('campaigns').select('status,results_frozen_at').eq('id',CAMP).single();if(ce)return fail(req,'READ_FAILURE',503);
-    if(campaign.status!=='closed')return fail(req,'CLOSE_CAMPAIGN_FIRST',409);
-    if(campaign.results_frozen_at)return json(req,{ok:true,resultsFrozenAt:campaign.results_frozen_at});
-    const now=new Date().toISOString();const {error}=await admin.from('campaigns').update({results_frozen_at:now,updated_at:now}).eq('id',CAMP);if(error)return fail(req,'FREEZE_FAILED',503);
-    await logAdmin(user.id,'results.freeze',{at:now});return json(req,{ok:true,resultsFrozenAt:now});
-  }
-  return fail(req,'UNKNOWN_ADMIN_OPERATION',404);
-}catch(error){console.error('vote edge error',error);return fail(req,'SERVER_ERROR',500)}});).test(choices[k])))return fail(req,'SELECT_EIGHT_CATEGORIES');
+    if(keys.length!==8||!expected.every(k=>typeof choices[k]==='string'&&new RegExp('^'+k+'[1-7]$').test(choices[k])))return fail(req,'SELECT_EIGHT_CATEGORIES');
     const [{data:campaign,error:ce},{data:invite,error:ie}]=await Promise.all([
       admin.from('campaigns').select('results_frozen_at').eq('id',CAMP).single(),
       admin.from('invite_codes').select('id').eq('campaign_id',CAMP).eq('id',inviteId).maybeSingle()
