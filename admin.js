@@ -29,6 +29,8 @@ let latestCodes = [];
 let currentPlan = null;
 let currentPlanMode = 'popular';
 let catalogVersion = null;
+let submissions = [];
+let selectedInviteId = null;
 
 function notice(message, type = false) {
   const cls = type === true || type === 'error' ? 'error' : type === 'info' ? 'info' : 'good';
@@ -205,6 +207,10 @@ async function enterPreviewMode() {
   renderResults(simResults);
   renderInvites(simInvites);
   renderPreferences(simPrefs);
+  renderSubmissions([]);
+  if ($('eligibleVoters')) $('eligibleVoters').value = 50;
+  if ($('saveEligibleVoters')) $('saveEligibleVoters').disabled = true;
+  if ($('reloadSubmissions')) $('reloadSubmissions').disabled = true;
 
   $('state').textContent = '● โหมดจำลองข้อมูล (Interactive Preview)';
   $('state').style.background = '#e6f4ea';
@@ -330,10 +336,11 @@ async function refresh() {
     return;
   }
   try {
-    const [r, inv, pref] = await Promise.all([
+    const [r, inv, pref, sub] = await Promise.all([
       call('admin.results'),
       call('admin.invites.list'),
-      call('admin.preferences.results')
+      call('admin.preferences.results'),
+      call('admin.submissions.list')
     ]);
     lastResults = r;
     numBallots = r.count;
@@ -341,6 +348,10 @@ async function refresh() {
     renderResults(r);
     renderInvites(inv.items || []);
     renderPreferences(pref);
+    renderSubmissions(sub.items || []);
+    if ($('eligibleVoters')) $('eligibleVoters').value = Number(r.eligibleVoters || 50);
+    if ($('saveEligibleVoters')) $('saveEligibleVoters').disabled = false;
+    if ($('reloadSubmissions')) $('reloadSubmissions').disabled = false;
     $('state').textContent = r.status === 'open' ? '● เปิดรับคะแนน' : '● ปิดรับคะแนน';
     $('state').style.background = r.status === 'open' ? '#eaf6ea' : '#fff3e1';
     $('lastRefresh').textContent = 'อัปเดตเมื่อ ' + new Date().toLocaleTimeString('th-TH');
@@ -472,6 +483,192 @@ function renderInvites(items) {
     })
   );
 }
+
+function recordTime(item) {
+  const values = [item?.ballot?.updatedAt, item?.preferences?.updatedAt, item?.createdAt]
+    .filter(Boolean)
+    .map(x => new Date(x).getTime())
+    .filter(Number.isFinite);
+  if (!values.length) return '—';
+  return new Date(Math.max(...values)).toLocaleString('th-TH');
+}
+
+function preferenceSummary(p) {
+  if (!p) return '—';
+  const attendance = { yes: 'ไป', maybe: 'ไม่แน่ใจ', no: 'ไม่ไป' }[p.attendance] || p.attendance;
+  const gift = {
+    gift_300: 'ของขวัญ ฿300',
+    gift_500: 'ของขวัญ ฿500',
+    gift_300_500: 'ของขวัญ ฿300–500',
+    gift_none: 'ไม่จับของขวัญ'
+  }[p.giftChoice] || p.giftChoice;
+  const theme = {
+    midnight_gold: 'Midnight & Gold',
+    forest_champagne: 'Forest & Champagne',
+    retro_future: 'Retro Future',
+    come_as_you_are: 'Come As You Are'
+  }[p.themeChoice] || p.themeChoice;
+  return [attendance, gift, theme].filter(Boolean).join(' · ');
+}
+
+function renderSubmissions(items) {
+  submissions = Array.isArray(items) ? items : [];
+  if (!$('submissionRows')) return;
+  $('submissionRows').innerHTML = submissions.length
+    ? submissions
+        .map(item => {
+          const food = item.ballot
+            ? Object.entries(item.ballot.choices || {})
+                .sort(([a], [b]) => a.localeCompare(b))
+                .map(([, id]) => escapeHTML(String(id)))
+                .join(' · ')
+            : '—';
+          const prefs = escapeHTML(preferenceSummary(item.preferences));
+          const inviteId = escapeHTML(String(item.inviteId));
+          return `<tr>
+            <td><code>${inviteId.slice(0, 10)}</code></td>
+            <td>${item.active ? 'Active' : 'Revoked'}</td>
+            <td>${food}</td>
+            <td>${prefs}</td>
+            <td>${recordTime(item)}</td>
+            <td>
+              <div class="admin-btnrow">
+                <button class="mini-btn" data-edit-record="${inviteId}" ${previewMode ? 'disabled' : ''}>แก้ไข</button>
+                <button class="mini-btn" data-delete-ballot="${inviteId}" ${!item.ballot || previewMode ? 'disabled' : ''}>ลบคะแนน</button>
+                <button class="mini-btn" data-delete-pref="${inviteId}" ${!item.preferences || previewMode ? 'disabled' : ''}>ลบ RSVP</button>
+                <button class="mini-btn" data-delete-all="${inviteId}" ${(!item.ballot && !item.preferences) || previewMode ? 'disabled' : ''}>ลบข้อมูลทดสอบ</button>
+              </div>
+            </td>
+          </tr>`;
+        })
+        .join('')
+    : '<tr><td colspan="6" class="muted">ยังไม่มีข้อมูลรายคนในฐานข้อมูลกลาง</td></tr>';
+
+  document.querySelectorAll('[data-edit-record]').forEach(btn =>
+    btn.addEventListener('click', () => openSubmissionEditor(btn.dataset.editRecord))
+  );
+  document.querySelectorAll('[data-delete-ballot]').forEach(btn =>
+    btn.addEventListener('click', () =>
+      deleteRecordPart('admin.ballot.delete', btn.dataset.deleteBallot, 'ลบคะแนนอาหารของรายการนี้')
+    )
+  );
+  document.querySelectorAll('[data-delete-pref]').forEach(btn =>
+    btn.addEventListener('click', () =>
+      deleteRecordPart('admin.preferences.delete', btn.dataset.deletePref, 'ลบข้อมูล RSVP / ของขวัญ / ธีมของรายการนี้')
+    )
+  );
+  document.querySelectorAll('[data-delete-all]').forEach(btn =>
+    btn.addEventListener('click', () =>
+      deleteRecordPart('admin.submission.delete', btn.dataset.deleteAll, 'ลบข้อมูลโหวตและ RSVP ทั้งหมดของรายการนี้')
+    )
+  );
+}
+
+function openSubmissionEditor(inviteId) {
+  if (previewMode) return notice('โหมดจำลองไม่สามารถแก้ฐานข้อมูลจริงได้', true);
+  const item = submissions.find(x => x.inviteId === inviteId);
+  if (!item) return notice('ไม่พบรายการที่เลือก กรุณารีเฟรชข้อมูล', true);
+  selectedInviteId = inviteId;
+  $('editInviteId').textContent = String(inviteId).slice(0, 10);
+  $('ballotEditor').innerHTML = cats
+    .map(cat => {
+      const current = item.ballot?.choices?.[cat.key] || cat.options[0]?.id || '';
+      return `<label class="input-block">
+        <span>หมวด ${escapeHTML(cat.key)} · ${escapeHTML(cat.label)}</span>
+        <select class="text-field" data-ballot-cat="${escapeHTML(cat.key)}">
+          ${cat.options
+            .map(
+              opt =>
+                `<option value="${escapeHTML(opt.id)}" ${opt.id === current ? 'selected' : ''}>${escapeHTML(
+                  opt.id + ' · ' + opt.name
+                )}</option>`
+            )
+            .join('')}
+        </select>
+      </label>`;
+    })
+    .join('');
+  $('editAttendance').value = item.preferences?.attendance || 'yes';
+  $('editGift').value = item.preferences?.giftChoice || 'gift_500';
+  $('editTheme').value = item.preferences?.themeChoice || 'midnight_gold';
+  $('submissionEditor').classList.remove('hidden');
+  $('submissionEditor').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+async function deleteRecordPart(op, inviteId, label) {
+  if (previewMode) return;
+  if (!confirm(`ยืนยัน${label}?\n\nInvite ID: ${String(inviteId).slice(0, 10)}`)) return;
+  try {
+    await call(op, { inviteId });
+    if (selectedInviteId === inviteId) {
+      selectedInviteId = null;
+      $('submissionEditor')?.classList.add('hidden');
+    }
+    notice('ดำเนินการเรียบร้อยและบันทึก Audit Log แล้ว');
+    await refresh();
+  } catch (e) {
+    notice('ไม่สามารถลบข้อมูล: ' + e.message, true);
+  }
+}
+
+$('closeSubmissionEditor')?.addEventListener('click', () => {
+  selectedInviteId = null;
+  $('submissionEditor').classList.add('hidden');
+});
+
+$('saveBallotEdit')?.addEventListener('click', async () => {
+  if (previewMode || !selectedInviteId) return;
+  const choices = {};
+  document.querySelectorAll('[data-ballot-cat]').forEach(select => {
+    choices[select.dataset.ballotCat] = select.value;
+  });
+  try {
+    await call('admin.ballot.save', { inviteId: selectedInviteId, choices });
+    const keep = selectedInviteId;
+    notice('บันทึก/อัปเดตคะแนนอาหารเรียบร้อย');
+    await refresh();
+    openSubmissionEditor(keep);
+  } catch (e) {
+    notice('บันทึกคะแนนไม่สำเร็จ: ' + e.message, true);
+  }
+});
+
+$('savePreferencesEdit')?.addEventListener('click', async () => {
+  if (previewMode || !selectedInviteId) return;
+  try {
+    await call('admin.preferences.save', {
+      inviteId: selectedInviteId,
+      attendance: $('editAttendance').value,
+      giftChoice: $('editGift').value,
+      themeChoice: $('editTheme').value
+    });
+    const keep = selectedInviteId;
+    notice('บันทึก/อัปเดต RSVP เรียบร้อย');
+    await refresh();
+    openSubmissionEditor(keep);
+  } catch (e) {
+    notice('บันทึก RSVP ไม่สำเร็จ: ' + e.message, true);
+  }
+});
+
+$('saveEligibleVoters')?.addEventListener('click', async () => {
+  if (previewMode) return notice('โหมดจำลองไม่สามารถแก้ฐานข้อมูลจริงได้', true);
+  const count = Number($('eligibleVoters').value);
+  if (!Number.isInteger(count) || count < 1 || count > 200)
+    return notice('จำนวนผู้มีสิทธิ์เป้าหมายต้องเป็น 1–200 คน', true);
+  try {
+    await call('admin.eligible_voters', { count });
+    notice('อัปเดตจำนวนผู้มีสิทธิ์เป้าหมายเป็น ' + count + ' คนแล้ว');
+    await refresh();
+  } catch (e) {
+    notice('อัปเดตจำนวนเป้าหมายไม่สำเร็จ: ' + e.message, true);
+  }
+});
+
+$('reloadSubmissions')?.addEventListener('click', () => {
+  if (previewMode) return notice('โหมดจำลองไม่มีข้อมูลรายคนจากฐานข้อมูลจริง', 'info');
+  refresh();
+});
 
 function prefRows(target, entries, total) {
   $(target).innerHTML = entries
