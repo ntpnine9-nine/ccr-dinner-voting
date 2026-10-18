@@ -119,6 +119,143 @@ Deno.serve(async(req:Request)=>{try{
     const preffed=new Set((prefs.data||[]).map((x:any)=>x.invite_id));
     return json(req,{ok:true,items:(inv.data||[]).map((x:any)=>({id:x.id,active:x.active,createdAt:x.created_at,revokedAt:x.revoked_at,hasBallot:voted.has(x.id),hasPreferences:preffed.has(x.id)}))});
   }
+  if(op==='admin.submissions.list'){
+    const [inv,ballots,prefs]=await Promise.all([
+      admin.from('invite_codes').select('id,active,created_at,revoked_at').eq('campaign_id',CAMP).order('created_at',{ascending:false}).limit(500),
+      admin.from('ballots').select('id,invite_id,choices,created_at,updated_at').eq('campaign_id',CAMP),
+      admin.from('event_preferences').select('invite_id,attendance,gift_choice,theme_choice,created_at,updated_at').eq('campaign_id',CAMP)
+    ]);
+    if(inv.error||ballots.error||prefs.error)return fail(req,'READ_FAILURE',503);
+    const ballotMap=new Map((ballots.data||[]).map((x:any)=>[x.invite_id,x]));
+    const prefMap=new Map((prefs.data||[]).map((x:any)=>[x.invite_id,x]));
+    return json(req,{ok:true,items:(inv.data||[]).map((x:any)=>{
+      const ballot:any=ballotMap.get(x.id)||null;
+      const pref:any=prefMap.get(x.id)||null;
+      return {
+        inviteId:x.id,
+        active:x.active,
+        createdAt:x.created_at,
+        revokedAt:x.revoked_at,
+        ballot:ballot?{id:ballot.id,choices:ballot.choices,createdAt:ballot.created_at,updatedAt:ballot.updated_at}:null,
+        preferences:pref?{attendance:pref.attendance,giftChoice:pref.gift_choice,themeChoice:pref.theme_choice,createdAt:pref.created_at,updatedAt:pref.updated_at}:null
+      };
+    })});
+  }
+  if(op==='admin.eligible_voters'){
+    const count=Number(body.count);
+    if(!Number.isInteger(count)||count<1||count>200)return fail(req,'INVALID_ELIGIBLE_VOTERS');
+    const {error}=await admin.from('campaigns').update({eligible_voters:count,updated_at:new Date().toISOString()}).eq('id',CAMP);
+    if(error)return fail(req,'UPDATE_FAILED',503);
+    await logAdmin(user.id,'campaign.eligible_voters',{count});
+    return json(req,{ok:true,eligibleVoters:count});
+  }
+  if(op==='admin.ballot.save'){
+    const inviteId=String(body.inviteId||'');
+    if(!/^[0-9a-f-]{36}$/i.test(inviteId))return fail(req,'INVALID_INVITE_ID');
+    const choices=body.choices;
+    if(!choices||typeof choices!=='object'||Array.isArray(choices))return fail(req,'INVALID_CHOICES');
+    const keys=Object.keys(choices),expected=['A','B','C','D','E','F','G','H'];
+    if(keys.length!==8||!expected.every(k=>typeof choices[k]==='string'&&new RegExp('^'+k+'[1-7]
+    const count=Number(body.count);if(!Number.isInteger(count)||count<1||count>200)return fail(req,'INVALID_COUNT');
+    const items=[] as {id:string,code:string,token_hash:string}[];for(let i=0;i<count;i++){const code=inviteCode();items.push({id:crypto.randomUUID(),code,token_hash:await sha(normalized(code))})}
+    const {error}=await admin.from('invite_codes').insert(items.map(x=>({id:x.id,campaign_id:CAMP,token_hash:x.token_hash})));if(error)return fail(req,'CREATE_INVITES_ERROR',503);
+    await logAdmin(user.id,'invite.generate',{count});return json(req,{ok:true,items:items.map(({id,code})=>({id,code}))});
+  }
+  if(op==='admin.invites.revoke'){
+    const inviteId=String(body.inviteId||'');if(!/^[0-9a-f-]{36}$/i.test(inviteId))return fail(req,'INVALID_INVITE_ID');
+    const {data,error}=await admin.from('invite_codes').update({active:false,revoked_at:new Date().toISOString()}).eq('campaign_id',CAMP).eq('id',inviteId).select('id').maybeSingle();if(error||!data)return fail(req,'INVITE_NOT_FOUND',404);
+    await logAdmin(user.id,'invite.revoke',{inviteId});return json(req,{ok:true});
+  }
+  if(op==='admin.status'){
+    if(body.status!=='open'&&body.status!=='closed')return fail(req,'INVALID_STATUS');
+    const {data:current,error:re}=await admin.from('campaigns').select('results_frozen_at').eq('id',CAMP).single();if(re)return fail(req,'READ_FAILURE',503);
+    if(body.status==='open'&&current.results_frozen_at)return fail(req,'RESULTS_FROZEN',409);
+    const {error}=await admin.from('campaigns').update({status:body.status,updated_at:new Date().toISOString()}).eq('id',CAMP);if(error)return fail(req,'UPDATE_FAILED',503);
+    await logAdmin(user.id,'campaign.status',{status:body.status});return json(req,{ok:true,status:body.status});
+  }
+  if(op==='admin.freeze'){
+    const {data:campaign,error:ce}=await admin.from('campaigns').select('status,results_frozen_at').eq('id',CAMP).single();if(ce)return fail(req,'READ_FAILURE',503);
+    if(campaign.status!=='closed')return fail(req,'CLOSE_CAMPAIGN_FIRST',409);
+    if(campaign.results_frozen_at)return json(req,{ok:true,resultsFrozenAt:campaign.results_frozen_at});
+    const now=new Date().toISOString();const {error}=await admin.from('campaigns').update({results_frozen_at:now,updated_at:now}).eq('id',CAMP);if(error)return fail(req,'FREEZE_FAILED',503);
+    await logAdmin(user.id,'results.freeze',{at:now});return json(req,{ok:true,resultsFrozenAt:now});
+  }
+  return fail(req,'UNKNOWN_ADMIN_OPERATION',404);
+}catch(error){console.error('vote edge error',error);return fail(req,'SERVER_ERROR',500)}});).test(choices[k])))return fail(req,'SELECT_EIGHT_CATEGORIES');
+    const [{data:campaign,error:ce},{data:invite,error:ie}]=await Promise.all([
+      admin.from('campaigns').select('results_frozen_at').eq('id',CAMP).single(),
+      admin.from('invite_codes').select('id').eq('campaign_id',CAMP).eq('id',inviteId).maybeSingle()
+    ]);
+    if(ce)return fail(req,'READ_FAILURE',503);
+    if(campaign.results_frozen_at)return fail(req,'RESULTS_FROZEN',409);
+    if(ie||!invite)return fail(req,'INVITE_NOT_FOUND',404);
+    const ids=Object.values(choices);
+    const {data:opts,error:oe}=await admin.from('menu_options').select('id').eq('campaign_id',CAMP).in('id',ids);
+    if(oe||!opts||opts.length!==8)return fail(req,'INVALID_MENU_OPTION');
+    const now=new Date().toISOString();
+    const {data,error}=await admin.from('ballots').upsert({invite_id:inviteId,campaign_id:CAMP,choices,updated_at:now},{onConflict:'invite_id'}).select('id').single();
+    if(error||!data)return fail(req,'BALLOT_SAVE_FAILED',503);
+    await logAdmin(user.id,'ballot.save',{inviteId,ballotId:data.id});
+    return json(req,{ok:true,id:data.id,updatedAt:now});
+  }
+  if(op==='admin.ballot.delete'){
+    const inviteId=String(body.inviteId||'');
+    if(!/^[0-9a-f-]{36}$/i.test(inviteId))return fail(req,'INVALID_INVITE_ID');
+    const {data:campaign,error:ce}=await admin.from('campaigns').select('results_frozen_at').eq('id',CAMP).single();
+    if(ce)return fail(req,'READ_FAILURE',503);
+    if(campaign.results_frozen_at)return fail(req,'RESULTS_FROZEN',409);
+    const {data,error}=await admin.from('ballots').delete().eq('campaign_id',CAMP).eq('invite_id',inviteId).select('id');
+    if(error)return fail(req,'BALLOT_DELETE_FAILED',503);
+    if(!data?.length)return fail(req,'BALLOT_NOT_FOUND',404);
+    await logAdmin(user.id,'ballot.delete',{inviteId});
+    return json(req,{ok:true});
+  }
+  if(op==='admin.preferences.save'){
+    const inviteId=String(body.inviteId||'');
+    if(!/^[0-9a-f-]{36}$/i.test(inviteId))return fail(req,'INVALID_INVITE_ID');
+    const attendance=String(body.attendance||''),giftChoice=String(body.giftChoice||''),themeChoice=String(body.themeChoice||'');
+    if(!['yes','maybe','no'].includes(attendance))return fail(req,'INVALID_ATTENDANCE');
+    if(!['gift_300','gift_500','gift_300_500','gift_none'].includes(giftChoice))return fail(req,'INVALID_GIFT_CHOICE');
+    if(!['midnight_gold','forest_champagne','retro_future','come_as_you_are'].includes(themeChoice))return fail(req,'INVALID_THEME_CHOICE');
+    const [{data:campaign,error:ce},{data:invite,error:ie}]=await Promise.all([
+      admin.from('campaigns').select('results_frozen_at').eq('id',CAMP).single(),
+      admin.from('invite_codes').select('id').eq('campaign_id',CAMP).eq('id',inviteId).maybeSingle()
+    ]);
+    if(ce)return fail(req,'READ_FAILURE',503);
+    if(campaign.results_frozen_at)return fail(req,'RESULTS_FROZEN',409);
+    if(ie||!invite)return fail(req,'INVITE_NOT_FOUND',404);
+    const now=new Date().toISOString();
+    const {error}=await admin.from('event_preferences').upsert({invite_id:inviteId,campaign_id:CAMP,attendance,gift_choice:giftChoice,theme_choice:themeChoice,updated_at:now},{onConflict:'invite_id'});
+    if(error)return fail(req,'PREFERENCES_SAVE_FAILED',503);
+    await logAdmin(user.id,'preferences.save',{inviteId});
+    return json(req,{ok:true,updatedAt:now});
+  }
+  if(op==='admin.preferences.delete'){
+    const inviteId=String(body.inviteId||'');
+    if(!/^[0-9a-f-]{36}$/i.test(inviteId))return fail(req,'INVALID_INVITE_ID');
+    const {data:campaign,error:ce}=await admin.from('campaigns').select('results_frozen_at').eq('id',CAMP).single();
+    if(ce)return fail(req,'READ_FAILURE',503);
+    if(campaign.results_frozen_at)return fail(req,'RESULTS_FROZEN',409);
+    const {data,error}=await admin.from('event_preferences').delete().eq('campaign_id',CAMP).eq('invite_id',inviteId).select('invite_id');
+    if(error)return fail(req,'PREFERENCES_DELETE_FAILED',503);
+    if(!data?.length)return fail(req,'PREFERENCES_NOT_FOUND',404);
+    await logAdmin(user.id,'preferences.delete',{inviteId});
+    return json(req,{ok:true});
+  }
+  if(op==='admin.submission.delete'){
+    const inviteId=String(body.inviteId||'');
+    if(!/^[0-9a-f-]{36}$/i.test(inviteId))return fail(req,'INVALID_INVITE_ID');
+    const {data:campaign,error:ce}=await admin.from('campaigns').select('results_frozen_at').eq('id',CAMP).single();
+    if(ce)return fail(req,'READ_FAILURE',503);
+    if(campaign.results_frozen_at)return fail(req,'RESULTS_FROZEN',409);
+    const [ballot,pref]=await Promise.all([
+      admin.from('ballots').delete().eq('campaign_id',CAMP).eq('invite_id',inviteId).select('id'),
+      admin.from('event_preferences').delete().eq('campaign_id',CAMP).eq('invite_id',inviteId).select('invite_id')
+    ]);
+    if(ballot.error||pref.error)return fail(req,'SUBMISSION_DELETE_FAILED',503);
+    await logAdmin(user.id,'submission.delete',{inviteId,ballotDeleted:!!ballot.data?.length,preferencesDeleted:!!pref.data?.length});
+    return json(req,{ok:true,ballotDeleted:!!ballot.data?.length,preferencesDeleted:!!pref.data?.length});
+  }
   if(op==='admin.invites'){
     const count=Number(body.count);if(!Number.isInteger(count)||count<1||count>200)return fail(req,'INVALID_COUNT');
     const items=[] as {id:string,code:string,token_hash:string}[];for(let i=0;i<count;i++){const code=inviteCode();items.push({id:crypto.randomUUID(),code,token_hash:await sha(normalized(code))})}
