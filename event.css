@@ -53,6 +53,50 @@
 .guide-card a{font-size:12px;font-weight:800;text-decoration:none;border-bottom:1px solid #8fa198;display:inline-block;margin-top:6px}
 .guide-card .state-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.guide-card .state-row span{font-size:10px;font-weight:700;border-radius:999px;padding:5px 9px;background:#eaefeb;color:#43564c}
 .event-page button,.event-page a{-webkit-tap-highlight-color:transparent}
-@media(max-width:980px){.event-quickfacts-grid{grid-template-columns:repeat(2,1fr)}.gift-flow-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:680px){.event-quickfacts{padding-bottom:68px}.event-quickfacts-grid{grid-template-columns:1fr}.event-utility-row{gap:8px}.event-utility-btn{flex:1 1 calc(50% - 8px);justify-content:center;text-align:center}.gift-flow{padding:18px}.gift-flow-head{display:block}.gift-flow-badge{display:inline-block;margin-top:8px}.gift-flow-grid{grid-template-columns:1fr 1fr}.venue-public-snapshot{grid-template-columns:1fr}}
+/* Unified 4-Step User Journey Bar & My Event Pass */
+.venue-address-card p{color:#2c403a!important;font-weight:500}
+.preference-submit .flash-message{color:#0f382a!important;background:#e8f7ee!important;border:1px solid #84c9a1!important;font-weight:600}
+.preference-submit .flash-message.bad{color:#8a1f1f!important;background:#fff0ee!important;border:1px solid #e6a3a3!important}
+.journey-bar{background:#09221d;color:#d8e5df;border-bottom:1px solid rgba(255,255,255,.11);padding:8px max(18px,4vw)}
+.journey-inner,.journey-bar-inner{max-width:1240px;margin:auto;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.journey-step{display:flex;align-items:center;justify-content:flex-start;gap:10px;padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);text-decoration:none;color:#d2e0da;font-size:12px;font-weight:700;transition:.16s}
+.journey-step:hover{background:rgba(255,255,255,.1);color:#fff}
+.journey-step.is-active,.journey-step.active{background:rgba(216,189,130,.18);border-color:var(--ev-gold);color:#fff}
+.journey-step.done{border-color:rgba(116,214,167,.38)}
+.journey-step-title{display:flex;align-items:center;gap:7px;min-width:0;flex:1}
+.journey-step-text{display:flex;flex-direction:column;gap:2px;min-width:0;text-align:left}
+.journey-step-text b{font-size:12.5px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.journey-step-text small{font-size:11px;color:#b8d8c9;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.journey-step-no,.journey-step-num{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.12);color:var(--ev-gold);display:inline-grid;place-items:center;font-size:11px;font-weight:800;flex-shrink:0}
+.journey-step.is-active .journey-step-no,.journey-step.active .journey-step-num{background:var(--ev-gold);color:#0d2f29}
+.journey-badge{font-size:10.5px;font-weight:800;padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.09);color:#c9dbd3;white-space:nowrap}
+.journey-badge.is-complete{background:#1f6e50;color:#fff}
+.my-pass-card{margin-top:26px;background:#fff;border:1px solid var(--ev-line);border-radius:22px;padding:24px;box-shadow:0 16px 40px rgba(13,47,41,.06);color:#15332c}
+.my-pass-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px}
+.my-pass-head h2,.my-pass-head h3{margin:4px 0 0;font-size:21px;color:#12312a}
+.pass-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.pass-item{padding:14px 16px;border-radius:14px;background:#f6f4ee;border:1px solid #dfdace}
+.pass-item.done{background:#eaf4ec;border-color:#8ec2a3}
+.pass-item span,.pass-item small{display:block;font-size:11px;font-weight:800;color:var(--ev-muted);letter-spacing:.04em}
+.pass-item strong,.pass-item b{display:block;font-size:14px;margin-top:5px;color:#14352d}
+.arrival-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:24px}
+.arrival-card{background:#fff;border:1px solid var(--ev-line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column}
+.arrival-card img{width:100%;height:210px;object-fit:cover}
+.arrival-card-body{padding:16px}
+.arrival-card-body span{font:800 10.5px var(--font-sans);letter-spacing:.14em;color:var(--ev-gold-ink)}
+.arrival-card-body h3{font-size:17px;margin:6px 0;line-height:1.3}
+.arrival-card-body p{font-size:12.5px;color:var(--ev-muted);line-height:1.65;margin:0}
+.food-showcase-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:24px}
+.food-card{background:#fff;border:1px solid var(--ev-line);border-radius:18px;overflow:hidden}
+.food-card img{width:100%;height:200px;object-fit:cover}
+.food-card figcaption{padding:13px 15px;font-size:12.5px;line-height:1.55;color:#15332c}
+.food-card figcaption strong{display:block;font-size:14px;margin-bottom:3px}
+.food-card figcaption span{color:var(--ev-muted);font-size:11.5px}
+.next-step-banner{margin-top:36px;padding:24px 28px;border-radius:22px;background:linear-gradient(135deg,#0f352d,#1b4d40);color:#fff;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:18px}
+.next-step-banner span{font:800 10.5px var(--font-sans);letter-spacing:.16em;color:var(--ev-gold)}
+.next-step-banner h3{margin:4px 0;font-size:22px}
+.next-step-banner p{margin:0;color:#d2e2dc;font-size:13.5px}
+@media(max-width:980px){.event-quickfacts-grid{grid-template-columns:repeat(2,1fr)}.gift-flow-grid{grid-template-columns:repeat(2,1fr)}.journey-inner,.journey-bar-inner,.pass-grid,.arrival-grid,.food-showcase-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:680px){.event-quickfacts{padding-bottom:68px}.event-quickfacts-grid{grid-template-columns:1fr}.event-utility-row{gap:8px}.event-utility-btn{flex:1 1 calc(50% - 8px);justify-content:center;text-align:center}.gift-flow{padding:18px}.gift-flow-head{display:block}.gift-flow-badge{display:inline-block;margin-top:8px}.gift-flow-grid{grid-template-columns:1fr 1fr}.venue-public-snapshot{grid-template-columns:1fr}.journey-inner,.journey-bar-inner,.pass-grid,.arrival-grid,.food-showcase-grid{grid-template-columns:1fr}}
+
 

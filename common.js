@@ -2,6 +2,32 @@ import { CONFIG } from './config.js';
 export const configured = /^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(CONFIG.supabaseUrl) && CONFIG.publishableKey.length>30 && !CONFIG.publishableKey.includes('YOUR_');
 export const money = v => '฿'+Number(v).toLocaleString('en-US');
 export const escapeHTML = s => String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+export const PARTY_STORAGE_KEY = 'ccr_party_preferences_2026_v1';
+export const VOTE_PICKS_KEY = 'ccr_dinner_2026_picks_v1';
+export const VOTE_SAVED_KEY = 'ccr_dinner_2026_saved_ballot_v1';
+export const TOKEN_STORAGE_KEY = 'ccr_invite_token_2026_v1';
+
+const GIFT_MAP = {
+  gift_300: 'จับของขวัญ ฿300',
+  gift_500: 'จับของขวัญ ฿500',
+  gift_300_500: 'ช่วงงบ ฿300–500',
+  gift_none: 'ปีนี้ไม่จับของขวัญ'
+};
+const THEME_MAP = {
+  midnight_gold: 'Midnight & Gold',
+  forest_champagne: 'Forest & Champagne',
+  retro_future: 'Retro Future',
+  come_as_you_are: 'Come As You Are'
+};
+
+export const PARTY_LABELS = {
+  attendance: { yes: 'ไปแน่นอน', maybe: 'ยังไม่แน่ใจ', no: 'ไม่สะดวก' },
+  gift: GIFT_MAP,
+  giftChoice: GIFT_MAP,
+  theme: THEME_MAP,
+  themeChoice: THEME_MAP
+};
+
 export function formatInviteCode(raw){
   const upper=String(raw||'').toUpperCase();
   const alnum=upper.replace(/[^A-Z0-9]/g,'');
@@ -10,6 +36,106 @@ export function formatInviteCode(raw){
   }
   return upper.replace(/[^A-Z0-9-]/g,'');
 }
+
+export function getSharedToken(){
+  try{return formatInviteCode(localStorage.getItem(TOKEN_STORAGE_KEY)||'');}catch{return '';}
+}
+export function setSharedToken(raw){
+  const formatted=formatInviteCode(raw);
+  try{if(formatted)localStorage.setItem(TOKEN_STORAGE_KEY,formatted);}catch{}
+  return formatted;
+}
+
+export function getSavedJourneyState(){
+  let rawParty={}, picks={}, savedBallot=null;
+  try{rawParty=JSON.parse(localStorage.getItem(PARTY_STORAGE_KEY)||'{}')||{};}catch{}
+  try{picks=JSON.parse(localStorage.getItem(VOTE_PICKS_KEY)||'{}')||{};}catch{}
+  try{savedBallot=JSON.parse(localStorage.getItem(VOTE_SAVED_KEY)||'null');}catch{}
+
+  const party = {
+    attendance: rawParty.attendance || '',
+    giftChoice: rawParty.giftChoice || rawParty.gift || '',
+    themeChoice: rawParty.themeChoice || rawParty.theme || '',
+    savedAt: rawParty.savedAt || null
+  };
+  const partyCount=[party.attendance,party.giftChoice,party.themeChoice].filter(Boolean).length;
+  const partyDone=partyCount===3;
+
+  if(savedBallot?.picks && Object.keys(picks).length===0){
+    picks={...savedBallot.picks};
+  }
+  const pickKeys=['A','B','C','D','E','F','G','H'].filter(k=>Boolean(picks[k]));
+  const voteCount=pickKeys.length;
+  const voteDone=voteCount===8;
+  const hasSavedVote=Boolean(savedBallot?.savedAt);
+
+  return {
+    party,
+    partyCount,
+    partyDone,
+    partyComplete: partyDone,
+    partySaved: Boolean(party.savedAt),
+    picks,
+    votePicks: picks,
+    voteCount,
+    voteDone,
+    hasSavedVote,
+    voteSaved: savedBallot,
+    savedBallot
+  };
+}
+
+export function renderJourneyProgress(){
+  if(typeof document==='undefined')return;
+  const st=getSavedJourneyState();
+
+  const partyText = st.partySaved
+    ? '✓ บันทึกครบ 3 ข้อแล้ว'
+    : st.partyDone
+    ? 'เลือกครบ 3/3 ข้อแล้ว'
+    : `เลือกแล้ว ${st.partyCount}/3 ข้อ`;
+  document.querySelectorAll('[data-step-status="party"], [data-journey-badge="party"]').forEach(el=>{
+    el.textContent=partyText;
+  });
+  document.querySelectorAll('[data-journey-step="2"]').forEach(el=>{
+    el.classList.toggle('done', st.partyDone || st.partySaved);
+  });
+
+  const voteText = st.hasSavedVote
+    ? `✓ บันทึกครบ 8 หมวด (${money(st.savedBallot.grandTotal||0)})`
+    : st.voteDone
+    ? 'เลือกครบ 8/8 หมวดแล้ว'
+    : `เลือกแล้ว ${st.voteCount}/8 หมวด`;
+  document.querySelectorAll('[data-step-status="vote"], [data-journey-badge="vote"]').forEach(el=>{
+    el.textContent=voteText;
+  });
+  document.querySelectorAll('[data-journey-step="3"]').forEach(el=>{
+    el.classList.toggle('done', st.voteDone || st.hasSavedVote);
+  });
+
+  const attLabel = PARTY_LABELS.attendance[st.party.attendance] || 'ยังไม่ได้เลือก';
+  const giftLabel = PARTY_LABELS.giftChoice[st.party.giftChoice] || 'ยังไม่ได้เลือก';
+  const themeLabel = PARTY_LABELS.themeChoice[st.party.themeChoice] || 'ยังไม่ได้เลือก';
+  const voteLabel = st.hasSavedVote
+    ? `✓ บันทึกครบ 8 หมวดแล้ว (${money(st.savedBallot.grandTotal||0)}/โต๊ะ)`
+    : st.voteDone
+    ? 'เลือกครบ 8/8 หมวด (รอคลิกบันทึก)'
+    : st.voteCount > 0
+    ? `เลือกไว้ ${st.voteCount}/8 หมวด`
+    : 'ยังไม่ได้เลือกเมนู';
+
+  const setPass = (key, text, isDone) => {
+    document.querySelectorAll(`[data-pass="${key}"]`).forEach(el => {
+      el.textContent = text;
+      el.classList.toggle('empty', !isDone);
+    });
+  };
+  setPass('attendance', attLabel, Boolean(st.party.attendance));
+  setPass('gift', giftLabel, Boolean(st.party.giftChoice));
+  setPass('theme', themeLabel, Boolean(st.party.themeChoice));
+  setPass('vote', voteLabel, st.voteCount > 0 || st.hasSavedVote);
+}
+
 export async function api(op,payload={},bearer=''){
   if(!configured) throw Error('ยังไม่ได้ตั้งค่าการเชื่อมต่อฐานข้อมูลกลาง');
   const headers={'Content-Type':'application/json','apikey':CONFIG.publishableKey};

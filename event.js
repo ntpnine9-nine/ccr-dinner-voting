@@ -1,3 +1,4 @@
+import { renderJourneyProgress, getSavedJourneyState, escapeHTML, money } from './common.js';
 const target=new Date('2026-12-18T18:00:00+07:00');
 const $=id=>document.getElementById(id);
 function tick(){
@@ -10,6 +11,31 @@ function tick(){
   if($('minutes'))$('minutes').textContent=String(minutes).padStart(2,'0');
 }
 tick();setInterval(tick,30000);
+
+function renderGuideSavedDetails(){
+  renderJourneyProgress();
+  const box=$('guideSavedMenu');
+  if(!box)return;
+  const st=getSavedJourneyState();
+  const items=st.voteSaved?.items;
+  if(Array.isArray(items)&&items.length){
+    box.innerHTML=`
+      <div style="margin-top:16px;padding:16px 18px;border-radius:16px;background:#ffffff;border:1px solid rgba(15,43,38,.12)">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+          <strong style="color:#0f2b26">รายการอาหารทั้ง ${items.length} หมวดที่คุณบันทึกไว้ (${escapeHTML(st.voteSaved.receipt||'LOCAL')})</strong>
+          <span style="font-weight:700;color:#0d5c46">รวมต่อโต๊ะประมาณ ${money(st.voteSaved.grandTotal||0)}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px">
+          ${items.map(it=>`<div style="padding:8px 10px;border-radius:10px;background:#f8f5ef;font-size:.86rem"><b style="color:#0d5c46">หมวด ${escapeHTML(it.key)}:</b> ${escapeHTML(it.name)} <span style="color:#666">(${money(it.lineTotal)})</span></div>`).join('')}
+        </div>
+      </div>`;
+  }else{
+    box.innerHTML='';
+  }
+}
+renderGuideSavedDetails();
+window.addEventListener('storage',()=>renderGuideSavedDetails());
+
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 if(!reduce&&'IntersectionObserver' in window){
   const io=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('is-visible');io.unobserve(e.target)}}),{threshold:.12});
