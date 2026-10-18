@@ -20,6 +20,7 @@
       <a href="#overview" class="current" aria-current="page">▣ ภาพรวม</a>
       <a href="#votes">▥ ผลโหวตอาหาร 8 หมวด</a>
       <a href="#preferences">✦ RSVP / ของขวัญ / ธีม</a>
+      <a href="#records">⌘ จัดการข้อมูลรายคน</a>
       <a href="#decisions">◈ คำนวณชุดอาหาร & งบโต๊ะ</a>
       <a href="#manage">⚙ จัดการรหัสเชิญ</a>
       <a href="./index.html">↗ กลับหน้าเว็บไซต์หลัก</a>
@@ -144,8 +145,76 @@
         </div>
       </section>
 
+      <section id="records" class="admin-card">
+        <div class="admin-card-head">
+          <div>
+            <span class="section-kicker">07 / ADMIN DATA MANAGEMENT</span>
+            <h2>จัดการข้อมูลโหวตและ RSVP รายคน</h2>
+            <p class="muted small">สำหรับผู้ดูแลระบบเท่านั้น · เพิ่ม/แก้ไข/ลบข้อมูลทดสอบหรือข้อมูลจริงโดยอ้างอิง Invite ID โดยไม่เปิดสิทธิ์นี้ให้ผู้เข้าร่วมทั่วไป</p>
+          </div>
+          <button id="reloadSubmissions" class="btn btn-outline" type="button">↻ โหลดข้อมูลรายคน</button>
+        </div>
+
+        <div class="admin-flex" style="margin:14px 0 18px">
+          <label class="input-block" style="min-width:240px;flex:1">
+            <span>จำนวนผู้มีสิทธิ์เป้าหมาย</span>
+            <input id="eligibleVoters" type="number" min="1" max="200" value="50" class="text-field">
+          </label>
+          <div style="display:flex;align-items:flex-end">
+            <button id="saveEligibleVoters" class="btn btn-outline" type="button">บันทึกจำนวนเป้าหมาย</button>
+          </div>
+        </div>
+
+        <div class="data-scroll">
+          <table>
+            <thead>
+              <tr><th>Invite ID</th><th>สถานะ</th><th>Food Vote</th><th>RSVP / Mood</th><th>อัปเดตล่าสุด</th><th>จัดการ</th></tr>
+            </thead>
+            <tbody id="submissionRows"><tr><td colspan="6" class="muted">เข้าสู่ระบบผู้ดูแลเพื่อโหลดข้อมูลจริง</td></tr></tbody>
+          </table>
+        </div>
+
+        <div id="submissionEditor" class="admin-preview-box hidden" style="margin-top:18px">
+          <div class="row-between">
+            <div>
+              <span class="section-kicker">EDIT RECORD</span>
+              <h3 style="margin:5px 0">แก้ไขข้อมูล Invite <code id="editInviteId">—</code></h3>
+            </div>
+            <button id="closeSubmissionEditor" class="mini-btn" type="button">ปิด</button>
+          </div>
+
+          <h4>Food Vote · เลือก 1 เมนูต่อหมวด</h4>
+          <div id="ballotEditor" class="ranking-grid"></div>
+          <div class="admin-btnrow" style="margin:12px 0 22px">
+            <button id="saveBallotEdit" class="btn btn-dark" type="button">บันทึก/อัปเดตคะแนนอาหาร</button>
+          </div>
+
+          <h4>RSVP · Gift · Dress Mood</h4>
+          <div class="admin-flex">
+            <label class="input-block" style="flex:1"><span>RSVP</span>
+              <select id="editAttendance" class="text-field">
+                <option value="yes">ไปแน่นอน</option><option value="maybe">ยังไม่แน่ใจ</option><option value="no">ไม่สะดวก</option>
+              </select>
+            </label>
+            <label class="input-block" style="flex:1"><span>Gift Exchange</span>
+              <select id="editGift" class="text-field">
+                <option value="gift_300">จับของขวัญ ฿300</option><option value="gift_500">จับของขวัญ ฿500</option><option value="gift_300_500">ช่วงงบ ฿300–500</option><option value="gift_none">ปีนี้ไม่จับ</option>
+              </select>
+            </label>
+            <label class="input-block" style="flex:1"><span>Dress Mood</span>
+              <select id="editTheme" class="text-field">
+                <option value="midnight_gold">Midnight & Gold</option><option value="forest_champagne">Forest & Champagne</option><option value="retro_future">Retro Future</option><option value="come_as_you_are">Come As You Are</option>
+              </select>
+            </label>
+          </div>
+          <div class="admin-btnrow" style="margin-top:12px">
+            <button id="savePreferencesEdit" class="btn btn-dark" type="button">บันทึก/อัปเดต RSVP</button>
+          </div>
+        </div>
+      </section>
+
       <section id="decisions" class="admin-card">
-        <span class="section-kicker">07 / MENU DECISION ENGINE</span>
+        <span class="section-kicker">08 / MENU DECISION ENGINE</span>
         <h2>ระบบคำนวณและจัดชุดอาหารประจำโต๊ะ</h2>
         <p class="muted small">เปรียบเทียบระหว่างชุดเมนูที่ได้คะแนนโหวตสูงสุด (Popularity Winner) กับชุดเมนูที่ปรับให้อยู่ในเพดานงบ ฿2,000 และ ฿2,200 ต่อโต๊ะโดยเสียคะแนนนิยมน้อยที่สุด</p>
         <div class="budget-pills">
