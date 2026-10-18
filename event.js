@@ -1,4 +1,4 @@
-import { renderJourneyProgress, getSavedJourneyState, escapeHTML, money } from './common.js';
+import { renderJourneyProgress, getSavedJourneyState, escapeHTML, money, PARTY_STORAGE_KEY, VOTE_SAVED_KEY, VOTE_PICKS_KEY, TOKEN_STORAGE_KEY } from './common.js';
 const target=new Date('2026-12-18T18:00:00+07:00');
 const $=id=>document.getElementById(id);
 function tick(){
@@ -35,6 +35,21 @@ function renderGuideSavedDetails(){
 }
 renderGuideSavedDetails();
 window.addEventListener('storage',()=>renderGuideSavedDetails());
+
+$('resetAllDataBtn')?.addEventListener('click', () => {
+  if (confirm('คุณต้องการล้างข้อมูลที่บันทึกไว้ในเบราว์เซอร์นี้ทั้งหมด (RSVP, ของขวัญ, โทนสี, คะแนนโหวตเมนูอาหาร) ใช่หรือไม่?')) {
+    try {
+      localStorage.removeItem(PARTY_STORAGE_KEY);
+      localStorage.removeItem(VOTE_SAVED_KEY);
+      localStorage.removeItem(VOTE_PICKS_KEY);
+      localStorage.removeItem(TOKEN_STORAGE_KEY);
+      sessionStorage.removeItem('ccr_party_choices_v1');
+      sessionStorage.removeItem('ccr_vote_choices_v3');
+    } catch {}
+    renderGuideSavedDetails();
+    alert('🗑️ ล้างข้อมูลที่บันทึกไว้ในเครื่องนี้เรียบร้อยแล้ว');
+  }
+});
 
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 if(!reduce&&'IntersectionObserver' in window){

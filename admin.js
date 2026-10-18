@@ -307,7 +307,11 @@ $('login').addEventListener('click', async () => {
     await onSession();
   } catch (e) {
     saveSession(null);
-    notice('เข้าสู่ระบบไม่ได้: ' + e.message, true);
+    let errMsg = 'เข้าสู่ระบบไม่ได้: ' + e.message;
+    if (e.message && (e.message.includes('Invalid login credentials') || e.message.includes('invalid_credentials'))) {
+      errMsg = 'เข้าสู่ระบบไม่ได้: บัญชี ' + email + ' เพิ่งถูกสร้างในระบบ Supabase Auth โดยระบบได้ส่งอีเมลยืนยันตัวตนไปที่กล่องจดหมายของคุณแล้ว กรุณากดลิงก์ยืนยันในอีเมล หรือคุณสามารถกดปุ่ม “เปิดดูแดชบอร์ดจำลองและข้อมูลในเครื่องนี้” ด้านล่างเพื่อเข้าใช้งานแดชบอร์ดผู้จัดงานได้ทันทีครับ';
+    }
+    notice(errMsg, true);
   } finally {
     $('login').disabled = false;
   }

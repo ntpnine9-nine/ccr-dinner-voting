@@ -363,7 +363,7 @@ $('quickSample')?.addEventListener('click', () => {
   show('✓ เลือกชุดเมนูแนะนำครบทั้ง 8 หมวดให้แล้ว! คุณสามารถคลิกเปลี่ยนรายหมวด หรือกดปุ่ม “บันทึกคะแนนของฉัน” ได้เลย');
 });
 
-$('clearPicks')?.addEventListener('click', () => {
+function handleClearAllPicks() {
   selected = {};
   success = false;
   try {
@@ -375,8 +375,11 @@ $('clearPicks')?.addEventListener('click', () => {
   step = 0;
   renderJourneyProgress();
   render();
-  show('ล้างรายการที่เลือกแล้ว เริ่มเลือกใหม่จากหมวด A ได้เลย');
-});
+  show('🗑️ ล้างคะแนนโหวตทั้งหมดของคุณแล้ว คุณสามารถเลือกเมนูใหม่ตั้งแต่หมวด A–H ได้เลยครับ');
+}
+
+$('clearPicks')?.addEventListener('click', handleClearAllPicks);
+$('resetVoteBtn')?.addEventListener('click', handleClearAllPicks);
 
 if ($('token')) {
   const existingToken = getSharedToken();

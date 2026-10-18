@@ -180,6 +180,20 @@ $('savePreferences')?.addEventListener('click', async () => {
   }
 });
 
+$('resetPreferences')?.addEventListener('click', () => {
+  state.attendance = '';
+  state.giftChoice = '';
+  state.themeChoice = '';
+  state.savedAt = null;
+  try {
+    localStorage.removeItem(PARTY_STORAGE_KEY);
+    sessionStorage.removeItem('ccr_party_choices_v1');
+  } catch {}
+  render();
+  renderJourneyProgress();
+  msg('🗑️ ล้างตัวเลือกที่บันทึกไว้เรียบร้อยแล้ว คุณสามารถเลือกและตอบใหม่ได้เลยครับ');
+});
+
 async function init() {
   renderJourneyProgress();
   render();
