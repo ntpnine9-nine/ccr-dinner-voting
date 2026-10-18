@@ -1,3 +1,8 @@
 project_id = "ccr-dinner-voting"
 [functions.vote]
 verify_jwt = false
+[functions.ccr-app]
+verify_jwt = false
+[functions.publish-static]
+verify_jwt = false
+

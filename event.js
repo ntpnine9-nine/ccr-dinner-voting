@@ -1,4 +1,4 @@
-const target=new Date('2026-12-18T00:00:00+07:00');
+const target=new Date('2026-12-18T18:00:00+07:00');
 const $=id=>document.getElementById(id);
 function tick(){
   const diff=Math.max(0,target-Date.now());

@@ -10,18 +10,19 @@
   <link rel="stylesheet" href="./event.css">
 </head>
 <body class="event-page party-page">
-<header class="event-nav"><a class="event-brand" href="./index.html"><span class="event-brand-mark">C</span><span><b>CCR After Hours</b><small>YOUR CHOICE</small></span></a><nav class="event-nav-links"><a href="./index.html">Home</a><a href="./vote.html">Food</a><a href="./venue.html">Venue</a><a href="./guide.html">Guide</a></nav><a class="event-nav-cta" href="./vote.html">Food Vote ↗</a></header>
-<main>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
+<header class="event-nav"><a class="event-brand" href="./index.html"><span class="event-brand-mark">C</span><span><b>CCR After Hours</b><small>YOUR CHOICE</small></span></a><nav class="event-nav-links" aria-label="เมนูหลัก"><a href="./index.html">Home</a><a href="./venue.html">Venue</a><a href="./party.html" aria-current="page">Your Choice</a><a href="./vote.html">Food Vote</a><a href="./guide.html">Event Guide</a></nav><a class="event-nav-cta" href="./vote.html">Food Vote ↗</a></header>
+<main id="main">
 <section class="subhero subhero-party">
   <div class="event-wrap subhero-grid"><div><p class="event-overline">YOUR NIGHT · YOUR SAY</p><h1>เลือก Mood<br><em>ของค่ำคืนนี้</em></h1><p>ตอบ 3 เรื่องสั้น ๆ: มาร่วมงานไหม · จะจับของขวัญแบบไหน · Theme การแต่งตัวแบบใดที่อยากเห็นมากที่สุด</p></div><div class="subhero-badge"><span>03</span><strong>QUICK PICKS</strong><small>ใช้รหัสเชิญเดียวกับ Food Vote</small></div></div>
 </section>
 
 <section class="event-wrap choice-form-wrap">
-  <div id="partyStatus" class="system-status"><span class="status-dot"></span><span>กำลังตรวจสอบสถานะระบบ…</span></div>
+  <div id="partyStatus" class="system-status" role="status" aria-live="polite"><span class="status-dot"></span><span>กำลังตรวจสอบสถานะระบบ…</span></div>
 
   <section class="choice-block">
     <div class="choice-block-head"><span>01</span><div><p class="event-section-label">RSVP</p><h2>18 ธันวาคม เราเจอกันไหม?</h2></div></div>
-    <div class="choice-cards three" data-group="attendance">
+    <div class="choice-cards three" data-group="attendance" role="group" aria-label="สถานะการเข้าร่วมงาน (RSVP)">
       <button type="button" class="preference-card" data-value="yes"><span class="pref-icon">✓</span><b>ไปแน่นอน</b><small>เจอกันที่ครัวซอย 11</small></button>
       <button type="button" class="preference-card" data-value="maybe"><span class="pref-icon">~</span><b>ยังไม่แน่ใจ</b><small>ขอเช็กตารางก่อน</small></button>
       <button type="button" class="preference-card" data-value="no"><span class="pref-icon">—</span><b>ไม่สะดวก</b><small>ปีนี้อาจพลาดค่ำคืนนี้</small></button>
@@ -30,7 +31,7 @@
 
   <section class="choice-block">
     <div class="choice-block-head"><span>02</span><div><p class="event-section-label">GIFT EXCHANGE</p><h2>ถ้าจะจับของขวัญ — เล่นแบบไหนดี?</h2><p>ปีที่แล้วผลโหวตจบที่งบ 500 บาท ปีนี้ให้ทีมตัดสินใหม่ด้วยกัน</p></div></div>
-    <div class="choice-cards four" data-group="gift">
+    <div class="choice-cards four" data-group="gift" role="group" aria-label="รูปแบบการจับของขวัญ">
       <button type="button" class="preference-card" data-value="gift_300"><span class="pref-kicker">OPTION A</span><b>จับของขวัญ · ฿300</b><small>เบา ๆ เข้าถึงง่าย เน้นความคิดมากกว่าราคา</small></button>
       <button type="button" class="preference-card" data-value="gift_500"><span class="pref-kicker">OPTION B</span><b>จับของขวัญ · ฿500</b><small>งบชัด เลือกของได้กว้างขึ้น</small></button>
       <button type="button" class="preference-card" data-value="gift_300_500"><span class="pref-kicker">OPTION C</span><b>ช่วงงบ ฿300–500</b><small>ยืดหยุ่นที่สุด แต่ยังคุมเพดาน</small></button>
@@ -49,7 +50,7 @@
 
   <section class="choice-block">
     <div class="choice-block-head"><span>03</span><div><p class="event-section-label">DRESS MOOD</p><h2>ถ้าค่ำคืนนี้มี Visual Mood — อยากได้แบบไหน?</h2><p>ไม่ใช่การบังคับแต่งแฟนซี แต่เป็น Direction ให้ภาพรวมของงานดูเข้ากันและถ่ายรูปสวย</p></div></div>
-    <div class="theme-grid" data-group="theme">
+    <div class="theme-grid" data-group="theme" role="group" aria-label="Visual Mood การแต่งกาย">
       <button type="button" class="theme-card midnight" data-value="midnight_gold"><div class="theme-swatch"><i></i><i></i><i></i></div><span>01</span><h3>Midnight & Gold</h3><p>ดำ · Charcoal · Cream · Gold — เรียบ คม และดูเป็นงานกลางคืน</p></button>
       <button type="button" class="theme-card forest" data-value="forest_champagne"><div class="theme-swatch"><i></i><i></i><i></i></div><span>02</span><h3>Forest & Champagne</h3><p>Deep Green · Beige · Ivory · Gold — อบอุ่นและเข้ากับบรรยากาศ Dinner</p></button>
       <button type="button" class="theme-card retro" data-value="retro_future"><div class="theme-swatch"><i></i><i></i><i></i></div><span>03</span><h3>Retro Future</h3><p>กลิ่น 90s / Y2K แบบตีความใหม่ — สนุกแต่ไม่ย้อนยุคจนดูเชย</p></button>
@@ -58,18 +59,18 @@
   </section>
 
   <section class="preference-submit">
-    <div><p class="event-section-label light">SAVE YOUR PICKS</p><h2>บันทึกความเห็นของคุณ</h2><p>ใช้รหัสเชิญส่วนตัวเดียวกับระบบโหวตอาหาร เพื่อให้ 1 คนมี 1 ชุดคำตอบและแก้ไขได้ก่อนปิดโหวต</p></div>
+    <div><p class="event-section-label light">SAVE YOUR PICKS</p><h2>บันทึกความเห็นของคุณ</h2><p>ใช้รหัสเชิญส่วนตัวเดียวกับระบบโหวตอาหาร เพื่อให้ 1 คนมี 1 ชุดคำตอบและแก้ไขได้ก่อนปิดโหวต</p><p style="margin-top:14px"><a class="event-btn event-btn-ghost" href="./vote.html">ไปหน้าโหวตเมนูอาหาร 8 หมวด ↗</a></p></div>
     <div class="preference-submit-box">
       <label for="prefToken">รหัสเชิญของคุณ</label>
-      <input id="prefToken" class="text-field" type="text" placeholder="CCR26-XXXXX-XXXXX-XXXXX-XXXXX" maxlength="39" autocomplete="off">
+      <input id="prefToken" class="text-field" type="text" placeholder="CCR26-XXXXX-XXXXX-XXXXX-XXXXX" maxlength="39" autocomplete="off" spellcheck="false">
       <div id="prefSummary" class="pref-summary">เลือกให้ครบทั้ง 3 เรื่องก่อนบันทึก</div>
       <button id="savePreferences" type="button" class="event-btn event-btn-light full" disabled>บันทึกตัวเลือกของฉัน ↗</button>
       <div class="privacy-strip">ระบบแสดงผลแบบรวมใน Dashboard ผู้จัดงาน · รหัสเชิญใช้ยืนยันสิทธิ์และเก็บเป็น Hash ในฐานข้อมูล · หน้า Public ไม่แสดงว่าใครตอบอะไร</div>
-      <div id="prefMessage" aria-live="polite"></div>
+      <div id="prefMessage" role="status" aria-live="polite"></div>
     </div>
   </section>
 </section>
 </main>
-<footer class="event-footer"><div><b>CCR AFTER HOURS 2026</b><span>18 DEC · KRUASOI 11</span></div><div class="event-footer-links"><a href="./index.html">Home</a><a href="./vote.html">Food Vote</a><a href="./venue.html">Venue</a></div></footer>
+<footer class="event-footer"><div><b>CCR AFTER HOURS 2026</b><span>18 DEC · KRUASOI 11</span></div><div class="event-footer-links"><a href="./index.html">Home</a><a href="./venue.html">Venue</a><a href="./party.html" aria-current="page">Your Choice</a><a href="./vote.html">Food Vote</a><a href="./guide.html">Event Guide</a><a href="./admin.html">Admin</a></div></footer>
 <script type="module" src="./party.js"></script>
 </body></html>

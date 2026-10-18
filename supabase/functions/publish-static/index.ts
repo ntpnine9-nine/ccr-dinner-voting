@@ -1,22 +1,42 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 const url=Deno.env.get('SUPABASE_URL')!;
 const secret=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')||JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS')||'{}').default;
-if(!url||!secret)throw Error('Supabase environment missing');
+const publishable=Deno.env.get('SUPABASE_ANON_KEY')||JSON.parse(Deno.env.get('SUPABASE_PUBLISHABLE_KEYS')||'{}').default;
+if(!url||!secret||!publishable)throw Error('Supabase environment missing');
 const db=createClient(url,secret,{auth:{persistSession:false}});
+const auth=createClient(url,publishable,{auth:{persistSession:false}});
 const BUCKET='ccr-public';
 const OWNER='ntpnine9-nine';
 const REPO='ccr-dinner-voting';
 const files=[
   ['index.html','text/html; charset=utf-8'],
+  ['vote.html','text/html; charset=utf-8'],
+  ['party.html','text/html; charset=utf-8'],
+  ['venue.html','text/html; charset=utf-8'],
+  ['guide.html','text/html; charset=utf-8'],
   ['admin.html','text/html; charset=utf-8'],
   ['styles.css','text/css; charset=utf-8'],
+  ['event.css','text/css; charset=utf-8'],
   ['config.js','text/javascript; charset=utf-8'],
   ['common.js','text/javascript; charset=utf-8'],
   ['decision-engine.js','text/javascript; charset=utf-8'],
   ['vote.js','text/javascript; charset=utf-8'],
   ['admin.js','text/javascript; charset=utf-8'],
+  ['event.js','text/javascript; charset=utf-8'],
+  ['party.js','text/javascript; charset=utf-8'],
+  ['menus.json','application/json; charset=utf-8'],
+  ['assets/menu-cover.jpg','image/jpeg'],
+  ['assets/menu-spread.jpg','image/jpeg'],
   ['.nojekyll','text/plain; charset=utf-8']
 ] as const;
+async function adminUser(req:Request){
+  const value=req.headers.get('authorization')||'';
+  if(!value.startsWith('Bearer '))return null;
+  const {data,error}=await auth.auth.getUser(value.slice(7));
+  if(error||!data.user)return null;
+  const {data:row,error:checkError}=await db.from('admin_users').select('user_id').eq('user_id',data.user.id).maybeSingle();
+  return !checkError&&row?data.user:null;
+}
 async function currentSha(){
   const r=await fetch('https://api.github.com/repos/'+OWNER+'/'+REPO+'/commits/main',{headers:{'User-Agent':'CCR-Publisher/1.0','Accept':'application/vnd.github+json'}});
   if(!r.ok)throw Error('GITHUB_COMMIT_UNAVAILABLE');
@@ -29,11 +49,13 @@ async function existingSha(){
 }
 Deno.serve(async(req:Request)=>{
   if(req.method!=='POST')return new Response(JSON.stringify({ok:false,error:'METHOD_NOT_ALLOWED'}),{status:405,headers:{'content-type':'application/json'}});
+  const user=await adminUser(req);
+  if(!user)return new Response(JSON.stringify({ok:false,error:'ADMIN_UNAUTHORIZED'}),{status:403,headers:{'content-type':'application/json','cache-control':'no-store'}});
   try{
     const sha=await currentSha();
     if(!sha)return new Response(JSON.stringify({ok:false,error:'NO_SHA'}),{status:503,headers:{'content-type':'application/json'}});
     const {data:bucket}=await db.storage.getBucket(BUCKET);
-    if(!bucket){const {error}=await db.storage.createBucket(BUCKET,{public:true,fileSizeLimit:1048576,allowedMimeTypes:['text/html','text/css','text/javascript','text/plain','application/json']});if(error)throw error;}
+    if(!bucket){const {error}=await db.storage.createBucket(BUCKET,{public:true,fileSizeLimit:2097152,allowedMimeTypes:['text/html','text/css','text/javascript','text/plain','application/json','image/jpeg']});if(error)throw error;}
     if(await existingSha()===sha)return new Response(JSON.stringify({ok:true,sha,changed:false}),{headers:{'content-type':'application/json','cache-control':'no-store'}});
     for(const [path,contentType] of files){
       const raw='https://raw.githubusercontent.com/'+OWNER+'/'+REPO+'/'+sha+'/'+path;

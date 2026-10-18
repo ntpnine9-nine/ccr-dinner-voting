@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {FIXED_ALLOWANCE,lineCost,popularityWinner,optimizeMenuSet,comparePlans} from '../decision-engine.js';
+import {escapeHTML,formatInviteCode,csv} from '../common.js';
 const d=JSON.parse(fs.readFileSync(new URL('../menus.json',import.meta.url),'utf8'));
 assert.equal(d.categories.length,8,'8 categories');
 assert.deepEqual(d.categories.map(c=>c.key),['A','B','C','D','E','F','G','H']);
@@ -11,14 +12,56 @@ const maxFood=d.categories.reduce((a,c)=>a+Math.max(...c.options.map(lineCost)),
 const counts=Object.fromEntries(options.map(o=>[o.id,0]));for(const c of d.categories){const hi=[...c.options].sort((a,b)=>lineCost(b)-lineCost(a)||a.id.localeCompare(b.id))[0];counts[hi.id]=12}
 const pop=popularityWinner(d.categories,counts);assert.equal(pop.length,8);
 const p2=optimizeMenuSet(d.categories,counts,2000),p22=optimizeMenuSet(d.categories,counts,2200);assert.ok(p2&&p2.picks.length===8&&p2.total<=2000);assert.ok(p22&&p22.picks.length===8&&p22.total<=2200);assert.equal(p22.score,96);assert.equal(p22.total,2156);
+assert.equal(optimizeMenuSet(d.categories,counts,500),null,'infeasible budget returns null');
 const tie=Object.fromEntries(options.map(o=>[o.id,1]));const t1=optimizeMenuSet(d.categories,tie,2000),t2=optimizeMenuSet(d.categories,tie,2000);assert.deepEqual(t1,t2,'deterministic tie');
-assert.ok(Array.isArray(comparePlans(pop,p2,counts)));
+const diffs=comparePlans(pop,p2,counts);assert.ok(Array.isArray(diffs)&&diffs.length>0);
+assert.ok(diffs.every(x=>x.costSaved>0&&x.votesLost>=0));
+assert.equal(formatInviteCode('ccr26abcdefghjklmnpqrstuv'),'CCR26-ABCDE-FGHJK-LMNPQ-RSTUV','auto-formats 25-char unhyphenated invite code');
+assert.equal(formatInviteCode('CCR26-ABCDE-FGHJK-LMNPQ-RSTUV'),'CCR26-ABCDE-FGHJK-LMNPQ-RSTUV','preserves hyphenated invite code');
+assert.equal(escapeHTML('<script>"\'&'), '&lt;script&gt;&quot;&#39;&amp;');
+assert.ok(csv([['a','b"c']]).startsWith('\ufeff"a","b""c"'));
 const edge=fs.readFileSync(new URL('../supabase/functions/vote/index.ts',import.meta.url),'utf8');
-for(const required of ["op==='catalog'","preferences.submit","admin.preferences.results","admin.invites.revoke","CATALOG_VERSION_MISMATCH","admin.freeze","TOO_MANY_REQUESTS"])assert.ok(edge.includes(required),required);
+for(const required of ["op==='catalog'","preferences.submit","admin.preferences.results","admin.invites.revoke","CATALOG_VERSION_MISMATCH","admin.freeze","TOO_MANY_REQUESTS","hasPreferences","activeSet"])assert.ok(edge.includes(required),required);
 for(const forbidden of ['SERVICE_ROLE_KEY =','sb_secret_','postgresql://']) assert.ok(!edge.includes(forbidden),'no privileged secret literal');
-for(const file of ['index.html','vote.html','party.html','venue.html','guide.html','event.css','event.js','party.js']) assert.ok(fs.existsSync(new URL('../'+file,import.meta.url)),file+' exists');
+const ccrApp=fs.readFileSync(new URL('../supabase/functions/ccr-app/index.ts',import.meta.url),'utf8');
+assert.ok(ccrApp.includes("'menus.json'"),'ccr-app allows menus.json');
+const pubStatic=fs.readFileSync(new URL('../supabase/functions/publish-static/index.ts',import.meta.url),'utf8');
+assert.ok(pubStatic.includes('ADMIN_UNAUTHORIZED')&&pubStatic.includes('image/jpeg'),'publish-static hardened');
+for(const file of ['index.html','vote.html','party.html','venue.html','guide.html','admin.html','styles.css','event.css','event.js','party.js','vote.js','admin.js','supabase/migrations/20261018140000_audit_hardening.sql']) assert.ok(fs.existsSync(new URL('../'+file,import.meta.url)),file+' exists');
 const party=fs.readFileSync(new URL('../party.html',import.meta.url),'utf8');
-for(const value of ['gift_300','gift_500','gift_300_500','gift_none','midnight_gold','forest_champagne','retro_future','come_as_you_are']) assert.ok(party.includes(value),value);
+for(const value of ['gift_300','gift_500','gift_300_500','gift_none','midnight_gold','forest_champagne','retro_future','come_as_you_are','GIFT EXCHANGE']) assert.ok(party.includes(value),value);
 const landing=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');assert.ok(landing.includes('18'));assert.ok(landing.includes('CCR After Hours'));
-const venue=fs.readFileSync(new URL('../venue.html',import.meta.url),'utf8');assert.ok(venue.includes('13.6776392'));assert.ok(!venue.includes('13.6692272'),'must not expose owner route origin');
-console.log('PASS · Release 1 + event portal static/data/decision-engine checks');
+const venue=fs.readFileSync(new URL('../venue.html',import.meta.url),'utf8');assert.ok(venue.includes('13.6776392')&&venue.includes('Google Maps'));assert.ok(!venue.includes('13.6692272'),'must not expose owner route origin');
+const guide=fs.readFileSync(new URL('../guide.html',import.meta.url),'utf8');assert.ok(guide.includes('THE COMPLETE NIGHT GUIDE')&&guide.includes('แต่จัดใหม่ให้ดูเร็ว')&&!guide.includes('แต่จะใหม่ให้ดูเร็ว'));
+const voteHtml=fs.readFileSync(new URL('../vote.html',import.meta.url),'utf8');assert.ok(voteHtml.includes('FOOD VOTE')&&voteHtml.includes('role="radiogroup"'));
+const adminHtml=fs.readFileSync(new URL('../admin.html',import.meta.url),'utf8');assert.ok(adminHtml.includes('แดชบอร์ดผู้จัดงาน'));
+const domContracts={
+  'index.html':['days','hours','minutes','shareEvent','addCalendar','shareStatus','main'],
+  'party.html':['partyStatus','prefToken','prefSummary','savePreferences','prefMessage','main'],
+  'vote.html':['globalStatus','submitStatus','chosenCount','categoryNumber','categoryTitle','categoryDescription','categoryTabs','voteForm','prev','next','summary','foodTotal','grandTotal','budgetTag','reviewStatus','submit','token','main'],
+  'venue.html':['main'],
+  'guide.html':['main','guideCampaignState'],
+  'admin.html':['adminMain','refresh','logout','notice','authPanel','email','password','login','dashboard','overview','state','stats','manage','open','close','freeze','inviteCount','generate','downloadCodes','codes','inviteList','votes','lastRefresh','rankings','preferences','prefCount','prefStats','attendanceResults','giftResults','themeResults','decisions','popular','budget2k','budget22','engineStatus','draft','costInfo','tradeoffs','exportCSV','exportJSON']
+};
+for(const [page,ids] of Object.entries(domContracts)){
+  const html=fs.readFileSync(new URL('../'+page,import.meta.url),'utf8');
+  assert.ok(html.includes('name="referrer" content="no-referrer"'),page+' referrer');
+  assert.ok(html.includes('name="robots" content="noindex,nofollow"'),page+' robots');
+  assert.ok(html.includes('viewport-fit=cover'),page+' viewport-fit=cover');
+  assert.ok(html.includes('class="skip-link"'),page+' skip-link');
+  for(const id of ids)assert.ok(html.includes(`id="${id}"`),`${page} must contain #${id}`);
+}
+for(const imgFile of ['assets/menu-cover.jpg','assets/menu-spread.jpg']){
+  const buf=fs.readFileSync(new URL('../'+imgFile,import.meta.url));
+  assert.equal(buf[0],0xff);assert.equal(buf[1],0xd8);
+  assert.equal(buf[buf.length-2],0xff);assert.equal(buf[buf.length-1],0xd9);
+  let idx=2;
+  while(idx<buf.length){
+    assert.equal(buf[idx],0xff,`${imgFile} valid marker prefix at ${idx}`);
+    const marker=buf[idx+1];
+    if(marker===0xda)break;
+    const segLen=buf.readUInt16BE(idx+2);
+    idx+=2+segLen;
+  }
+}
+console.log('PASS · Release 1 + event portal static/data/decision-engine/DOM/security/JPEG checks');

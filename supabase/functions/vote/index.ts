@@ -13,8 +13,12 @@ function json(req:Request,data:unknown,status=200){return new Response(JSON.stri
 const fail=(req:Request,error:string,status=400)=>json(req,{ok:false,error},status);
 function normalized(s:string){return s.toUpperCase().replace(/[^A-Z0-9]/g,'')}
 async function sha(s:string){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('')}
-function ip(req:Request){return (req.headers.get('x-forwarded-for')||req.headers.get('cf-connecting-ip')||'unknown').split(',')[0].trim()}
-function limited(req:Request,limit=80){const key=ip(req),now=Date.now();let b=buckets.get(key);if(!b||now>b.reset)b={count:0,reset:now+60000};b.count++;buckets.set(key,b);return b.count>limit}
+function ip(req:Request){return (req.headers.get('cf-connecting-ip')||req.headers.get('x-forwarded-for')||'unknown').split(',')[0].trim()}
+function limited(req:Request,limit=80){
+  const key=ip(req),now=Date.now();
+  if(buckets.size>2000){for(const [k,v] of buckets)if(now>v.reset)buckets.delete(k);if(buckets.size>2000)buckets.clear()}
+  let b=buckets.get(key);if(!b||now>b.reset)b={count:0,reset:now+60000};b.count++;buckets.set(key,b);return b.count>limit;
+}
 async function adminUser(req:Request){const value=req.headers.get('authorization')||'';if(!value.startsWith('Bearer '))return null;const {data,error}=await auth.auth.getUser(value.slice(7));if(error||!data.user)return null;const {data:row,error:checkError}=await admin.from('admin_users').select('user_id').eq('user_id',data.user.id).maybeSingle();return !checkError&&row?data.user:null}
 async function logAdmin(userId:string,action:string,details:Record<string,unknown>={}){await admin.from('admin_action_logs').insert({campaign_id:CAMP,user_id:userId,action,details})}
 function inviteCode(){const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';const bytes=crypto.getRandomValues(new Uint8Array(20));let raw='';for(const b of bytes)raw+=alphabet[b%alphabet.length];return 'CCR26-'+raw.match(/.{1,5}/g)!.join('-')}
@@ -75,20 +79,28 @@ Deno.serve(async(req:Request)=>{try{
   if(!op.startsWith('admin.'))return fail(req,'UNKNOWN_OPERATION',404);
   const user=await adminUser(req);if(!user)return fail(req,'ADMIN_UNAUTHORIZED',403);
   if(op==='admin.results'){
-    const {data:campaign,error:ce}=await admin.from('campaigns').select('status,eligible_voters,catalog_version,results_frozen_at').eq('id',CAMP).single();if(ce)return fail(req,'CAMPAIGN_NOT_FOUND',404);
-    let rows:any[]=[];for(let from=0;from<10000;from+=500){const {data,error}=await admin.from('ballots').select('choices').eq('campaign_id',CAMP).range(from,from+499);if(error)return fail(req,'READ_FAILURE',503);rows.push(...(data||[]));if(!data||data.length<500)break}
-    const tallies:Record<string,number>={};for(const row of rows)for(const id of Object.values(row.choices||{})){if(typeof id==='string')tallies[id]=(tallies[id]||0)+1}
-    const [allInvites,activeInvites]=await Promise.all([
-      admin.from('invite_codes').select('*',{count:'exact',head:true}).eq('campaign_id',CAMP),
-      admin.from('invite_codes').select('*',{count:'exact',head:true}).eq('campaign_id',CAMP).eq('active',true)
+    const [campaignRes,invRes]=await Promise.all([
+      admin.from('campaigns').select('status,eligible_voters,catalog_version,results_frozen_at').eq('id',CAMP).single(),
+      admin.from('invite_codes').select('id,active').eq('campaign_id',CAMP)
     ]);
-    if(allInvites.error||activeInvites.error)return fail(req,'READ_FAILURE',503);
-    return json(req,{ok:true,count:rows.length,invites:allInvites.count||0,activeInvites:activeInvites.count||0,status:campaign.status,eligibleVoters:campaign.eligible_voters,catalogVersion:campaign.catalog_version,resultsFrozenAt:campaign.results_frozen_at,tallies});
+    if(campaignRes.error)return fail(req,'CAMPAIGN_NOT_FOUND',404);
+    if(invRes.error)return fail(req,'READ_FAILURE',503);
+    const campaign=campaignRes.data;
+    const allInv=invRes.data||[];
+    const activeSet=new Set(allInv.filter((x:any)=>x.active).map((x:any)=>x.id));
+    let rows:any[]=[];for(let from=0;from<10000;from+=500){const {data,error}=await admin.from('ballots').select('invite_id,choices').eq('campaign_id',CAMP).range(from,from+499);if(error)return fail(req,'READ_FAILURE',503);rows.push(...(data||[]));if(!data||data.length<500)break}
+    const activeRows=rows.filter((r:any)=>!r.invite_id||activeSet.has(r.invite_id));
+    const tallies:Record<string,number>={};for(const row of activeRows)for(const id of Object.values(row.choices||{})){if(typeof id==='string')tallies[id]=(tallies[id]||0)+1}
+    return json(req,{ok:true,count:activeRows.length,invites:allInv.length,activeInvites:activeSet.size,status:campaign.status,eligibleVoters:campaign.eligible_voters,catalogVersion:campaign.catalog_version,resultsFrozenAt:campaign.results_frozen_at,tallies});
   }
   if(op==='admin.preferences.results'){
-    const {data,error}=await admin.from('event_preferences').select('attendance,gift_choice,theme_choice').eq('campaign_id',CAMP);
-    if(error)return fail(req,'READ_FAILURE',503);
-    const rows=data||[];
+    const [prefRes,invRes]=await Promise.all([
+      admin.from('event_preferences').select('invite_id,attendance,gift_choice,theme_choice').eq('campaign_id',CAMP),
+      admin.from('invite_codes').select('id,active').eq('campaign_id',CAMP)
+    ]);
+    if(prefRes.error||invRes.error)return fail(req,'READ_FAILURE',503);
+    const activeSet=new Set((invRes.data||[]).filter((x:any)=>x.active).map((x:any)=>x.id));
+    const rows=(prefRes.data||[]).filter((r:any)=>!r.invite_id||activeSet.has(r.invite_id));
     const attendance={yes:0,maybe:0,no:0},gift={gift_300:0,gift_500:0,gift_300_500:0,gift_none:0},theme={midnight_gold:0,forest_champagne:0,retro_future:0,come_as_you_are:0};
     for(const row of rows){
       if(row.attendance in attendance)attendance[row.attendance as keyof typeof attendance]++;
@@ -98,12 +110,14 @@ Deno.serve(async(req:Request)=>{try{
     return json(req,{ok:true,count:rows.length,attendance,gift,theme});
   }
   if(op==='admin.invites.list'){
-    const [inv,ballots]=await Promise.all([
+    const [inv,ballots,prefs]=await Promise.all([
       admin.from('invite_codes').select('id,active,created_at,revoked_at').eq('campaign_id',CAMP).order('created_at',{ascending:false}).limit(500),
-      admin.from('ballots').select('invite_id').eq('campaign_id',CAMP)
-    ]);if(inv.error||ballots.error)return fail(req,'READ_FAILURE',503);
+      admin.from('ballots').select('invite_id').eq('campaign_id',CAMP),
+      admin.from('event_preferences').select('invite_id').eq('campaign_id',CAMP)
+    ]);if(inv.error||ballots.error||prefs.error)return fail(req,'READ_FAILURE',503);
     const voted=new Set((ballots.data||[]).map((x:any)=>x.invite_id));
-    return json(req,{ok:true,items:(inv.data||[]).map((x:any)=>({id:x.id,active:x.active,createdAt:x.created_at,revokedAt:x.revoked_at,hasBallot:voted.has(x.id)}))});
+    const preffed=new Set((prefs.data||[]).map((x:any)=>x.invite_id));
+    return json(req,{ok:true,items:(inv.data||[]).map((x:any)=>({id:x.id,active:x.active,createdAt:x.created_at,revokedAt:x.revoked_at,hasBallot:voted.has(x.id),hasPreferences:preffed.has(x.id)}))});
   }
   if(op==='admin.invites'){
     const count=Number(body.count);if(!Number.isInteger(count)||count<1||count>200)return fail(req,'INVALID_COUNT');

@@ -3,7 +3,7 @@ const REPO='ccr-dinner-voting';
 const BRANCH='main';
 const allowed=new Set([
   'index.html','vote.html','party.html','venue.html','guide.html','admin.html',
-  'styles.css','event.css','config.js','common.js','decision-engine.js','vote.js','admin.js','event.js','party.js',
+  'styles.css','event.css','config.js','common.js','decision-engine.js','vote.js','admin.js','event.js','party.js','menus.json',
   'assets/menu-cover.jpg','assets/menu-spread.jpg'
 ]);
 function assetPath(pathname:string){
