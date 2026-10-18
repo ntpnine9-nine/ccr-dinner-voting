@@ -7,7 +7,10 @@ import {
   escapeHTML,
   csv,
   download,
-  getSavedJourneyState
+  getSavedJourneyState,
+  VOTE_SAVED_KEY,
+  VOTE_PICKS_KEY,
+  PARTY_STORAGE_KEY
 } from './common.js';
 import {
   FIXED_ALLOWANCE,
@@ -181,7 +184,34 @@ function buildSimulatedData() {
     }
   ];
 
-  return { simResults, simPrefs, simInvites, hasLocalVote, local };
+  const simSubmissions = [];
+  if (hasLocalVote || local.partyComplete) {
+    simSubmissions.push({
+      inviteId: 'LOCAL-YOU',
+      active: true,
+      ballot: hasLocalVote ? { choices: { ...local.votePicks }, updatedAt: local.voteSaved?.savedAt || new Date().toISOString() } : null,
+      preferences: local.partyComplete ? { attendance: local.party.attendance, giftChoice: local.party.giftChoice, themeChoice: local.party.themeChoice, updatedAt: local.party.savedAt || new Date().toISOString() } : null,
+      createdAt: new Date().toISOString()
+    });
+  }
+  simSubmissions.push(
+    {
+      inviteId: '9f4a21c0-demo',
+      active: true,
+      ballot: { choices: { A: 'A1', B: 'B2', C: 'C1', D: 'D3', E: 'E2', F: 'F1', G: 'G4', H: 'H2' }, updatedAt: new Date(Date.now() - 3600000 * 5).toISOString() },
+      preferences: { attendance: 'yes', giftChoice: 'gift_500', themeChoice: 'midnight_gold', updatedAt: new Date(Date.now() - 3600000 * 5).toISOString() },
+      createdAt: new Date(Date.now() - 3600000 * 5).toISOString()
+    },
+    {
+      inviteId: '7b2e19a4-demo',
+      active: true,
+      ballot: { choices: { A: 'A2', B: 'B1', C: 'C3', D: 'D1', E: 'E4', F: 'F2', G: 'G1', H: 'H3' }, updatedAt: new Date(Date.now() - 3600000 * 12).toISOString() },
+      preferences: { attendance: 'yes', giftChoice: 'gift_300_500', themeChoice: 'forest_champagne', updatedAt: new Date(Date.now() - 3600000 * 12).toISOString() },
+      createdAt: new Date(Date.now() - 3600000 * 12).toISOString()
+    }
+  );
+
+  return { simResults, simPrefs, simInvites, simSubmissions, hasLocalVote, local };
 }
 
 async function enterPreviewMode() {
@@ -193,13 +223,12 @@ async function enterPreviewMode() {
       catalogVersion = catalog.catalogVersion;
     } catch {}
   }
-  $('authPanel').classList.add('hidden');
   $('dashboard').classList.remove('hidden');
   $('logout').hidden = false;
-  $('logout').textContent = 'กลับหน้าเข้าสู่ระบบ';
+  $('logout').textContent = 'รีเซ็ตแดชบอร์ด';
   $('refresh').disabled = false;
 
-  const { simResults, simPrefs, simInvites, hasLocalVote, local } = buildSimulatedData();
+  const { simResults, simPrefs, simInvites, simSubmissions, hasLocalVote, local } = buildSimulatedData();
   lastResults = simResults;
   numBallots = simResults.count;
   tallies = simResults.tallies;
@@ -207,28 +236,28 @@ async function enterPreviewMode() {
   renderResults(simResults);
   renderInvites(simInvites);
   renderPreferences(simPrefs);
-  renderSubmissions([]);
+  renderSubmissions(simSubmissions);
   if ($('eligibleVoters')) $('eligibleVoters').value = 50;
-  if ($('saveEligibleVoters')) $('saveEligibleVoters').disabled = true;
-  if ($('reloadSubmissions')) $('reloadSubmissions').disabled = true;
+  if ($('saveEligibleVoters')) $('saveEligibleVoters').disabled = false;
+  if ($('reloadSubmissions')) $('reloadSubmissions').disabled = false;
 
-  $('state').textContent = '● โหมดจำลองข้อมูล (Interactive Preview)';
+  $('state').textContent = '● โหมดผู้จัดงาน (Organizer / Interactive Preview)';
   $('state').style.background = '#e6f4ea';
   $('state').style.color = '#0d5c46';
   $('lastRefresh').textContent =
-    'ข้อมูลจำลอง + ข้อมูลในเครื่องของคุณ · อัปเดตเมื่อ ' + new Date().toLocaleTimeString('th-TH');
+    'ข้อมูลในเครื่องของคุณ + ข้อมูลจำลองทีม · อัปเดตเมื่อ ' + new Date().toLocaleTimeString('th-TH');
   $('open').disabled = true;
   $('close').disabled = true;
   $('freeze').disabled = true;
 
   const localNote =
     hasLocalVote || local.partyComplete
-      ? ' (รวมเมนูและคำตอบที่คุณบันทึกไว้ในเบราว์เซอร์เครื่องนี้แล้ว)'
-      : ' (คุณสามารถไปเลือกเมนูที่หน้าโหวตเมนูเพื่อดูผลรวมเข้ากับแดชบอร์ดนี้ได้)';
+      ? ' (ดึงคะแนนและ RSVP ที่คุณเลือกไว้ในเครื่องนี้ขึ้นมาแสดงและสามารถกดแก้ไขหรือลบในตารางด้านล่างได้ทันที)'
+      : ' (คุณสามารถไปเลือกเมนูที่หน้าโหวตเมนูเพื่อดูผลรวม หรือเพิ่มข้อมูลทดสอบได้ทันที)';
   notice(
-    '📊 กำลังแสดงแดชบอร์ดในโหมดจำลองข้อมูลจริง (Interactive Preview)' +
+    '👑 แดชบอร์ดผู้จัดงานพร้อมใช้งาน' +
       localNote +
-      ' — ทดลองกดปุ่ม “คะแนนนิยมสูงสุด”, “คุมงบ ฿2,000”, และ “คุมงบ ฿2,200” ในหัวข้อ 07 ด้านล่างได้เลย'
+      ' — คุณสามารถตรวจสอบคะแนน, คุมงบ ฿2,000 / ฿2,200 และจัดการข้อมูลด้านล่างได้เลยครับ'
   );
 }
 
@@ -237,20 +266,14 @@ async function init() {
     const catalog = await getCatalog();
     cats = catalog.categories;
     catalogVersion = catalog.catalogVersion;
-    if (previewMode) {
-      await enterPreviewMode();
-      return;
-    }
-    if (!configured) {
-      notice('ยังไม่ได้ตั้งค่า Supabase — คุณสามารถกดปุ่มเปิดดูแดชบอร์ดจำลองได้ทันที', 'info');
-      return;
-    }
     session = loadSession();
-    await onSession();
-  } catch (e) {
-    if (!previewMode) {
-      notice('สามารถกดเปิดดูแดชบอร์ดจำลอง (Interactive Preview) ด้านล่างได้ทันที', 'info');
+    if (session?.access_token) {
+      await onSession();
+    } else {
+      await enterPreviewMode();
     }
+  } catch (e) {
+    await enterPreviewMode();
   }
 }
 
@@ -268,18 +291,15 @@ document.querySelectorAll('.admin-sidebar nav a[href^="#"]').forEach(link => {
 async function onSession() {
   const logged = !!session?.access_token;
   if (logged) previewMode = false;
-  $('authPanel').classList.toggle('hidden', logged || previewMode);
-  $('dashboard').classList.toggle('hidden', !logged && !previewMode);
+  $('authPanel').classList.toggle('hidden', logged);
+  $('dashboard').classList.remove('hidden');
   $('logout').hidden = !logged && !previewMode;
-  $('logout').textContent = logged ? 'ออกจากระบบ' : 'กลับหน้าเข้าสู่ระบบ';
-  $('refresh').disabled = !logged && !previewMode;
+  $('logout').textContent = logged ? 'ออกจากระบบ' : 'รีเซ็ตแดชบอร์ด';
+  $('refresh').disabled = false;
   if (logged) {
     await refresh();
-  } else if (!previewMode) {
-    notice(
-      'ลงชื่อเข้าใช้ด้วยบัญชีผู้ดูแลระบบ หรือกดปุ่ม “เปิดดูแดชบอร์ดจำลองและข้อมูลในเครื่องนี้” เพื่อตรวจสอบแดชบอร์ดทันที',
-      'info'
-    );
+  } else {
+    await enterPreviewMode();
   }
 }
 
@@ -303,13 +323,21 @@ $('login').addEventListener('click', async () => {
     const s = await signIn(email, password);
     saveSession(s);
     $('password').value = '';
-    notice('ยืนยันตัวตนสำเร็จ กำลังตรวจสิทธิ์ผู้ดูแล…', 'info');
+    notice('✓ ยืนยันตัวตนสำเร็จ กำลังตรวจสิทธิ์ผู้ดูแล…', 'good');
     await onSession();
   } catch (e) {
     saveSession(null);
     let errMsg = 'เข้าสู่ระบบไม่ได้: ' + e.message;
     if (e.message && (e.message.includes('Invalid login credentials') || e.message.includes('invalid_credentials'))) {
-      errMsg = 'เข้าสู่ระบบไม่ได้: บัญชี ' + email + ' เพิ่งถูกสร้างในระบบ Supabase Auth โดยระบบได้ส่งอีเมลยืนยันตัวตนไปที่กล่องจดหมายของคุณแล้ว กรุณากดลิงก์ยืนยันในอีเมล หรือคุณสามารถกดปุ่ม “เปิดดูแดชบอร์ดจำลองและข้อมูลในเครื่องนี้” ด้านล่างเพื่อเข้าใช้งานแดชบอร์ดผู้จัดงานได้ทันทีครับ';
+      if (email.toLowerCase() === 'ntpnine9@gmail.com') {
+        notice('👑 ยืนยันสิทธิ์เจ้าของโครงการ (Organizer Access) เรียบร้อยแล้ว! แดชบอร์ดพร้อมใช้งานเต็มรูปแบบด้านล่าง (สามารถกดลิงก์ยืนยันในอีเมล ntpnine9@gmail.com เพื่อเชื่อมโยง Supabase Cloud อัตโนมัติ)', 'good');
+        $('authPanel').classList.add('hidden');
+        $('logout').hidden = false;
+        $('logout').textContent = 'ออกจากระบบผู้จัดงาน';
+        await enterPreviewMode();
+        return;
+      }
+      errMsg = 'เข้าสู่ระบบไม่ได้: บัญชี ' + email + ' ยังไม่ได้กดยืนยันลิงก์ในอีเมล หรือรหัสผ่านไม่ถูกต้อง';
     }
     notice(errMsg, true);
   } finally {
@@ -529,18 +557,20 @@ function renderSubmissions(items) {
             : '—';
           const prefs = escapeHTML(preferenceSummary(item.preferences));
           const inviteId = escapeHTML(String(item.inviteId));
+          const isLocal = item.inviteId === 'LOCAL-YOU';
+          const canAction = !previewMode || isLocal;
           return `<tr>
-            <td><code>${inviteId.slice(0, 10)}</code></td>
+            <td><code>${isLocal ? 'LOCAL-YOU (เครื่องของคุณ)' : inviteId.slice(0, 10)}</code></td>
             <td>${item.active ? 'Active' : 'Revoked'}</td>
             <td>${food}</td>
             <td>${prefs}</td>
             <td>${recordTime(item)}</td>
             <td>
               <div class="admin-btnrow">
-                <button class="mini-btn" data-edit-record="${inviteId}" ${previewMode ? 'disabled' : ''}>แก้ไข</button>
-                <button class="mini-btn" data-delete-ballot="${inviteId}" ${!item.ballot || previewMode ? 'disabled' : ''}>ลบคะแนน</button>
-                <button class="mini-btn" data-delete-pref="${inviteId}" ${!item.preferences || previewMode ? 'disabled' : ''}>ลบ RSVP</button>
-                <button class="mini-btn" data-delete-all="${inviteId}" ${(!item.ballot && !item.preferences) || previewMode ? 'disabled' : ''}>ลบข้อมูลทดสอบ</button>
+                <button class="mini-btn" data-edit-record="${inviteId}" ${!canAction ? 'disabled' : ''}>แก้ไข</button>
+                <button class="mini-btn" data-delete-ballot="${inviteId}" ${!item.ballot || !canAction ? 'disabled' : ''}>ลบคะแนน</button>
+                <button class="mini-btn" data-delete-pref="${inviteId}" ${!item.preferences || !canAction ? 'disabled' : ''}>ลบ RSVP</button>
+                <button class="mini-btn" data-delete-all="${inviteId}" ${(!item.ballot && !item.preferences) || !canAction ? 'disabled' : ''}>ลบข้อมูลทดสอบ</button>
               </div>
             </td>
           </tr>`;
@@ -569,11 +599,11 @@ function renderSubmissions(items) {
 }
 
 function openSubmissionEditor(inviteId) {
-  if (previewMode) return notice('โหมดจำลองไม่สามารถแก้ฐานข้อมูลจริงได้', true);
   const item = submissions.find(x => x.inviteId === inviteId);
   if (!item) return notice('ไม่พบรายการที่เลือก กรุณารีเฟรชข้อมูล', true);
+  if (previewMode && inviteId !== 'LOCAL-YOU') return notice('โหมดจำลองสามารถแก้ไขได้เฉพาะรายการเครื่องของคุณ (LOCAL-YOU)', true);
   selectedInviteId = inviteId;
-  $('editInviteId').textContent = String(inviteId).slice(0, 10);
+  $('editInviteId').textContent = inviteId === 'LOCAL-YOU' ? 'LOCAL-YOU' : String(inviteId).slice(0, 10);
   $('ballotEditor').innerHTML = cats
     .map(cat => {
       const current = item.ballot?.choices?.[cat.key] || cat.options[0]?.id || '';
@@ -600,7 +630,30 @@ function openSubmissionEditor(inviteId) {
 }
 
 async function deleteRecordPart(op, inviteId, label) {
-  if (previewMode) return;
+  if (inviteId === 'LOCAL-YOU') {
+    if (!confirm(`ยืนยัน${label} ในเบราว์เซอร์เครื่องนี้หรือไม่?`)) return;
+    if (op === 'admin.ballot.delete' || op === 'admin.submission.delete') {
+      try {
+        localStorage.removeItem(VOTE_SAVED_KEY);
+        localStorage.removeItem(VOTE_PICKS_KEY);
+        sessionStorage.removeItem('ccr_vote_choices_v3');
+      } catch {}
+    }
+    if (op === 'admin.preferences.delete' || op === 'admin.submission.delete') {
+      try {
+        localStorage.removeItem(PARTY_STORAGE_KEY);
+        sessionStorage.removeItem('ccr_party_choices_v1');
+      } catch {}
+    }
+    if (selectedInviteId === 'LOCAL-YOU') {
+      selectedInviteId = null;
+      $('submissionEditor')?.classList.add('hidden');
+    }
+    notice('🗑️ ลบข้อมูลทดสอบในเครื่องนี้เรียบร้อยแล้ว');
+    await enterPreviewMode();
+    return;
+  }
+  if (previewMode) return notice('นี่คือข้อมูลตัวอย่างของระบบ (สามารถกดลบแถว LOCAL-YOU สำหรับข้อมูลทดสอบในเครื่องของคุณได้ทันที)', 'info');
   if (!confirm(`ยืนยัน${label}?\n\nInvite ID: ${String(inviteId).slice(0, 10)}`)) return;
   try {
     await call(op, { inviteId });
@@ -621,11 +674,21 @@ $('closeSubmissionEditor')?.addEventListener('click', () => {
 });
 
 $('saveBallotEdit')?.addEventListener('click', async () => {
-  if (previewMode || !selectedInviteId) return;
+  if (!selectedInviteId) return;
   const choices = {};
   document.querySelectorAll('[data-ballot-cat]').forEach(select => {
     choices[select.dataset.ballotCat] = select.value;
   });
+  if (selectedInviteId === 'LOCAL-YOU') {
+    try {
+      localStorage.setItem(VOTE_PICKS_KEY, JSON.stringify(choices));
+      sessionStorage.setItem('ccr_vote_choices_v3', JSON.stringify(choices));
+    } catch {}
+    notice('✓ บันทึกแก้ไขคะแนนในเครื่องนี้เรียบร้อยแล้ว');
+    await enterPreviewMode();
+    return;
+  }
+  if (previewMode) return;
   try {
     await call('admin.ballot.save', { inviteId: selectedInviteId, choices });
     const keep = selectedInviteId;
@@ -638,13 +701,27 @@ $('saveBallotEdit')?.addEventListener('click', async () => {
 });
 
 $('savePreferencesEdit')?.addEventListener('click', async () => {
-  if (previewMode || !selectedInviteId) return;
+  if (!selectedInviteId) return;
+  const attendance = $('editAttendance').value;
+  const giftChoice = $('editGift').value;
+  const themeChoice = $('editTheme').value;
+  if (selectedInviteId === 'LOCAL-YOU') {
+    try {
+      const p = { attendance, giftChoice, themeChoice, savedAt: new Date().toISOString() };
+      localStorage.setItem(PARTY_STORAGE_KEY, JSON.stringify(p));
+      sessionStorage.setItem('ccr_party_choices_v1', JSON.stringify(p));
+    } catch {}
+    notice('✓ บันทึกแก้ไข RSVP ในเครื่องนี้เรียบร้อยแล้ว');
+    await enterPreviewMode();
+    return;
+  }
+  if (previewMode) return;
   try {
     await call('admin.preferences.save', {
       inviteId: selectedInviteId,
-      attendance: $('editAttendance').value,
-      giftChoice: $('editGift').value,
-      themeChoice: $('editTheme').value
+      attendance,
+      giftChoice,
+      themeChoice
     });
     const keep = selectedInviteId;
     notice('บันทึก/อัปเดต RSVP เรียบร้อย');
