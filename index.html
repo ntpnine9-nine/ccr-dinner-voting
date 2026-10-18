@@ -1,212 +1,56 @@
 <!doctype html>
 <html lang="th">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="referrer" content="no-referrer"><meta name="theme-color" content="#0d2f29">
-  <meta name="robots" content="noindex,nofollow">
-  <meta name="description" content="CCR After Hours 2026 — Digital invitation, RSVP, food voting, gift exchange, dress mood, venue map and live event guide.">
-  <meta property="og:title" content="CCR After Hours 2026 · Year-End Celebration">
-  <meta property="og:description" content="18 DEC 2026 · ครัวซอย 11 · One team, one table, one night.">
-  <meta property="og:type" content="website">
-  <meta property="og:image" content="https://vjvptuecwewmqhkedybs.supabase.co/functions/v1/ccr-app/assets/menu-cover.jpg">
-  <title>CCR After Hours 2026 · Year-End Celebration</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css">
-  <link rel="stylesheet" href="./event.css">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="referrer" content="no-referrer"><meta name="theme-color" content="#123a31"><meta name="robots" content="noindex,nofollow">
+<meta name="description" content="CCR After Hours 2026 — บัตรเชิญ งานเลี้ยงปลายปี สถานที่จริง โหวตอาหาร RSVP ของขวัญ และ Event Guide ในเว็บเดียว">
+<title>CCR After Hours 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./event.css">
 </head>
 <body class="event-page">
 <a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
-
-<header class="event-nav">
-  <a class="event-brand" href="./index.html" aria-label="CCR After Hours home">
-    <span class="event-brand-mark">C</span>
-    <span><b>CCR After Hours</b><small>YEAR-END 2026</small></span>
-  </a>
-  <nav class="event-nav-links" aria-label="เมนูหลัก">
-    <a href="#invitation">Invitation</a>
-    <a href="./venue.html">Venue</a>
-    <a href="./party.html">Your Choice</a>
-    <a href="./vote.html">Food Vote</a>
-    <a href="./guide.html">Event Guide</a>
-  </nav>
-  <a class="event-nav-cta" href="./vote.html">เริ่มโหวต <span>↗</span></a>
+<header class="site-nav">
+  <a class="brand" href="./index.html"><span class="brand-mark">C</span><span><b>CCR After Hours</b><small>YEAR-END 2026</small></span></a>
+  <nav class="nav-links" aria-label="เมนูหลัก"><a class="active" href="./index.html">หน้าแรก</a><a href="./party.html">ร่วมเลือก</a><a href="./vote.html">โหวตอาหาร</a><a href="./venue.html">สถานที่</a><a href="./guide.html">คู่มืองาน</a></nav>
+  <a class="nav-cta" href="./party.html">เริ่มใช้งาน ↗</a>
 </header>
-
 <main id="main">
-  <section class="event-hero" id="invitation">
-    <div class="event-hero-glow"></div>
-    <div class="event-hero-grid">
-      <div class="event-hero-copy">
-        <p class="event-overline">DIGITAL INVITATION · CCR YEAR-END CELEBRATION</p>
-        <div class="event-date-lockup" aria-label="18 December 2026">
-          <span class="event-date-day">18</span>
-          <span class="event-date-meta">DEC<br>2026</span>
-        </div>
-        <h1>OFF SHIFT.<br><em>ON THE TABLE.</em></h1>
-        <p class="event-lead">ปีนี้เราไม่ได้แค่ “ไปกินข้าวด้วยกัน” — เราจะช่วยกันออกแบบค่ำคืนนี้ ตั้งแต่เมนูบนโต๊ะ ของขวัญ ธีมการแต่งตัว ไปจนถึงบรรยากาศของงาน</p>
-        <div class="event-hero-actions">
-          <a class="event-btn event-btn-light" href="#choose">เปิดคำเชิญ ↓</a>
-          <a class="event-btn event-btn-ghost" href="./venue.html">ดูสถานที่ / นำทาง ↗</a>
-        </div>
-        <div class="event-hero-facts">
-          <div><span>DATE</span><strong>ศุกร์ 18 ธันวาคม 2026</strong></div>
-          <div><span>VENUE</span><strong>ครัวซอย 11 · ประเวศ</strong></div>
-          <div><span>TIME</span><strong>รอยืนยันเวลา</strong></div>
-        </div>
-        <div class="event-utility-row" aria-label="เครื่องมือคำเชิญ">
-          <button type="button" id="shareEvent" class="event-utility-btn">แชร์คำเชิญ <span>↗</span></button>
-          <button type="button" id="addCalendar" class="event-utility-btn">เพิ่มลงปฏิทิน <span>＋</span></button>
-          <a class="event-utility-btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=13.6776392%2C100.6522394&travelmode=driving">นำทาง <span>⌖</span></a>
-        </div>
-        <p id="shareStatus" class="event-share-status" aria-live="polite"></p>
-      </div>
-
-      <div class="event-visual" aria-label="ภาพเมนูร้านจริงที่ใช้เป็นข้อมูล">
-        <figure class="event-photo event-photo-main"><img src="./assets/menu-cover.jpg" alt="เมนูหน้าปกร้านครัวซอย 11 ที่ถ่ายจากร้านจริง"></figure>
-        <figure class="event-photo event-photo-side one"><img src="./assets/menu-spread.jpg" alt="ภาพเมนูอาหารร้านครัวซอย 11"></figure>
-        <figure class="event-photo event-photo-side two"><img src="./assets/menu-spread.jpg" alt="ภาพเมนูอาหารร้านครัวซอย 11"></figure>
-        <div class="event-stamp"><span>ONE TEAM</span><b>ONE TABLE</b><span>ONE NIGHT</span></div>
-      </div>
-    </div>
-    <div class="event-scroll-cue">SCROLL TO ENTER <span>↓</span></div>
-  </section>
-
-  <section class="event-intro event-wrap reveal">
-    <div class="event-section-label">01 / THE INVITATION</div>
-    <div class="event-intro-grid">
-      <h2>ค่ำคืนของทีม<br><em>ที่ทุกคนมีส่วนเลือก</em></h2>
-      <div>
-        <p class="event-big-copy">แทนที่จะส่ง PDF หลายหน้าแล้วต้องไล่หาข้อมูล เรารวม “บัตรเชิญ + สถานที่ + เส้นทาง + กำหนดการ + โหวตอาหาร + จับของขวัญ + ธีมงาน” ไว้ในเว็บเดียว</p>
-        <p class="event-muted">เปิดจากมือถือได้ทันที ส่งต่อเป็นลิงก์หรือ QR ได้ และส่วนที่เป็นการโหวตจริงจะบันทึกลงฐานข้อมูลกลางด้วยรหัสเชิญส่วนตัว</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="event-countdown reveal">
-    <div class="event-wrap event-countdown-grid">
-      <div>
-        <span class="event-section-label light">02 / SAVE THE DATE</span>
-        <h2>FRIDAY<br>18.12.26</h2>
-      </div>
-      <div class="countdown" aria-label="นับถอยหลังถึงวันงาน">
-        <div><strong id="days">—</strong><span>DAYS</span></div>
-        <div><strong id="hours">—</strong><span>HOURS</span></div>
-        <div><strong id="minutes">—</strong><span>MIN</span></div>
-      </div>
-      <p>วันจัดงานยืนยันแล้ว · เวลาเริ่มงานจะแจ้งเมื่อสรุป Final Schedule</p>
-    </div>
-  </section>
-
-  <section class="event-wrap event-choices reveal" id="choose">
-    <div class="event-section-head">
-      <div><span class="event-section-label">03 / CHOOSE YOUR NIGHT</span><h2>คืนนี้เป็นของพวกเรา<br><em>เลือกได้จริง ไม่ใช่แค่ดู</em></h2></div>
-      <p>แต่ละหน้าคือหนึ่งส่วนของงาน ไม่ต้อง Login เพื่อเข้าดู และทุกอย่างออกแบบให้กดใช้งานบนมือถือได้</p>
-    </div>
-    <div class="event-action-grid">
-      <a class="event-action-card featured" href="./vote.html">
-        <span class="event-card-no">01</span><span class="event-card-icon">🍽</span>
-        <h3>โหวตอาหาร</h3><p>8 หมวด · 56 เมนู · 1 ตัวเลือกต่อหมวด พร้อมสรุปงบก่อนส่งคะแนน</p><span class="event-card-link">OPEN FOOD VOTE ↗</span>
-      </a>
-      <a class="event-action-card" href="./party.html">
-        <span class="event-card-no">02</span><span class="event-card-icon">✦</span>
-        <h3>ของขวัญ & Theme</h3><p>เลือกว่าจะจับของขวัญงบเท่าไร และค่ำคืนนี้อยากแต่งตัวใน Mood แบบไหน</p><span class="event-card-link">MAKE YOUR PICK ↗</span>
-      </a>
-      <a class="event-action-card" href="./venue.html">
-        <span class="event-card-no">03</span><span class="event-card-icon">⌖</span>
-        <h3>สถานที่ & เส้นทาง</h3><p>ข้อมูลร้านจริง แผนที่จริง ปุ่มนำทางจากตำแหน่งของผู้กด และภาพเมนูจากร้าน</p><span class="event-card-link">EXPLORE VENUE ↗</span>
-      </a>
-      <a class="event-action-card" href="./guide.html">
-        <span class="event-card-no">04</span><span class="event-card-icon">◴</span>
-        <h3>Event Guide</h3><p>ภาพรวม Concept, Flow ของค่ำคืน, สิ่งที่ควรรู้ และ FAQ ในหน้าเดียว</p><span class="event-card-link">VIEW THE GUIDE ↗</span>
-      </a>
-    </div>
-  </section>
-
-  <section class="event-story reveal">
-    <div class="event-wrap event-story-grid">
-      <div class="event-story-copy">
-        <span class="event-section-label light">04 / THIS YEAR'S CONCEPT</span>
-        <h2>CCR<br><em>AFTER HOURS</em></h2>
-        <p>ออกจากโหมดงาน แล้วกลับมาเป็นทีมเดียวกันบนโต๊ะเดียวกัน — ไม่เป็นทางการเกินไป ไม่เชย และไม่ต้องแต่งเวอร์เพื่อให้สนุก</p>
-        <div class="event-tag-row"><span>DINNER</span><span>VOTE</span><span>GIFT</span><span>PHOTO</span><span>TEAM</span></div>
-      </div>
-      <div class="event-story-card">
-        <p class="event-quote">“Good events don't start at the venue. They start the moment the invitation makes people want to be there.”</p>
-        <div class="event-story-meta"><span>EVENT DIRECTION</span><strong>Warm · Modern · Participatory</strong></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="event-wrap event-venue-teaser reveal">
-    <div class="event-photo-strip">
-      <figure><img src="./assets/menu-cover.jpg" alt="ภาพเมนูจริงของครัวซอย 11"></figure>
-      <figure><img src="./assets/menu-spread.jpg" alt="ภาพเมนูจริงของครัวซอย 11"></figure>
-      <figure><img src="./assets/menu-cover.jpg" alt="ภาพเมนูจริงของครัวซอย 11"></figure>
-    </div>
-    <div class="event-venue-copy">
-      <span class="event-section-label">05 / THE VENUE</span>
-      <h2>ครัวซอย 11</h2>
-      <p>เฉลิมพระเกียรติ ร.9 ซอย 11 · แขวงหนองบอน · เขตประเวศ · กรุงเทพฯ 10250</p>
-      <div class="event-venue-facts">
-        <span><b>095-249-7863</b><small>โทรศัพท์ร้าน</small></span>
-        <span><b>16:00–22:00</b><small>ข้อมูลสาธารณะล่าสุดในวันที่เปิดทำการ*</small></span>
-        <span><b>18 DEC</b><small>วันงาน</small></span>
-      </div>
-      <p class="event-fine">*เวลาร้านและรายละเอียดวันงานต้องยืนยันอีกครั้งก่อนใช้งานจริง</p>
-      <div class="event-inline-actions">
-        <a class="event-btn event-btn-dark" href="./venue.html">ดูสถานที่เต็ม ๆ ↗</a>
-        <a class="event-text-link" href="https://www.google.com/maps/dir/?api=1&destination=13.6776392%2C100.6522394&travelmode=driving" target="_blank" rel="noopener">เปิด Google Maps ↗</a>
-      </div>
-    </div>
-  </section>
-
-  <section class="event-wrap event-flow reveal">
-    <span class="event-section-label">06 / THE NIGHT, AT A GLANCE</span>
-    <div class="event-flow-head"><h2>จาก “เจอกันนะ”<br>ไปจนถึง <em>กลับบ้านพร้อมความทรงจำ</em></h2><p>เวลารายละเอียดจะใส่เมื่อ Final Schedule ถูกยืนยัน เพื่อไม่สร้างข้อมูลปลอมบนบัตรเชิญ</p></div>
-    <div class="event-flow-line">
-      <div><span>01</span><b>ARRIVE</b><p>มาถึงร้าน · เช็กอิน · ถ่ายรูป</p></div>
-      <div><span>02</span><b>SETTLE IN</b><p>รวมทีม · เลือกที่นั่ง · เริ่มค่ำคืน</p></div>
-      <div><span>03</span><b>DINNER</b><p>เมนูจากผลโหวตของทีม</p></div>
-      <div><span>04</span><b>GIFT</b><p>กิจกรรมจับของขวัญ หากทีมเลือกเล่น</p></div>
-      <div><span>05</span><b>MOMENTS</b><p>รูปทีม · เกมเบา ๆ · โมเมนต์ของปี</p></div>
-      <div><span>06</span><b>WRAP</b><p>สรุปค่ำคืน · กลับบ้านโดยสวัสดิภาพ</p></div>
-    </div>
-  </section>
-
-  <section class="event-wrap event-quickfacts reveal">
-    <div class="event-section-head">
-      <div><span class="event-section-label">07 / EVERYTHING IN ONE LINK</span><h2>ข้อมูลที่ต้องรู้<br><em>อยู่ครบ แต่ไม่ยัดทุกอย่างไว้หน้าเดียว</em></h2></div>
-      <p>หน้าแรกแสดงเฉพาะสิ่งสำคัญ ส่วนรายละเอียดเปิดดูต่อเมื่อจำเป็น — เพื่อให้เว็บยังดูสะอาดและใช้งานเร็วบนมือถือ</p>
-    </div>
-    <div class="event-quickfacts-grid">
-      <article><span>RSVP</span><b>ไป / ยังไม่แน่ใจ / ไม่สะดวก</b><p>รวมสถานะผู้ร่วมงานไว้กับแบบเลือก Gift & Theme</p></article>
-      <article><span>FOOD</span><b>8 หมวด · 56 เมนู</b><p>โหวตจริงผ่านรหัสเชิญและบันทึกฐานข้อมูลกลาง</p></article>
-      <article><span>GIFT</span><b>4 ตัวเลือกงบ</b><p>฿300 / ฿500 / ฿300–500 / ปีนี้ไม่จับ</p></article>
-      <article><span>DRESS</span><b>4 Visual Moods</b><p>มี Direction แต่ไม่บังคับ Costume</p></article>
-      <article><span>VENUE</span><b>Map + Directions</b><p>กดนำทางจากตำแหน่งของผู้ใช้โดยไม่เผยพิกัดต้นทางในเว็บ</p></article>
-      <article><span>UPDATES</span><b>Live Event Guide</b><p>ข้อมูลที่ยังไม่ Final แสดงสถานะชัดและอัปเดตที่ลิงก์เดิม</p></article>
-    </div>
-  </section>
-
-  <section class="event-finale reveal">
-    <div class="event-wrap">
-      <p class="event-overline">SEE YOU AROUND THE TABLE</p>
-      <h2>18 DECEMBER 2026</h2>
-      <p>หนึ่งลิงก์สำหรับข้อมูลทั้งหมดของงาน — และหนึ่งค่ำคืนที่เราออกแบบร่วมกัน</p>
-      <div class="event-hero-actions centered">
-        <a class="event-btn event-btn-light" href="./party.html">เลือก Gift & Theme ↗</a>
-        <a class="event-btn event-btn-ghost" href="./vote.html">โหวตอาหาร ↗</a>
-      </div>
-    </div>
-  </section>
+<section class="hero">
+  <div class="hero-copy">
+    <p class="eyebrow">DIGITAL INVITATION · CCR YEAR-END CELEBRATION</p>
+    <div class="date-lock"><strong>18</strong><span>DEC<br>2026</span></div>
+    <h1>OFF SHIFT.<br><em>ON THE TABLE.</em></h1>
+    <p class="lead">เว็บเดียวสำหรับคำเชิญ งานเลี้ยง สถานที่จริง การเดินทาง RSVP ของขวัญ ธีม และโหวตอาหาร — เรียงตามลำดับใช้งานจริง ไม่ต้องไล่เปิดหลายไฟล์หรือหลายลิงก์</p>
+    <div class="hero-actions"><a class="btn light" href="#start">ดูภาพรวม ↓</a><a class="btn ghost" href="./party.html">เริ่มร่วมเลือก ↗</a></div>
+    <div class="hero-facts"><div><span>DATE</span><b>ศุกร์ 18 ธันวาคม 2026</b></div><div><span>VENUE</span><b>ครัวซอย 11 · ประเวศ</b></div><div><span>TIME</span><b>รอยืนยันเวลา</b></div></div>
+    <div class="hero-tools"><button id="shareEvent" class="mini-action">แชร์คำเชิญ</button><button id="addCalendar" class="mini-action">เพิ่มปฏิทิน</button><a class="mini-action" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=13.6776392%2C100.6522394&travelmode=driving">นำทาง</a></div><p id="shareStatus" class="share-status" aria-live="polite"></p>
+  </div>
+  <div class="hero-gallery" aria-label="ภาพจริงจากครัวซอย 11">
+    <figure class="hero-img hero-img-main"><img src="./assets/real/venue-interior-night.webp" alt="บรรยากาศจริงภายในครัวซอย 11"></figure>
+    <figure class="hero-img hero-img-top"><img src="./assets/real/venue-sign-night.webp" alt="ป้ายร้านครัวซอย 11 ในเวลากลางคืน"></figure>
+    <figure class="hero-img hero-img-bottom"><img src="./assets/real/food-01.webp" alt="ภาพอาหารจริงจากครัวซอย 11"></figure>
+    <div class="stamp"><span>ONE TEAM</span><b>ONE TABLE</b><span>ONE NIGHT</span></div>
+  </div>
+</section>
+<section class="wrap intro" id="start">
+  <div><p class="section-label">01 / START HERE</p><h2>เข้าเว็บครั้งเดียว<br><em>แล้วรู้ว่าต้องทำอะไรต่อ</em></h2></div>
+  <div><p class="big-copy">ลำดับที่แนะนำมีแค่ 3 ขั้น: <b>1) บอกว่าจะมาหรือไม่ + เลือก Gift/Theme</b> → <b>2) โหวตอาหาร 8 หมวด</b> → <b>3) ดูสถานที่ เส้นทาง และ Event Guide</b></p><p class="muted">ทุกหน้ามี Navigation ชุดเดียวกัน และมีปุ่ม “ทำขั้นต่อไป” เพื่อไม่ให้หลงทาง</p></div>
+</section>
+<section class="wrap journey">
+  <a class="journey-card primary" href="./party.html"><span class="step">STEP 1</span><h3>RSVP · Gift · Theme</h3><p>ตอบว่าจะมาหรือไม่ เลือกแนวของขวัญ และ Mood การแต่งตัว</p><b>เริ่มจากตรงนี้ ↗</b></a>
+  <a class="journey-card" href="./vote.html"><span class="step">STEP 2</span><h3>Food Vote</h3><p>เลือกอาหาร 1 รายการจากแต่ละหมวด รวม 8 หมวด 56 ตัวเลือก</p><b>ไปโหวตอาหาร ↗</b></a>
+  <a class="journey-card" href="./venue.html"><span class="step">STEP 3</span><h3>Venue & Guide</h3><p>ดูภาพจริง ที่อยู่ ปุ่มนำทาง ที่จอดรถ และข้อมูลก่อนวันงาน</p><b>ดูสถานที่ ↗</b></a>
+</section>
+<section class="venue-feature">
+  <div class="wrap venue-grid">
+    <div class="venue-copy"><p class="section-label light">02 / REAL VENUE</p><h2>ครัวซอย 11<br><em>ภาพจริง ไม่ใช่ภาพแทน</em></h2><p>ภาพในส่วนนี้มาจากชุดภาพร้านจริงที่ส่งให้โครงการ ใช้เพื่อให้คนใน CCR เห็นบรรยากาศจริงก่อนถึงวันงาน</p><div class="facts-row"><span><b>095-249-7863</b><small>โทรศัพท์ร้าน</small></span><span><b>หนองบอน · ประเวศ</b><small>กรุงเทพฯ 10250</small></span></div><a class="btn light" href="./venue.html">เปิด Venue Guide ↗</a></div>
+    <div class="mosaic"><img src="./assets/real/venue-interior-night.webp" alt="ที่นั่งภายในร้าน"><img src="./assets/real/venue-interior-night.webp" alt="บรรยากาศการรับประทานอาหารจริง"><img src="./assets/real/venue-sign-night.webp" alt="บรรยากาศหน้าร้านช่วงกลางคืน"><img src="./assets/real/venue-sign-night.webp" alt="พื้นที่จอดรถช่วงกลางคืน"></div>
+  </div>
+</section>
+<section class="wrap food-showcase"><div class="section-head"><div><p class="section-label">03 / FOOD, FOR REAL</p><h2>ก่อนโหวต<br><em>เห็นบรรยากาศอาหารจริง</em></h2></div><p>ภาพเป็นภาพอาหารจากร้านจริง แต่ไม่ได้ใช้ระบุว่าเป็นเมนูใดในฐานข้อมูลหากยังไม่มีหลักฐานจับคู่ชื่อเมนูกับรูปอย่างแน่นอน</p></div><div class="food-strip"><img src="./assets/real/food-01.webp" alt="ภาพอาหารจริงจากร้าน"><img src="./assets/real/food-01.webp" alt="ภาพอาหารจริงจากร้าน"><img src="./assets/real/food-01.webp" alt="ภาพอาหารจริงจากร้าน"><img src="./assets/real/food-01.webp" alt="ภาพอาหารจริงจากร้าน"><img src="./assets/real/food-01.webp" alt="ภาพอาหารจริงจากร้าน"></div></section>
+<section class="wrap status-grid"><article><span>FOOD</span><h3>8 หมวด · 56 เมนู</h3><p>หนึ่งคน หนึ่งคำตอบต่อหมวด และแก้ไขได้ด้วยรหัสเดิมก่อนปิดโหวต</p><a href="./vote.html">โหวตอาหาร ↗</a></article><article><span>GIFT</span><h3>4 ตัวเลือกชัดเจน</h3><p>฿300 / ฿500 / ฿300–500 / ปีนี้ไม่จับของขวัญ</p><a href="./party.html">ร่วมเลือก ↗</a></article><article><span>VENUE</span><h3>Map + ภาพจริง</h3><p>พิกัดปลายทางร้านและปุ่มเปิด Google Maps จากตำแหน่งของผู้ใช้</p><a href="./venue.html">ดูสถานที่ ↗</a></article><article><span>GUIDE</span><h3>ข้อมูลก่อนวันงาน</h3><p>Flow, FAQ, ราคาอ้างอิง, Dietary/Allergen note และสิ่งที่ยังรอยืนยัน</p><a href="./guide.html">เปิดคู่มืองาน ↗</a></article></section>
+<section class="finale"><div class="wrap"><p class="eyebrow">SEE YOU AROUND THE TABLE</p><h2>18 DECEMBER 2026</h2><p>หนึ่งลิงก์สำหรับข้อมูลทั้งหมดของงาน และหนึ่งค่ำคืนที่เราออกแบบร่วมกัน</p><div class="hero-actions centered"><a class="btn light" href="./party.html">เริ่มร่วมเลือก ↗</a><a class="btn ghost" href="./vote.html">โหวตอาหาร ↗</a></div></div></section>
 </main>
-
-<footer class="event-footer">
-  <div><b>CCR AFTER HOURS 2026</b><span>ONE TEAM · ONE TABLE · ONE NIGHT</span></div>
-  <div class="event-footer-links"><a href="./venue.html">Venue</a><a href="./party.html">Your Choice</a><a href="./vote.html">Food Vote</a><a href="./admin.html">Admin</a></div>
-</footer>
-<script type="module" src="./event.js"></script>
+<footer class="footer"><div><b>CCR AFTER HOURS 2026</b><span>ครัวซอย 11 · 18 DEC 2026</span></div><div><a href="./guide.html">Event Guide</a><a href="./admin.html">Organizer Admin</a></div></footer>
+<script src="./event.js"></script>
 </body></html>
