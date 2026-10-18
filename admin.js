@@ -1,4 +1,3 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.2';
 import { CONFIG } from './config.js';
 import {
   configured,
@@ -19,7 +18,7 @@ import {
 } from './decision-engine.js';
 
 const $ = id => document.getElementById(id);
-const db = configured ? createClient(CONFIG.supabaseUrl, CONFIG.publishableKey) : null;
+const AUTH_KEY = 'ccr_admin_session_v3';
 let cats = [];
 let session = null;
 let previewMode = false;
@@ -37,9 +36,65 @@ function notice(message, type = false) {
   $('notice').textContent = message;
 }
 
-async function call(op, data = {}) {
+function saveSession(s) {
+  session = s || null;
+  try {
+    if (s) sessionStorage.setItem(AUTH_KEY, JSON.stringify(s));
+    else sessionStorage.removeItem(AUTH_KEY);
+  } catch {}
+}
+
+function loadSession() {
+  try {
+    return JSON.parse(sessionStorage.getItem(AUTH_KEY) || 'null');
+  } catch {
+    return null;
+  }
+}
+
+async function authFetch(path, body, token = '') {
+  const headers = {
+    'Content-Type': 'application/json',
+    apikey: CONFIG.publishableKey
+  };
+  if (token) headers.Authorization = 'Bearer ' + token;
+  const r = await fetch(CONFIG.supabaseUrl + path, {
+    method: 'POST',
+    headers,
+    body: body ? JSON.stringify(body) : undefined
+  });
+  let data = {};
+  try {
+    data = await r.json();
+  } catch {}
+  if (!r.ok) {
+    throw Error(data.error_description || data.msg || data.error || `Auth HTTP ${r.status}`);
+  }
+  return data;
+}
+
+async function signIn(email, password) {
+  return authFetch('/auth/v1/token?grant_type=password', { email, password });
+}
+
+async function refreshSession() {
+  if (!session?.refresh_token) return null;
+  const fresh = await authFetch('/auth/v1/token?grant_type=refresh_token', {
+    refresh_token: session.refresh_token
+  });
+  saveSession(fresh);
+  return fresh;
+}
+
+async function validToken() {
   if (!session?.access_token) throw Error('กรุณาลงชื่อเข้าใช้ด้วยบัญชีผู้ดูแลระบบจริง');
-  return api(op, data, session.access_token);
+  const exp = Number(session.expires_at || 0);
+  if (exp && Date.now() / 1000 > exp - 60) await refreshSession();
+  return session.access_token;
+}
+
+async function call(op, data = {}) {
+  return api(op, data, await validToken());
 }
 
 function buildSimulatedData() {
@@ -184,18 +239,8 @@ async function init() {
       notice('ยังไม่ได้ตั้งค่า Supabase — คุณสามารถกดปุ่มเปิดดูแดชบอร์ดจำลองได้ทันที', 'info');
       return;
     }
-    const {
-      data: { session: s },
-      error
-    } = await db.auth.getSession();
-    if (error) throw error;
-    session = s;
+    session = loadSession();
     await onSession();
-    db.auth.onAuthStateChange((event, s) => {
-      if (event === 'INITIAL_SESSION') return;
-      session = s;
-      setTimeout(onSession, 0);
-    });
   } catch (e) {
     if (!previewMode) {
       notice('สามารถกดเปิดดูแดชบอร์ดจำลอง (Interactive Preview) ด้านล่างได้ทันที', 'info');
@@ -215,7 +260,7 @@ document.querySelectorAll('.admin-sidebar nav a[href^="#"]').forEach(link => {
 });
 
 async function onSession() {
-  const logged = !!session;
+  const logged = !!session?.access_token;
   if (logged) previewMode = false;
   $('authPanel').classList.toggle('hidden', logged || previewMode);
   $('dashboard').classList.toggle('hidden', !logged && !previewMode);
@@ -249,14 +294,16 @@ $('login').addEventListener('click', async () => {
   if (password.length < 8) return notice('กรุณากรอกรหัสผ่านผู้ดูแล', true);
   $('login').disabled = true;
   try {
-    const { error } = await db.auth.signInWithPassword({ email, password });
-    if (error) throw error;
+    const s = await signIn(email, password);
+    saveSession(s);
+    $('password').value = '';
     notice('ยืนยันตัวตนสำเร็จ กำลังตรวจสิทธิ์ผู้ดูแล…', 'info');
+    await onSession();
   } catch (e) {
+    saveSession(null);
     notice('เข้าสู่ระบบไม่ได้: ' + e.message, true);
   } finally {
     $('login').disabled = false;
-    $('password').value = '';
   }
 });
 
@@ -270,9 +317,11 @@ $('logout').addEventListener('click', async () => {
     await onSession();
     return;
   }
-  if (db) await db.auth.signOut();
-  session = null;
-  onSession();
+  try {
+    if (session?.access_token) await authFetch('/auth/v1/logout', null, session.access_token);
+  } catch {}
+  saveSession(null);
+  await onSession();
 });
 
 async function refresh() {
@@ -304,6 +353,9 @@ async function refresh() {
         : 'เชื่อมฐานข้อมูลกลางและโหลดผลคะแนนจริงแล้ว'
     );
   } catch (e) {
+    if (/ADMIN_UNAUTHORIZED|JWT|token|session/i.test(e.message)) {
+      saveSession(null);
+    }
     notice('ไม่สามารถเข้าถึงข้อมูลผู้ดูแล: ' + e.message, true);
     $('dashboard').classList.add('hidden');
     $('authPanel').classList.remove('hidden');
