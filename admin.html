@@ -81,7 +81,7 @@
         <div class="admin-card">
           <span class="section-kicker">02 / CAMPAIGN STATUS</span>
           <h2>ควบคุมการลงคะแนน</h2>
-          <p class="muted small">การเปิดรับคะแนนออนไลน์จริงต้องเข้าสู่ระบบด้วยบัญชีผู้ดูแลระบบก่อน</p>
+          <p class="muted small">เปิดหรือปิดรับคะแนนโหวตออนไลน์ และควบคุมสถานะของแคมเปญ</p>
           <div class="admin-btnrow">
             <button id="open" class="btn btn-dark">เปิดรับโหวต</button>
             <button id="close" class="btn btn-outline">ปิดรับโหวต</button>
@@ -92,9 +92,9 @@
         <div class="admin-card">
           <span class="section-kicker">03 / INVITATION CODES</span>
           <h2>ออกบัตรเชิญส่วนตัว</h2>
-          <p class="muted small">หนึ่งรหัส = หนึ่งผู้โหวต · รหัสเต็มแสดงตอนสร้างครั้งเดียว · ภายหลังสามารถยกเลิกรหัสได้ด้วย Invite ID</p>
+          <p class="muted small">สร้างรหัสเชิญส่วนตัว (1–200 รหัส) เพื่อแจกจ่ายให้เพื่อนร่วมทีม พร้อมดาวน์โหลด CSV ได้ทันที</p>
           <div class="admin-btnrow">
-            <label class="input-block" style="margin:0;max-width:110px"><span>จำนวนรหัส</span><input class="text-field" id="inviteCount" type="number" value="25" min="1" max="200"></label>
+            <label class="input-block" style="margin:0;max-width:110px"><span>จำนวนรหัส</span><input class="text-field" id="inviteCount" type="number" value="50" min="1" max="200"></label>
             <button id="generate" class="btn btn-dark" style="align-self:end">สร้างรหัส</button>
             <button id="downloadCodes" class="btn btn-outline" style="align-self:end" disabled>CSV ↓</button>
           </div>

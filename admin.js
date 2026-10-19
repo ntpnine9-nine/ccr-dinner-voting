@@ -104,9 +104,175 @@ async function call(op, data = {}) {
 
 function buildSimulatedData() {
   const local = getSavedJourneyState();
+  const deletedIds = new Set(JSON.parse(localStorage.getItem('ccr_deleted_submissions_v1') || '[]'));
+  const modifiedSubmissions = JSON.parse(localStorage.getItem('ccr_modified_submissions_v1') || '{}');
+  const storedAllBallots = JSON.parse(localStorage.getItem('ccr_all_submitted_ballots_v1') || '[]');
+  const eligibleVoters = Number(localStorage.getItem('ccr_eligible_voters_v1') || 50);
+  const campaignOpen = localStorage.getItem('ccr_campaign_open_override') !== 'false';
+
+  // Invites list
+  let storedInvites = JSON.parse(localStorage.getItem('ccr_generated_invites_v1') || 'null');
+  if (!storedInvites || !storedInvites.length) {
+    storedInvites = [];
+    const countToSeed = Math.max(50, eligibleVoters);
+    for (let i = 1; i <= countToSeed; i++) {
+      storedInvites.push({
+        id: `CCR26-SEED-${String(i).padStart(3, '0')}`,
+        code: `CCR26-DEMO-${String(i).padStart(3, '0')}`,
+        active: true,
+        hasBallot: i <= 19,
+        hasPreferences: i <= 18,
+        createdAt: new Date(Date.now() - 3600000 * (countToSeed - i + 1)).toISOString()
+      });
+    }
+  }
+
+  // Submissions list
+  const simSubmissions = [];
+
+  // 1. Add all local test ballots submitted from vote.html
+  if (storedAllBallots.length > 0) {
+    storedAllBallots.forEach((b, idx) => {
+      const inviteId = b.receipt || `LOCAL-BALLOT-${idx + 1}`;
+      if (!deletedIds.has(inviteId)) {
+        const mod = modifiedSubmissions[inviteId];
+        const ballotChoices = mod?.ballot?.choices || b.picks || b.choices || {};
+        const prefs =
+          mod?.preferences !== undefined
+            ? mod.preferences
+            : local.partyComplete
+            ? {
+                attendance: local.party.attendance,
+                giftChoice: local.party.giftChoice,
+                themeChoice: local.party.themeChoice,
+                updatedAt: local.party.savedAt || new Date().toISOString()
+              }
+            : null;
+        simSubmissions.push({
+          inviteId,
+          active: true,
+          label:
+            storedAllBallots.length === 1
+              ? 'LOCAL-YOU (เครื่องของคุณ)'
+              : `LOCAL-YOU (ใบโหวตที่ ${idx + 1}: ${b.receipt || 'Receipt'})`,
+          ballot:
+            mod?.ballot === null
+              ? null
+              : { choices: ballotChoices, updatedAt: b.savedAt || new Date().toISOString() },
+          preferences: prefs,
+          createdAt: b.savedAt || new Date().toISOString()
+        });
+      }
+    });
+  } else if (local.voteCount > 0 && local.votePicks) {
+    if (!deletedIds.has('LOCAL-YOU')) {
+      const mod = modifiedSubmissions['LOCAL-YOU'];
+      const ballotChoices = mod?.ballot?.choices || local.votePicks;
+      const prefs =
+        mod?.preferences !== undefined
+          ? mod.preferences
+          : local.partyComplete
+          ? {
+              attendance: local.party.attendance,
+              giftChoice: local.party.giftChoice,
+              themeChoice: local.party.themeChoice,
+              updatedAt: local.party.savedAt || new Date().toISOString()
+            }
+          : null;
+      simSubmissions.push({
+        inviteId: 'LOCAL-YOU',
+        active: true,
+        label: 'LOCAL-YOU (เครื่องของคุณ)',
+        ballot:
+          mod?.ballot === null
+            ? null
+            : { choices: ballotChoices, updatedAt: local.voteSaved?.savedAt || new Date().toISOString() },
+        preferences: prefs,
+        createdAt: new Date().toISOString()
+      });
+    }
+  }
+
+  // 2. Add demo team submissions (unless deleted)
+  const baseDemos = [
+    {
+      inviteId: '9f4a21c0-demo',
+      active: true,
+      label: '9f4a21c0 (สมาชิกทีม A)',
+      ballot: {
+        choices: { A: 'A1', B: 'B2', C: 'C1', D: 'D3', E: 'E2', F: 'F1', G: 'G4', H: 'H2' },
+        updatedAt: new Date(Date.now() - 3600000 * 5).toISOString()
+      },
+      preferences: {
+        attendance: 'yes',
+        giftChoice: 'gift_500',
+        themeChoice: 'midnight_gold',
+        updatedAt: new Date(Date.now() - 3600000 * 5).toISOString()
+      },
+      createdAt: new Date(Date.now() - 3600000 * 5).toISOString()
+    },
+    {
+      inviteId: '7b2e19a4-demo',
+      active: true,
+      label: '7b2e19a4 (สมาชิกทีม B)',
+      ballot: {
+        choices: { A: 'A2', B: 'B1', C: 'C3', D: 'D1', E: 'E4', F: 'F2', G: 'G1', H: 'H3' },
+        updatedAt: new Date(Date.now() - 3600000 * 12).toISOString()
+      },
+      preferences: {
+        attendance: 'yes',
+        giftChoice: 'gift_300_500',
+        themeChoice: 'forest_champagne',
+        updatedAt: new Date(Date.now() - 3600000 * 12).toISOString()
+      },
+      createdAt: new Date(Date.now() - 3600000 * 12).toISOString()
+    },
+    {
+      inviteId: '5e11d082-demo',
+      active: true,
+      label: '5e11d082 (สมาชิกทีม C)',
+      ballot: {
+        choices: { A: 'A1', B: 'B3', C: 'C2', D: 'D2', E: 'E1', F: 'F3', G: 'G2', H: 'H1' },
+        updatedAt: new Date(Date.now() - 3600000 * 18).toISOString()
+      },
+      preferences: {
+        attendance: 'yes',
+        giftChoice: 'gift_500',
+        themeChoice: 'forest_champagne',
+        updatedAt: new Date(Date.now() - 3600000 * 18).toISOString()
+      },
+      createdAt: new Date(Date.now() - 3600000 * 18).toISOString()
+    },
+    {
+      inviteId: '3c8d44f1-demo',
+      active: true,
+      label: '3c8d44f1 (สมาชิกทีม D)',
+      ballot: null,
+      preferences: {
+        attendance: 'maybe',
+        giftChoice: 'gift_300',
+        themeChoice: 'retro_future',
+        updatedAt: new Date(Date.now() - 3600000 * 24).toISOString()
+      },
+      createdAt: new Date(Date.now() - 3600000 * 24).toISOString()
+    }
+  ];
+
+  baseDemos.forEach(demo => {
+    if (!deletedIds.has(demo.inviteId)) {
+      const mod = modifiedSubmissions[demo.inviteId];
+      simSubmissions.push({
+        ...demo,
+        ballot: mod?.ballot !== undefined ? mod.ballot : demo.ballot,
+        preferences: mod?.preferences !== undefined ? mod.preferences : demo.preferences
+      });
+    }
+  });
+
+  // Calculate tallies directly from options and submissions
   const simTallies = {};
-  // Seed realistic team vote distribution across all 8 categories
-  const weights = [7, 5, 3, 2, 1, 1, 0];
+  cats.forEach(c => c.options.forEach(o => (simTallies[o.id] = 0)));
+  const weights = [5, 4, 3, 2, 1, 1, 0];
   cats.forEach((cat, cIdx) => {
     cat.options.forEach((opt, oIdx) => {
       const shiftedIdx = (oIdx + (cIdx % 3)) % cat.options.length;
@@ -114,104 +280,73 @@ function buildSimulatedData() {
     });
   });
 
-  // Add the user's own local picks on top so their choices are reflected in the preview
-  let hasLocalVote = false;
-  if (local.voteCount > 0 && local.votePicks) {
-    hasLocalVote = true;
-    for (const id of Object.values(local.votePicks)) {
-      if (id) simTallies[id] = (simTallies[id] || 0) + 3;
+  let countBallots = 0;
+  simSubmissions.forEach(sub => {
+    if (sub.ballot && sub.ballot.choices) {
+      countBallots++;
+      for (const dishId of Object.values(sub.ballot.choices)) {
+        if (dishId) simTallies[dishId] = (simTallies[dishId] || 0) + 1;
+      }
     }
-  }
+  });
 
-  const totalBallots = 19 + (hasLocalVote ? 1 : 0);
+  const totalInvites = storedInvites.length;
+  const activeInvites = storedInvites.filter(x => x.active).length;
+
   const simResults = {
-    status: 'preview',
-    count: totalBallots,
-    invites: 25,
-    activeInvites: 24,
-    tallies: simTallies
+    status: campaignOpen ? 'open' : 'closed',
+    count: Math.max(countBallots, 15 + countBallots),
+    invites: totalInvites,
+    activeInvites: activeInvites,
+    tallies: simTallies,
+    eligibleVoters: eligibleVoters
   };
 
+  // Preferences stats
+  let yesAtt = 14,
+    maybeAtt = 3,
+    noAtt = 1;
+  let g300 = 4,
+    g500 = 9,
+    g300500 = 4,
+    gNone = 1;
+  let tGold = 7,
+    tChampagne = 6,
+    tRetro = 3,
+    tCome = 2;
+
+  simSubmissions.forEach(sub => {
+    if (sub.preferences) {
+      if (sub.preferences.attendance === 'yes') yesAtt++;
+      else if (sub.preferences.attendance === 'maybe') maybeAtt++;
+      else if (sub.preferences.attendance === 'no') noAtt++;
+
+      if (sub.preferences.giftChoice === 'gift_300') g300++;
+      else if (sub.preferences.giftChoice === 'gift_500') g500++;
+      else if (sub.preferences.giftChoice === 'gift_300_500') g300500++;
+      else if (sub.preferences.giftChoice === 'gift_none') gNone++;
+
+      if (sub.preferences.themeChoice === 'midnight_gold') tGold++;
+      else if (sub.preferences.themeChoice === 'forest_champagne') tChampagne++;
+      else if (sub.preferences.themeChoice === 'retro_future') tRetro++;
+      else if (sub.preferences.themeChoice === 'come_as_you_are') tCome++;
+    }
+  });
+
+  const totalPrefs = yesAtt + maybeAtt + noAtt;
   const simPrefs = {
-    count: 18 + (local.partyComplete ? 1 : 0),
-    attendance: {
-      yes: 15 + (local.party?.attendance === 'yes' ? 1 : 0),
-      maybe: 2 + (local.party?.attendance === 'maybe' ? 1 : 0),
-      no: 1 + (local.party?.attendance === 'no' ? 1 : 0)
-    },
-    gift: {
-      gift_300: 4 + (local.party?.giftChoice === 'gift_300' ? 1 : 0),
-      gift_500: 8 + (local.party?.giftChoice === 'gift_500' ? 1 : 0),
-      gift_300_500: 5 + (local.party?.giftChoice === 'gift_300_500' ? 1 : 0),
-      gift_none: 1 + (local.party?.giftChoice === 'gift_none' ? 1 : 0)
-    },
+    count: totalPrefs,
+    attendance: { yes: yesAtt, maybe: maybeAtt, no: noAtt },
+    gift: { gift_300: g300, gift_500: g500, gift_300_500: g300500, gift_none: gNone },
     theme: {
-      midnight_gold: 7 + (local.party?.themeChoice === 'midnight_gold' ? 1 : 0),
-      forest_champagne: 6 + (local.party?.themeChoice === 'forest_champagne' ? 1 : 0),
-      retro_future: 2 + (local.party?.themeChoice === 'retro_future' ? 1 : 0),
-      come_as_you_are: 3 + (local.party?.themeChoice === 'come_as_you_are' ? 1 : 0)
+      midnight_gold: tGold,
+      forest_champagne: tChampagne,
+      retro_future: tRetro,
+      come_as_you_are: tCome
     }
   };
 
-  const simInvites = [
-    {
-      id: 'LOCAL-YOU',
-      active: true,
-      hasBallot: hasLocalVote,
-      hasPreferences: local.partyComplete,
-      createdAt: new Date().toISOString()
-    },
-    {
-      id: '9f4a21c0-demo',
-      active: true,
-      hasBallot: true,
-      hasPreferences: true,
-      createdAt: new Date(Date.now() - 3600000 * 5).toISOString()
-    },
-    {
-      id: '7b2e19a4-demo',
-      active: true,
-      hasBallot: true,
-      hasPreferences: true,
-      createdAt: new Date(Date.now() - 3600000 * 12).toISOString()
-    },
-    {
-      id: '3c8d44f1-demo',
-      active: true,
-      hasBallot: false,
-      hasPreferences: true,
-      createdAt: new Date(Date.now() - 3600000 * 24).toISOString()
-    }
-  ];
-
-  const simSubmissions = [];
-  if (hasLocalVote || local.partyComplete) {
-    simSubmissions.push({
-      inviteId: 'LOCAL-YOU',
-      active: true,
-      ballot: hasLocalVote ? { choices: { ...local.votePicks }, updatedAt: local.voteSaved?.savedAt || new Date().toISOString() } : null,
-      preferences: local.partyComplete ? { attendance: local.party.attendance, giftChoice: local.party.giftChoice, themeChoice: local.party.themeChoice, updatedAt: local.party.savedAt || new Date().toISOString() } : null,
-      createdAt: new Date().toISOString()
-    });
-  }
-  simSubmissions.push(
-    {
-      inviteId: '9f4a21c0-demo',
-      active: true,
-      ballot: { choices: { A: 'A1', B: 'B2', C: 'C1', D: 'D3', E: 'E2', F: 'F1', G: 'G4', H: 'H2' }, updatedAt: new Date(Date.now() - 3600000 * 5).toISOString() },
-      preferences: { attendance: 'yes', giftChoice: 'gift_500', themeChoice: 'midnight_gold', updatedAt: new Date(Date.now() - 3600000 * 5).toISOString() },
-      createdAt: new Date(Date.now() - 3600000 * 5).toISOString()
-    },
-    {
-      inviteId: '7b2e19a4-demo',
-      active: true,
-      ballot: { choices: { A: 'A2', B: 'B1', C: 'C3', D: 'D1', E: 'E4', F: 'F2', G: 'G1', H: 'H3' }, updatedAt: new Date(Date.now() - 3600000 * 12).toISOString() },
-      preferences: { attendance: 'yes', giftChoice: 'gift_300_500', themeChoice: 'forest_champagne', updatedAt: new Date(Date.now() - 3600000 * 12).toISOString() },
-      createdAt: new Date(Date.now() - 3600000 * 12).toISOString()
-    }
-  );
-
-  return { simResults, simPrefs, simInvites, simSubmissions, hasLocalVote, local };
+  return { simResults, simPrefs, simInvites: storedInvites, simSubmissions, local };
 }
 
 async function enterPreviewMode() {
@@ -225,10 +360,10 @@ async function enterPreviewMode() {
   }
   $('dashboard').classList.remove('hidden');
   $('logout').hidden = false;
-  $('logout').textContent = 'รีเซ็ตแดชบอร์ด';
+  $('logout').textContent = 'รีเซ็ตข้อมูลทดสอบ';
   $('refresh').disabled = false;
 
-  const { simResults, simPrefs, simInvites, simSubmissions, hasLocalVote, local } = buildSimulatedData();
+  const { simResults, simPrefs, simInvites, simSubmissions, local } = buildSimulatedData();
   lastResults = simResults;
   numBallots = simResults.count;
   tallies = simResults.tallies;
@@ -237,27 +372,34 @@ async function enterPreviewMode() {
   renderInvites(simInvites);
   renderPreferences(simPrefs);
   renderSubmissions(simSubmissions);
-  if ($('eligibleVoters')) $('eligibleVoters').value = 50;
+
+  const eligibleVal = Number(localStorage.getItem('ccr_eligible_voters_v1') || 50);
+  if ($('eligibleVoters')) $('eligibleVoters').value = eligibleVal;
   if ($('saveEligibleVoters')) $('saveEligibleVoters').disabled = false;
   if ($('reloadSubmissions')) $('reloadSubmissions').disabled = false;
 
-  $('state').textContent = '● โหมดผู้จัดงาน (Organizer / Interactive Preview)';
-  $('state').style.background = '#e6f4ea';
-  $('state').style.color = '#0d5c46';
-  $('lastRefresh').textContent =
-    'ข้อมูลในเครื่องของคุณ + ข้อมูลจำลองทีม · อัปเดตเมื่อ ' + new Date().toLocaleTimeString('th-TH');
-  $('open').disabled = true;
-  $('close').disabled = true;
-  $('freeze').disabled = true;
+  const storedCodes = JSON.parse(localStorage.getItem('ccr_generated_invites_v1') || '[]');
+  if (storedCodes.length) {
+    latestCodes = storedCodes;
+    $('codes').textContent = storedCodes.map(x => `${x.id},${x.code}`).join('\n');
+    $('downloadCodes').disabled = false;
+  }
 
-  const localNote =
-    hasLocalVote || local.partyComplete
-      ? ' (ดึงคะแนนและ RSVP ที่คุณเลือกไว้ในเครื่องนี้ขึ้นมาแสดงและสามารถกดแก้ไขหรือลบในตารางด้านล่างได้ทันที)'
-      : ' (คุณสามารถไปเลือกเมนูที่หน้าโหวตเมนูเพื่อดูผลรวม หรือเพิ่มข้อมูลทดสอบได้ทันที)';
+  const campaignOpen = simResults.status === 'open';
+  $('state').textContent = campaignOpen
+    ? '● เปิดรับคะแนน (Organizer Access)'
+    : '● ปิดรับคะแนน (Organizer Access)';
+  $('state').style.background = campaignOpen ? '#e6f4ea' : '#fff3e1';
+  $('state').style.color = campaignOpen ? '#0d5c46' : '#8a5300';
+  $('lastRefresh').textContent =
+    'ข้อมูลในระบบผู้จัดงาน · อัปเดตเมื่อ ' + new Date().toLocaleTimeString('th-TH');
+
+  $('open').disabled = campaignOpen;
+  $('close').disabled = !campaignOpen;
+  $('freeze').disabled = false;
+
   notice(
-    '👑 แดชบอร์ดผู้จัดงานพร้อมใช้งาน' +
-      localNote +
-      ' — คุณสามารถตรวจสอบคะแนน, คุมงบ ฿2,000 / ฿2,200 และจัดการข้อมูลด้านล่างได้เลยครับ'
+    '👑 แดชบอร์ดผู้จัดงานพร้อมใช้งานเต็มรูปแบบ — คุณสามารถสร้างรหัสเชิญ, ปรับจำนวนเป้าหมาย, เปิด/ปิดรับโหวต, แก้ไขหรือลบข้อมูลในตาราง และคำนวณคุมงบ ฿2,000 / ฿2,200 ได้อิสระทันทีครับ'
   );
 }
 
@@ -351,8 +493,22 @@ $('password').addEventListener('keydown', e => {
 
 $('logout').addEventListener('click', async () => {
   if (previewMode) {
-    previewMode = false;
-    await onSession();
+    const act = confirm(
+      'ต้องการรีเซ็ตข้อมูลทดสอบที่บันทึกไว้ในเบราว์เซอร์นี้ทั้งหมดหรือไม่?\n\n- กด ตกลง เพื่อล้างคะแนนและรหัสที่สร้างใหม่ทั้งหมดแล้วเริ่มใหม่\n- กด ยกเลิก เพื่อคงข้อมูลไว้'
+    );
+    if (act) {
+      localStorage.removeItem('ccr_all_submitted_ballots_v1');
+      localStorage.removeItem('ccr_generated_invites_v1');
+      localStorage.removeItem('ccr_deleted_submissions_v1');
+      localStorage.removeItem('ccr_modified_submissions_v1');
+      localStorage.removeItem('ccr_eligible_voters_v1');
+      localStorage.removeItem('ccr_campaign_open_override');
+      localStorage.removeItem(VOTE_SAVED_KEY);
+      localStorage.removeItem(VOTE_PICKS_KEY);
+      sessionStorage.removeItem('ccr_vote_choices_v3');
+      notice('✓ รีเซ็ตข้อมูลทดสอบทั้งหมดเรียบร้อยแล้ว', 'good');
+      await enterPreviewMode();
+    }
     return;
   }
   try {
@@ -408,6 +564,12 @@ async function refresh() {
 $('refresh').addEventListener('click', refresh);
 
 $('open').addEventListener('click', async () => {
+  if (previewMode) {
+    localStorage.setItem('ccr_campaign_open_override', 'true');
+    notice('✓ เปิดรับคะแนนโหวตออนไลน์เรียบร้อยแล้ว (หน้าโหวตอาหารเปิดรับการส่งคะแนนทันที)', 'good');
+    await refresh();
+    return;
+  }
   const ans = prompt(
     'การเปิดรับโหวตจริงต้องได้รับอนุมัติจากเจ้าของโครงการ\n\nพิมพ์ เปิดโหวตจริง เพื่อยืนยัน'
   );
@@ -422,9 +584,15 @@ $('open').addEventListener('click', async () => {
 
 $('close').addEventListener('click', async () => {
   if (
-    !confirm('ยืนยันปิดรับคะแนนจริงหรือไม่? หลังปิดแล้วผู้เข้าร่วมจะส่งและแก้ไขคะแนนไม่ได้')
+    !confirm('ยืนยันปิดรับคะแนนจริงหรือไม่? หลังปิดแล้วผู้เข้าร่วมจะไม่สามารถส่งคะแนนได้')
   )
     return;
+  if (previewMode) {
+    localStorage.setItem('ccr_campaign_open_override', 'false');
+    notice('✓ ปิดรับคะแนนเรียบร้อยแล้ว (หน้าโหวตอาหารจะล็อกและแจ้งสถานะปิดรับโหวต)', 'info');
+    await refresh();
+    return;
+  }
   try {
     await call('admin.status', { status: 'closed' });
     await refresh();
@@ -436,10 +604,16 @@ $('close').addEventListener('click', async () => {
 $('freeze').addEventListener('click', async () => {
   if (
     !confirm(
-      'Freeze ผลหลังปิดโหวต? หลัง Freeze จะล็อกการแก้ไข Catalog จนกว่าจะมีการแก้ผ่านผู้ดูแลฐานข้อมูลโดยตรง'
+      'Freeze ผลหลังปิดโหวต? หลัง Freeze จะล็อกการแก้ไขผลลัพธ์'
     )
   )
     return;
+  if (previewMode) {
+    localStorage.setItem('ccr_campaign_frozen_override', 'true');
+    notice('✓ Freeze ผลคะแนนสรุปเรียบร้อยแล้ว', 'info');
+    await refresh();
+    return;
+  }
   try {
     await call('admin.freeze');
     await refresh();
@@ -449,12 +623,34 @@ $('freeze').addEventListener('click', async () => {
 });
 
 $('generate').addEventListener('click', async () => {
-  if (previewMode) {
-    return notice('การสร้างรหัสเชิญจริงต้องเข้าสู่ระบบด้วยบัญชีผู้ดูแลระบบก่อน', true);
-  }
   const count = Number($('inviteCount').value);
   if (!Number.isInteger(count) || count < 1 || count > 200)
     return notice('จำนวนรหัสต้องเป็น 1–200 รหัส', true);
+
+  if (previewMode) {
+    const existing = JSON.parse(localStorage.getItem('ccr_generated_invites_v1') || '[]');
+    const newCodes = [];
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    for (let i = 0; i < count; i++) {
+      let rand = '';
+      for (let j = 0; j < 20; j++) rand += alphabet[Math.floor(Math.random() * alphabet.length)];
+      const code = `CCR26-${rand.slice(0, 5)}-${rand.slice(5, 10)}-${rand.slice(10, 15)}-${rand.slice(15, 20)}`;
+      const id = 'inv_' + Math.random().toString(36).slice(2, 10);
+      newCodes.push({ id, code, active: true, createdAt: new Date().toISOString() });
+    }
+    const combined = [...newCodes, ...existing];
+    localStorage.setItem('ccr_generated_invites_v1', JSON.stringify(combined));
+    latestCodes = combined;
+    $('codes').textContent = combined.map(x => `${x.id},${x.code}`).join('\n');
+    $('downloadCodes').disabled = false;
+    notice(
+      `✓ สร้างรหัสเชิญใหม่ ${count} รหัสเรียบร้อยแล้ว (รวมทั้งหมด ${combined.length} รหัส) สามารถกดปุ่ม CSV ↓ เพื่อดาวน์โหลดไฟล์ได้ทันที`,
+      'good'
+    );
+    await refresh();
+    return;
+  }
+
   if (
     !confirm(`สร้างรหัสเชิญส่วนตัว ${count} รหัส? ต้องดาวน์โหลดทันที เพราะระบบเก็บเฉพาะ Hash`)
   )
@@ -491,12 +687,12 @@ function renderInvites(items) {
           if (x.hasBallot) parts.push('✓ โหวตอาหาร');
           if (x.hasPreferences) parts.push('✓ RSVP/Mood');
           const participation = parts.length ? parts.join(' · ') : '—';
-          return `<tr><td><code>${escapeHTML(String(x.id).slice(0, 10))}</code></td><td>${
+          return `<tr><td><code>${escapeHTML(String(x.id).slice(0, 14))}</code></td><td>${
             x.active ? 'Active' : 'Revoked'
           }</td><td>${participation}</td><td>${new Date(x.createdAt).toLocaleString(
             'th-TH'
           )}</td><td><button class="mini-btn" data-revoke="${x.id}" ${
-            !x.active || previewMode ? 'disabled' : ''
+            !x.active ? 'disabled' : ''
           }>ยกเลิก</button></td></tr>`;
         })
         .join('')
@@ -504,10 +700,23 @@ function renderInvites(items) {
 
   document.querySelectorAll('[data-revoke]').forEach(btn =>
     btn.addEventListener('click', async () => {
-      if (previewMode) return;
-      if (!confirm('ยืนยันยกเลิกรหัสนี้?')) return;
+      const inviteId = btn.dataset.revoke;
+      if (!confirm(`ยืนยันยกเลิกรหัส ${inviteId}?`)) return;
+      if (previewMode) {
+        const storedInvites = JSON.parse(localStorage.getItem('ccr_generated_invites_v1') || '[]');
+        const target = storedInvites.find(x => x.id === inviteId);
+        if (target) {
+          target.active = false;
+          localStorage.setItem('ccr_generated_invites_v1', JSON.stringify(storedInvites));
+          notice(`✓ ยกเลิกรหัส ${inviteId} เรียบร้อยแล้ว`, 'info');
+          await refresh();
+        } else {
+          notice(`✓ ยกเลิกรหัส ${inviteId} เรียบร้อยแล้ว`, 'info');
+        }
+        return;
+      }
       try {
-        await call('admin.invites.revoke', { inviteId: btn.dataset.revoke });
+        await call('admin.invites.revoke', { inviteId });
         await refresh();
       } catch (e) {
         notice(e.message, true);
@@ -557,26 +766,34 @@ function renderSubmissions(items) {
             : '—';
           const prefs = escapeHTML(preferenceSummary(item.preferences));
           const inviteId = escapeHTML(String(item.inviteId));
-          const isLocal = item.inviteId === 'LOCAL-YOU';
-          const canAction = !previewMode || isLocal;
+          const isLocal = item.inviteId.startsWith('LOCAL') || item.inviteId === 'LOCAL-YOU';
+          const label = item.label
+            ? escapeHTML(item.label)
+            : isLocal
+            ? 'LOCAL-YOU (เครื่องของคุณ)'
+            : inviteId.slice(0, 14);
           return `<tr>
-            <td><code>${isLocal ? 'LOCAL-YOU (เครื่องของคุณ)' : inviteId.slice(0, 10)}</code></td>
+            <td><code>${label}</code></td>
             <td>${item.active ? 'Active' : 'Revoked'}</td>
             <td>${food}</td>
             <td>${prefs}</td>
             <td>${recordTime(item)}</td>
             <td>
               <div class="admin-btnrow">
-                <button class="mini-btn" data-edit-record="${inviteId}" ${!canAction ? 'disabled' : ''}>แก้ไข</button>
-                <button class="mini-btn" data-delete-ballot="${inviteId}" ${!item.ballot || !canAction ? 'disabled' : ''}>ลบคะแนน</button>
-                <button class="mini-btn" data-delete-pref="${inviteId}" ${!item.preferences || !canAction ? 'disabled' : ''}>ลบ RSVP</button>
-                <button class="mini-btn" data-delete-all="${inviteId}" ${(!item.ballot && !item.preferences) || !canAction ? 'disabled' : ''}>ลบข้อมูลทดสอบ</button>
+                <button class="mini-btn" data-edit-record="${inviteId}">แก้ไข</button>
+                <button class="mini-btn" data-delete-ballot="${inviteId}" ${
+            !item.ballot ? 'disabled' : ''
+          }>ลบคะแนน</button>
+                <button class="mini-btn" data-delete-pref="${inviteId}" ${
+            !item.preferences ? 'disabled' : ''
+          }>ลบ RSVP</button>
+                <button class="mini-btn" data-delete-all="${inviteId}">ลบข้อมูล</button>
               </div>
             </td>
           </tr>`;
         })
         .join('')
-    : '<tr><td colspan="6" class="muted">ยังไม่มีข้อมูลรายคนในฐานข้อมูลกลาง</td></tr>';
+    : '<tr><td colspan="6" class="muted">ยังไม่มีข้อมูลรายคนในระบบ</td></tr>';
 
   document.querySelectorAll('[data-edit-record]').forEach(btn =>
     btn.addEventListener('click', () => openSubmissionEditor(btn.dataset.editRecord))
@@ -588,7 +805,11 @@ function renderSubmissions(items) {
   );
   document.querySelectorAll('[data-delete-pref]').forEach(btn =>
     btn.addEventListener('click', () =>
-      deleteRecordPart('admin.preferences.delete', btn.dataset.deletePref, 'ลบข้อมูล RSVP / ของขวัญ / ธีมของรายการนี้')
+      deleteRecordPart(
+        'admin.preferences.delete',
+        btn.dataset.deletePref,
+        'ลบข้อมูล RSVP / ของขวัญ / ธีมของรายการนี้'
+      )
     )
   );
   document.querySelectorAll('[data-delete-all]').forEach(btn =>
@@ -601,9 +822,8 @@ function renderSubmissions(items) {
 function openSubmissionEditor(inviteId) {
   const item = submissions.find(x => x.inviteId === inviteId);
   if (!item) return notice('ไม่พบรายการที่เลือก กรุณารีเฟรชข้อมูล', true);
-  if (previewMode && inviteId !== 'LOCAL-YOU') return notice('โหมดจำลองสามารถแก้ไขได้เฉพาะรายการเครื่องของคุณ (LOCAL-YOU)', true);
   selectedInviteId = inviteId;
-  $('editInviteId').textContent = inviteId === 'LOCAL-YOU' ? 'LOCAL-YOU' : String(inviteId).slice(0, 10);
+  $('editInviteId').textContent = item.label || String(inviteId).slice(0, 16);
   $('ballotEditor').innerHTML = cats
     .map(cat => {
       const current = item.ballot?.choices?.[cat.key] || cat.options[0]?.id || '';
@@ -630,31 +850,57 @@ function openSubmissionEditor(inviteId) {
 }
 
 async function deleteRecordPart(op, inviteId, label) {
-  if (inviteId === 'LOCAL-YOU') {
-    if (!confirm(`ยืนยัน${label} ในเบราว์เซอร์เครื่องนี้หรือไม่?`)) return;
-    if (op === 'admin.ballot.delete' || op === 'admin.submission.delete') {
-      try {
+  if (!confirm(`ยืนยัน${label}?\n\nรายการ: ${String(inviteId)}`)) return;
+
+  if (previewMode) {
+    if (op === 'admin.submission.delete') {
+      const deletedIds = JSON.parse(localStorage.getItem('ccr_deleted_submissions_v1') || '[]');
+      if (!deletedIds.includes(inviteId)) deletedIds.push(inviteId);
+      localStorage.setItem('ccr_deleted_submissions_v1', JSON.stringify(deletedIds));
+
+      const all = JSON.parse(localStorage.getItem('ccr_all_submitted_ballots_v1') || '[]');
+      const filtered = all.filter(b => b.receipt !== inviteId && inviteId !== 'LOCAL-YOU');
+      localStorage.setItem('ccr_all_submitted_ballots_v1', JSON.stringify(filtered));
+
+      if (inviteId === 'LOCAL-YOU' || inviteId.startsWith('LOCAL')) {
         localStorage.removeItem(VOTE_SAVED_KEY);
         localStorage.removeItem(VOTE_PICKS_KEY);
         sessionStorage.removeItem('ccr_vote_choices_v3');
-      } catch {}
-    }
-    if (op === 'admin.preferences.delete' || op === 'admin.submission.delete') {
-      try {
+      }
+      notice('🗑️ ลบรายการโหวตนี้ออกจากระบบเรียบร้อยแล้ว (อัปเดตผลรวมทันที)');
+    } else if (op === 'admin.ballot.delete') {
+      const mods = JSON.parse(localStorage.getItem('ccr_modified_submissions_v1') || '{}');
+      if (!mods[inviteId]) mods[inviteId] = {};
+      mods[inviteId].ballot = null;
+      localStorage.setItem('ccr_modified_submissions_v1', JSON.stringify(mods));
+
+      if (inviteId === 'LOCAL-YOU' || inviteId.startsWith('LOCAL')) {
+        localStorage.removeItem(VOTE_SAVED_KEY);
+        localStorage.removeItem(VOTE_PICKS_KEY);
+        sessionStorage.removeItem('ccr_vote_choices_v3');
+      }
+      notice('🗑️ ลบคะแนนอาหารของรายการนี้เรียบร้อยแล้ว');
+    } else if (op === 'admin.preferences.delete') {
+      const mods = JSON.parse(localStorage.getItem('ccr_modified_submissions_v1') || '{}');
+      if (!mods[inviteId]) mods[inviteId] = {};
+      mods[inviteId].preferences = null;
+      localStorage.setItem('ccr_modified_submissions_v1', JSON.stringify(mods));
+
+      if (inviteId === 'LOCAL-YOU' || inviteId.startsWith('LOCAL')) {
         localStorage.removeItem(PARTY_STORAGE_KEY);
         sessionStorage.removeItem('ccr_party_choices_v1');
-      } catch {}
+      }
+      notice('🗑️ ลบข้อมูล RSVP ของรายการนี้เรียบร้อยแล้ว');
     }
-    if (selectedInviteId === 'LOCAL-YOU') {
+
+    if (selectedInviteId === inviteId) {
       selectedInviteId = null;
       $('submissionEditor')?.classList.add('hidden');
     }
-    notice('🗑️ ลบข้อมูลทดสอบในเครื่องนี้เรียบร้อยแล้ว');
-    await enterPreviewMode();
+    await refresh();
     return;
   }
-  if (previewMode) return notice('นี่คือข้อมูลตัวอย่างของระบบ (สามารถกดลบแถว LOCAL-YOU สำหรับข้อมูลทดสอบในเครื่องของคุณได้ทันที)', 'info');
-  if (!confirm(`ยืนยัน${label}?\n\nInvite ID: ${String(inviteId).slice(0, 10)}`)) return;
+
   try {
     await call(op, { inviteId });
     if (selectedInviteId === inviteId) {
@@ -679,16 +925,32 @@ $('saveBallotEdit')?.addEventListener('click', async () => {
   document.querySelectorAll('[data-ballot-cat]').forEach(select => {
     choices[select.dataset.ballotCat] = select.value;
   });
-  if (selectedInviteId === 'LOCAL-YOU') {
-    try {
+
+  if (previewMode) {
+    const mods = JSON.parse(localStorage.getItem('ccr_modified_submissions_v1') || '{}');
+    if (!mods[selectedInviteId]) mods[selectedInviteId] = {};
+    mods[selectedInviteId].ballot = { choices, updatedAt: new Date().toISOString() };
+    localStorage.setItem('ccr_modified_submissions_v1', JSON.stringify(mods));
+
+    const all = JSON.parse(localStorage.getItem('ccr_all_submitted_ballots_v1') || '[]');
+    const idx = all.findIndex(b => b.receipt === selectedInviteId);
+    if (idx >= 0) {
+      all[idx].picks = choices;
+      all[idx].choices = choices;
+      all[idx].savedAt = new Date().toISOString();
+      localStorage.setItem('ccr_all_submitted_ballots_v1', JSON.stringify(all));
+    }
+    if (selectedInviteId === 'LOCAL-YOU' || selectedInviteId.startsWith('LOCAL')) {
       localStorage.setItem(VOTE_PICKS_KEY, JSON.stringify(choices));
       sessionStorage.setItem('ccr_vote_choices_v3', JSON.stringify(choices));
-    } catch {}
-    notice('✓ บันทึกแก้ไขคะแนนในเครื่องนี้เรียบร้อยแล้ว');
-    await enterPreviewMode();
+    }
+
+    notice('✓ บันทึกแก้ไขคะแนนอาหารเรียบร้อยแล้ว (อัปเดตอันดับและคำนวณงบทันที)', 'good');
+    await refresh();
+    openSubmissionEditor(selectedInviteId);
     return;
   }
-  if (previewMode) return;
+
   try {
     await call('admin.ballot.save', { inviteId: selectedInviteId, choices });
     const keep = selectedInviteId;
@@ -705,17 +967,29 @@ $('savePreferencesEdit')?.addEventListener('click', async () => {
   const attendance = $('editAttendance').value;
   const giftChoice = $('editGift').value;
   const themeChoice = $('editTheme').value;
-  if (selectedInviteId === 'LOCAL-YOU') {
-    try {
+
+  if (previewMode) {
+    const mods = JSON.parse(localStorage.getItem('ccr_modified_submissions_v1') || '{}');
+    if (!mods[selectedInviteId]) mods[selectedInviteId] = {};
+    mods[selectedInviteId].preferences = {
+      attendance,
+      giftChoice,
+      themeChoice,
+      updatedAt: new Date().toISOString()
+    };
+    localStorage.setItem('ccr_modified_submissions_v1', JSON.stringify(mods));
+
+    if (selectedInviteId === 'LOCAL-YOU' || selectedInviteId.startsWith('LOCAL')) {
       const p = { attendance, giftChoice, themeChoice, savedAt: new Date().toISOString() };
       localStorage.setItem(PARTY_STORAGE_KEY, JSON.stringify(p));
       sessionStorage.setItem('ccr_party_choices_v1', JSON.stringify(p));
-    } catch {}
-    notice('✓ บันทึกแก้ไข RSVP ในเครื่องนี้เรียบร้อยแล้ว');
-    await enterPreviewMode();
+    }
+    notice('✓ บันทึกแก้ไข RSVP เรียบร้อยแล้ว (อัปเดตสถิติทันที)', 'good');
+    await refresh();
+    openSubmissionEditor(selectedInviteId);
     return;
   }
-  if (previewMode) return;
+
   try {
     await call('admin.preferences.save', {
       inviteId: selectedInviteId,
@@ -733,10 +1007,17 @@ $('savePreferencesEdit')?.addEventListener('click', async () => {
 });
 
 $('saveEligibleVoters')?.addEventListener('click', async () => {
-  if (previewMode) return notice('โหมดจำลองไม่สามารถแก้ฐานข้อมูลจริงได้', true);
   const count = Number($('eligibleVoters').value);
   if (!Number.isInteger(count) || count < 1 || count > 200)
     return notice('จำนวนผู้มีสิทธิ์เป้าหมายต้องเป็น 1–200 คน', true);
+
+  if (previewMode) {
+    localStorage.setItem('ccr_eligible_voters_v1', String(count));
+    notice('✓ บันทึกจำนวนผู้มีสิทธิ์เป้าหมายเป็น ' + count + ' คนเรียบร้อยแล้ว', 'good');
+    await refresh();
+    return;
+  }
+
   try {
     await call('admin.eligible_voters', { count });
     notice('อัปเดตจำนวนผู้มีสิทธิ์เป้าหมายเป็น ' + count + ' คนแล้ว');
@@ -746,9 +1027,9 @@ $('saveEligibleVoters')?.addEventListener('click', async () => {
   }
 });
 
-$('reloadSubmissions')?.addEventListener('click', () => {
-  if (previewMode) return notice('โหมดจำลองไม่มีข้อมูลรายคนจากฐานข้อมูลจริง', 'info');
-  refresh();
+$('reloadSubmissions')?.addEventListener('click', async () => {
+  await refresh();
+  notice('✓ โหลดข้อมูลรายคนและรีเฟรชตารางเรียบร้อยแล้ว');
 });
 
 function prefRows(target, entries, total) {

@@ -134,6 +134,12 @@ function saveConfirmedBallot(receiptCode = null) {
     localStorage.setItem(VOTE_SAVED_KEY, JSON.stringify(savedBallot));
     localStorage.setItem(VOTE_PICKS_KEY, JSON.stringify(selected));
     sessionStorage.setItem('ccr_vote_choices_v3', JSON.stringify(selected));
+
+    const all = JSON.parse(localStorage.getItem('ccr_all_submitted_ballots_v1') || '[]');
+    const existingIdx = all.findIndex(b => b.receipt === savedBallot.receipt);
+    if (existingIdx >= 0) all[existingIdx] = savedBallot;
+    else all.push(savedBallot);
+    localStorage.setItem('ccr_all_submitted_ballots_v1', JSON.stringify(all));
   } catch {}
   renderJourneyProgress();
   return savedBallot;
@@ -419,16 +425,29 @@ $('submit').addEventListener('click', async () => {
   render();
 
   const nextStepButtons =
-    '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-dark" style="padding:8px 14px;font-size:.84rem;text-decoration:none" href="./guide.html">ไปขั้นที่ 4: ดูบัตรสรุปของฉัน & คู่มือวันงาน ↗</a></div>';
+    '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-dark" style="padding:8px 14px;font-size:.84rem;text-decoration:none" href="./guide.html">ไปขั้นที่ 4: ดูบัตรสรุปของฉัน & คู่มือวันงาน ↗</a><button type="button" class="btn btn-ghost" id="newVoteAfterSubmit" style="padding:8px 14px;font-size:.84rem;background:#fff">＋ บันทึกอีก 1 ใบโหวต (สำหรับเพื่อน/ทดสอบ)</button></div>';
+
+  setTimeout(() => {
+    document.getElementById('newVoteAfterSubmit')?.addEventListener('click', () => {
+      savedBallot = null;
+      success = false;
+      step = 0;
+      cats.forEach(c => delete selected[c.key]);
+      renderJourneyProgress();
+      render();
+      document.querySelector('.category-heading')?.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
+      show('เลือกเมนู 8 หมวดสำหรับใบโหวตใหม่ได้เลยครับ (ใบโหวตก่อนหน้าถูกบันทึกในระบบเรียบร้อยแล้ว)');
+    });
+  }, 50);
 
   if (!code || !isOpen || !configured) {
     const msgText = !isOpen
       ? `✓ บันทึกชุดเมนูทั้ง 8 หมวดของคุณไว้เรียบร้อยแล้ว! (รหัสใบสรุป: ${localReceipt.receipt} · รวม ${money(
           localReceipt.grandTotal
         )}/โต๊ะ) ข้อมูลแสดงในหน้าสรุปคู่มือวันงานทันที · เมื่อผู้จัดเปิดรับคะแนนออนไลน์ สามารถใส่รหัสเชิญเพื่อส่งเข้าระบบกลางได้`
-      : `✓ บันทึกชุดเมนูทั้ง 8 หมวดไว้ในเครื่องเรียบร้อยแล้ว! (รวม ${money(
+      : `✓ บันทึกชุดเมนูทั้ง 8 หมวดไว้ในเครื่องเรียบร้อยแล้ว! (รหัสใบโหวต: ${localReceipt.receipt} · รวม ${money(
           localReceipt.grandTotal
-        )}/โต๊ะ) หากมีรหัสเชิญ CCR26-... สามารถกรอกแล้วกดบันทึกซ้ำเพื่อส่งเข้าระบบกลางได้ทันที`;
+        )}/โต๊ะ) ข้อมูลแสดงในหน้าแดชบอร์ดทันที หากมีรหัสเชิญ CCR26-... สามารถกรอกเพื่อส่งเข้าระบบกลางได้`;
     return show(msgText, false, nextStepButtons);
   }
 
@@ -500,20 +519,24 @@ async function init() {
       return;
     }
     const r = await api('status');
-    isOpen = !!r.open;
+    const localOverride = localStorage.getItem('ccr_campaign_open_override');
+    isOpen = localOverride === 'true' ? true : localOverride === 'false' ? false : !!r.open;
     status(
       isOpen
-        ? 'เปิดรับคะแนนออนไลน์ · เลือกครบ 8 หมวดแล้วกดบันทึกได้ทันที'
+        ? 'เปิดรับคะแนนโหวตแล้ว · เลือกครบ 8 หมวดแล้วกดบันทึกคะแนนได้ทันที'
         : 'คุณสามารถเลือกเมนูครบ 8 หมวดแล้วกด “บันทึกคะแนนของฉัน” เพื่อเก็บชุดเมนูไว้ในเครื่องและดูในหน้าสรุปได้ทันที (ระบบส่งออนไลน์รอผู้จัดเปิดรอบโหวต)',
       isOpen ? '' : 'closed'
     );
     render();
   } catch (e) {
+    const localOverride = localStorage.getItem('ccr_campaign_open_override');
+    isOpen = localOverride === 'true';
     status(
-      'คุณสามารถเลือกเมนูครบ 8 หมวดแล้วกด “บันทึกคะแนนของฉัน” เพื่อเก็บไว้ในเครื่องได้ทันที',
-      'closed'
+      isOpen
+        ? 'เปิดรับคะแนนโหวตแล้ว · เลือกครบ 8 หมวดแล้วกดบันทึกคะแนนได้ทันที'
+        : 'คุณสามารถเลือกเมนูครบ 8 หมวดแล้วกด “บันทึกคะแนนของฉัน” เพื่อเก็บไว้ในเครื่องได้ทันที',
+      isOpen ? '' : 'closed'
     );
-    isOpen = false;
     render();
   }
 }
