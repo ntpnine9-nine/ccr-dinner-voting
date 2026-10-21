@@ -47,6 +47,10 @@
     </div>
 
     <div id="notice" class="notice info" role="status" aria-live="polite">กำลังตรวจการตั้งค่าและสิทธิ์ของระบบ…</div>
+    <div id="previewBanner" class="admin-preview-banner hidden" role="alert">
+      <span style="font-size:18px">⚠️</span>
+      <span>โหมดตัวอย่าง — ข้อมูลไม่ถูกบันทึกขึ้นระบบกลาง เข้าสู่ระบบผู้ดูแลระบบด้านล่างเพื่อจัดการข้อมูลจริงบน Supabase</span>
+    </div>
 
     <section id="authPanel" class="admin-card login-wrapper">
       <span class="section-kicker">SECURE ADMIN LOGIN</span>
@@ -97,6 +101,7 @@
             <label class="input-block" style="margin:0;max-width:110px"><span>จำนวนรหัส</span><input class="text-field" id="inviteCount" type="number" value="50" min="1" max="200"></label>
             <button id="generate" class="btn btn-dark" style="align-self:end">สร้างรหัส</button>
             <button id="downloadCodes" class="btn btn-outline" style="align-self:end" disabled>CSV ↓</button>
+            <button id="copyAllCodes" class="btn btn-outline" style="align-self:end" disabled>คัดลอกทุกลิงก์</button>
           </div>
           <pre id="codes" class="code-output" aria-label="รหัสเชิญที่สร้าง" style="margin-top:14px">ยังไม่มีรหัสที่สร้างในเซสชันนี้</pre>
         </div>

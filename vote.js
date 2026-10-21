@@ -86,7 +86,7 @@ try {
     selected = merged;
   }
   const savedRaw = JSON.parse(localStorage.getItem(VOTE_SAVED_KEY) || 'null');
-  if (savedRaw && savedRaw.savedAt) {
+  if (savedRaw) {
     savedBallot = savedRaw;
     if (savedRaw.picks && Object.keys(selected).length === 0) {
       selected = { ...savedRaw.picks };
@@ -102,7 +102,7 @@ function saveDraft() {
   renderJourneyProgress();
 }
 
-function saveConfirmedBallot(receiptCode = null) {
+function saveLocalDraft() {
   const rows = cats
     .filter(cat => selected[cat.key])
     .map(cat => {
@@ -127,19 +127,53 @@ function saveConfirmedBallot(receiptCode = null) {
     items: rows,
     foodTotal: food,
     grandTotal: total,
-    receipt: receiptCode || (savedBallot && savedBallot.receipt) || 'LOCAL-' + Date.now().toString(36).toUpperCase(),
-    savedAt: new Date().toISOString()
+    receipt: null,
+    cloudConfirmed: false,
+    savedAt: null,
+    draftSavedAt: new Date().toISOString()
   };
   try {
     localStorage.setItem(VOTE_SAVED_KEY, JSON.stringify(savedBallot));
     localStorage.setItem(VOTE_PICKS_KEY, JSON.stringify(selected));
     sessionStorage.setItem('ccr_vote_choices_v3', JSON.stringify(selected));
+  } catch {}
+  renderJourneyProgress();
+  return savedBallot;
+}
 
-    const all = JSON.parse(localStorage.getItem('ccr_all_submitted_ballots_v1') || '[]');
-    const existingIdx = all.findIndex(b => b.receipt === savedBallot.receipt);
-    if (existingIdx >= 0) all[existingIdx] = savedBallot;
-    else all.push(savedBallot);
-    localStorage.setItem('ccr_all_submitted_ballots_v1', JSON.stringify(all));
+function saveConfirmedBallot(receiptCode, savedAt) {
+  const rows = cats
+    .filter(cat => selected[cat.key])
+    .map(cat => {
+      const opt = cat.options.find(o => o.id === selected[cat.key]);
+      return opt
+        ? {
+            key: cat.key,
+            categoryLabel: cat.label,
+            id: opt.id,
+            name: opt.name,
+            qty: opt.qty,
+            price: opt.price,
+            lineTotal: lineCost(opt)
+          }
+        : null;
+    })
+    .filter(Boolean);
+  const food = rows.reduce((sum, r) => sum + r.lineTotal, 0);
+  const total = food + FIXED_ALLOWANCE;
+  savedBallot = {
+    picks: { ...selected },
+    items: rows,
+    foodTotal: food,
+    grandTotal: total,
+    receipt: receiptCode,
+    cloudConfirmed: true,
+    savedAt: savedAt || new Date().toISOString()
+  };
+  try {
+    localStorage.setItem(VOTE_SAVED_KEY, JSON.stringify(savedBallot));
+    localStorage.setItem(VOTE_PICKS_KEY, JSON.stringify(selected));
+    sessionStorage.setItem('ccr_vote_choices_v3', JSON.stringify(selected));
   } catch {}
   renderJourneyProgress();
   return savedBallot;
@@ -152,12 +186,16 @@ function status(message, type = '') {
   s.innerHTML = '<span class="status-dot"></span><span>' + escapeHTML(message) + '</span>';
 }
 
-function show(message, bad = false, extraHtml = '') {
+function show(message, type = 'normal', extraHtml = '') {
   const el = $('submitStatus');
   if (!el) return;
+  let cls = 'flash-message';
+  if (type === true || type === 'bad' || type === 'error') cls += ' bad';
+  else if (type === 'warn' || type === 'amber') cls += ' warn';
+  else if (type === 'good' || type === 'success') cls += ' good';
   el.innerHTML =
-    '<div class="flash-message ' +
-    (bad ? 'bad' : '') +
+    '<div class="' +
+    cls +
     '" role="status">' +
     escapeHTML(message) +
     extraHtml +
@@ -303,19 +341,21 @@ function render(restoreFocusId = '') {
   badge.style.background = total > 2200 ? '#fff0ee' : total > 2000 ? '#fff4df' : '#edf6ed';
   badge.style.color = total > 2200 ? '#9d3636' : total > 2000 ? '#87601f' : '#347050';
 
-  const hasSaved = Boolean(savedBallot && savedBallot.savedAt);
+  const hasSaved = Boolean(savedBallot && savedBallot.savedAt && savedBallot.cloudConfirmed);
   if (success || hasSaved) {
     const timeStr = savedBallot?.savedAt
       ? new Date(savedBallot.savedAt).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
       : '';
     $('reviewStatus').innerHTML =
       tally === 8
-        ? `✓ บันทึกชุดเมนูครบ 8 หมวดเรียบร้อยแล้ว${timeStr ? ` (เมื่อ ${escapeHTML(timeStr)} น.)` : ''} · เปลี่ยนเมนูแล้วกดบันทึกซ้ำได้ตลอด`
+        ? `✓ บันทึกลงระบบกลางแล้ว · รหัสใบโหวต: ${escapeHTML(savedBallot?.receipt || '—')}${timeStr ? ` (เมื่อ ${escapeHTML(timeStr)} น.)` : ''}`
         : `เลือกแล้ว ${tally} จาก 8 หมวด · เลือกให้ครบ 8 หมวดเพื่ออัปเดตการบันทึก`;
   } else {
     $('reviewStatus').textContent =
       tally === 8
-        ? '✓ เลือกครบทั้ง 8 หมวดแล้ว! กดปุ่ม “บันทึกคะแนนของฉัน” ด้านล่างได้เลย'
+        ? (savedBallot && !savedBallot.cloudConfirmed
+            ? 'ฉบับร่างในเครื่องนี้เท่านั้น ยังไม่ได้ส่งเข้าระบบกลาง — กรอกรหัสเชิญแล้วกดบันทึกเพื่อส่งคะแนน'
+            : '✓ เลือกครบทั้ง 8 หมวดแล้ว! กรอกรหัสเชิญแล้วกดปุ่ม “บันทึกคะแนนของฉัน” ด้านล่างเพื่อส่งเข้าระบบกลาง')
         : `เลือกแล้ว ${tally} จาก 8 หมวด · คลิกเลือกให้ครบทุกหมวดก่อนบันทึก`;
   }
 
@@ -396,6 +436,13 @@ if ($('token')) {
     setSharedToken(formatted);
     render();
   });
+  window.addEventListener('hashchange', () => {
+    const fromHash = getSharedToken();
+    if (fromHash && $('token').value !== fromHash) {
+      $('token').value = fromHash;
+      render();
+    }
+  });
 }
 
 $('submit').addEventListener('click', async () => {
@@ -408,9 +455,13 @@ $('submit').addEventListener('click', async () => {
     document.querySelector('.category-heading')?.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
     return show(
       `ยังเลือกไม่ครบ 8 หมวด — ขาดหมวด ${cats[missingIdx].key} (${cats[missingIdx].label}) ระบบเปิดหมวดนี้ให้คุณเลือกต่อแล้ว`,
-      true
+      'bad'
     );
   }
+
+  // Save as local draft so user work is never lost
+  saveLocalDraft();
+  render();
 
   const rawCode = $('token') ? $('token').value.trim() : '';
   const code = formatInviteCode(rawCode);
@@ -419,10 +470,38 @@ $('submit').addEventListener('click', async () => {
     setSharedToken(code);
   }
 
-  // Always save confirmed ballot locally so user never loses their work
-  const localReceipt = saveConfirmedBallot();
-  success = true;
+  // State B: Campaign Closed
+  if (!isOpen) {
+    success = false;
+    render();
+    return show(
+      'ขณะนี้ยังไม่เปิดรับโหวต (ระบบกลางปิดรับคะแนน) — ชุดเมนูทั้ง 8 หมวดถูกเก็บเป็นฉบับร่างในเครื่องนี้เท่านั้น ยังไม่ได้ส่งเข้าระบบกลาง',
+      'warn'
+    );
+  }
+
+  // State C: Missing or Invalid Code
+  if (!code || !/^CCR26(?:-[A-Z2-9]{5}){4}$/.test(code)) {
+    success = false;
+    render();
+    return show(
+      'กรุณากรอกรหัสเชิญส่วนตัว (รูปแบบ CCR26-XXXXX-XXXXX-XXXXX-XXXXX) เพื่อส่งคะแนนเข้าระบบกลาง — ชุดเมนูถูกเก็บเป็นฉบับร่างในเครื่องนี้เท่านั้น ยังไม่ได้ส่งเข้าระบบกลาง',
+      'warn'
+    );
+  }
+
+  if (!configured) {
+    success = false;
+    render();
+    return show(
+      'ยังไม่ได้ตั้งค่าการเชื่อมต่อฐานข้อมูลกลาง — ชุดเมนูถูกเก็บเป็นฉบับร่างในเครื่องนี้เท่านั้น ยังไม่ได้ส่งเข้าระบบกลาง',
+      'bad'
+    );
+  }
+
+  submitting = true;
   render();
+  show('กำลังส่งคะแนนเข้าสู่ฐานข้อมูลกลาง…', 'normal');
 
   const nextStepButtons =
     '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-dark" style="padding:8px 14px;font-size:.84rem;text-decoration:none" href="./guide.html">ไปขั้นที่ 4: ดูบัตรสรุปของฉัน & คู่มือวันงาน ↗</a><button type="button" class="btn btn-ghost" id="newVoteAfterSubmit" style="padding:8px 14px;font-size:.84rem;background:#fff">＋ บันทึกอีก 1 ใบโหวต (สำหรับเพื่อน/ทดสอบ)</button></div>';
@@ -433,6 +512,11 @@ $('submit').addEventListener('click', async () => {
       success = false;
       step = 0;
       cats.forEach(c => delete selected[c.key]);
+      try {
+        localStorage.removeItem(VOTE_SAVED_KEY);
+        localStorage.removeItem(VOTE_PICKS_KEY);
+        sessionStorage.removeItem('ccr_vote_choices_v3');
+      } catch {}
       renderJourneyProgress();
       render();
       document.querySelector('.category-heading')?.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
@@ -440,53 +524,34 @@ $('submit').addEventListener('click', async () => {
     });
   }, 50);
 
-  if (!code || !isOpen || !configured) {
-    const msgText = !isOpen
-      ? `✓ บันทึกชุดเมนูทั้ง 8 หมวดของคุณไว้เรียบร้อยแล้ว! (รหัสใบสรุป: ${localReceipt.receipt} · รวม ${money(
-          localReceipt.grandTotal
-        )}/โต๊ะ) ข้อมูลแสดงในหน้าสรุปคู่มือวันงานทันที · เมื่อผู้จัดเปิดรับคะแนนออนไลน์ สามารถใส่รหัสเชิญเพื่อส่งเข้าระบบกลางได้`
-      : `✓ บันทึกชุดเมนูทั้ง 8 หมวดไว้ในเครื่องเรียบร้อยแล้ว! (รหัสใบโหวต: ${localReceipt.receipt} · รวม ${money(
-          localReceipt.grandTotal
-        )}/โต๊ะ) ข้อมูลแสดงในหน้าแดชบอร์ดทันที หากมีรหัสเชิญ CCR26-... สามารถกรอกเพื่อส่งเข้าระบบกลางได้`;
-    return show(msgText, false, nextStepButtons);
-  }
-
-  if (!/^CCR26(?:-[A-Z2-9]{5}){4}$/.test(code)) {
-    return show(
-      `✓ บันทึกชุดเมนูทั้ง 8 หมวดไว้ในเครื่องแล้ว (${money(
-        localReceipt.grandTotal
-      )}/โต๊ะ) · แต่รูปแบบรหัสเชิญไม่ถูกต้อง (ตัวอย่าง CCR26-XXXXX-XXXXX-XXXXX-XXXXX) กรุณาตรวจสอบรหัสเชิญหากต้องการส่งเข้าระบบกลาง`,
-      true,
-      nextStepButtons
-    );
-  }
-
-  submitting = true;
-  render();
-  show('กำลังส่งคะแนนเข้าสู่ฐานข้อมูลกลาง…');
   try {
     const r = await api('submit', {
       code,
       catalogVersion,
       choices: Object.fromEntries(keys.map(k => [k, selected[k]]))
     });
-    saveConfirmedBallot(r.receipt);
+    saveConfirmedBallot(r.receipt, r.saved_at);
     success = true;
+    const timeStr = r.saved_at ? new Date(r.saved_at).toLocaleString('th-TH') : '';
     show(
-      '✓ บันทึกเข้าระบบกลางและในเครื่องสำเร็จ! รหัสใบโหวต: ' +
-        r.receipt +
-        ' · ' +
-        new Date(r.saved_at).toLocaleString('th-TH') +
-        ' · แก้ไขได้ด้วยรหัสเดิมก่อนปิดโหวต',
-      false,
+      `✓ บันทึกลงระบบกลางแล้ว · รหัสใบโหวต: ${r.receipt}${timeStr ? ` · ${timeStr}` : ''}`,
+      'good',
       nextStepButtons
     );
   } catch (e) {
+    success = false;
+    // State D: Network/Server Error
+    const retryBtn = '<div style="margin-top:10px"><button type="button" class="btn btn-dark" id="retrySubmitBtn" style="padding:8px 16px;font-size:.85rem">ลองส่งใหม่อีกครั้ง ↻</button></div>';
     show(
-      `✓ บันทึกชุดเมนูไว้ในเครื่องแล้ว (${localReceipt.receipt}) · แต่ส่งเข้าระบบกลางไม่สำเร็จ: ` + e.message,
-      true,
-      nextStepButtons
+      `ส่งเข้าระบบกลางไม่สำเร็จ (${escapeHTML(e.message || 'NETWORK_ERROR')}) — ชุดเมนูถูกเก็บเป็นฉบับร่างในเครื่องนี้แล้ว`,
+      'bad',
+      retryBtn
     );
+    setTimeout(() => {
+      $('retrySubmitBtn')?.addEventListener('click', () => {
+        $('submit')?.click();
+      });
+    }, 50);
   } finally {
     submitting = false;
     render();
@@ -508,34 +573,31 @@ async function init() {
     if (catalog.offlineFallback) {
       isOpen = false;
       status(
-        'พร้อมให้เลือกเมนูทั้ง 8 หมวดและกดบันทึกเก็บไว้ในเครื่องได้ทันที (โหมดออฟไลน์)',
+        'พร้อมให้เลือกเมนูทั้ง 8 หมวดและบันทึกเป็นฉบับร่างในเครื่องได้ทันที (โหมดออฟไลน์)',
         'closed'
       );
       render();
       return;
     }
     if (!configured) {
-      status('พร้อมให้เลือกเมนูทั้ง 8 หมวดและกดบันทึกไว้ในเครื่องได้ทันที', 'closed');
+      isOpen = false;
+      status('พร้อมให้เลือกเมนูทั้ง 8 หมวดและบันทึกเป็นฉบับร่างในเครื่องได้ทันที', 'closed');
       return;
     }
     const r = await api('status');
-    const localOverride = localStorage.getItem('ccr_campaign_open_override');
-    isOpen = localOverride === 'true' ? true : localOverride === 'false' ? false : !!r.open;
+    isOpen = !!r.open;
     status(
       isOpen
         ? 'เปิดรับคะแนนโหวตแล้ว · เลือกครบ 8 หมวดแล้วกดบันทึกคะแนนได้ทันที'
-        : 'คุณสามารถเลือกเมนูครบ 8 หมวดแล้วกด “บันทึกคะแนนของฉัน” เพื่อเก็บชุดเมนูไว้ในเครื่องและดูในหน้าสรุปได้ทันที (ระบบส่งออนไลน์รอผู้จัดเปิดรอบโหวต)',
+        : 'ขณะนี้ระบบกลางยังไม่เปิดรับคะแนน — คุณสามารถเลือกเมนูและบันทึกเป็นฉบับร่างในเครื่องนี้ได้',
       isOpen ? '' : 'closed'
     );
     render();
   } catch (e) {
-    const localOverride = localStorage.getItem('ccr_campaign_open_override');
-    isOpen = localOverride === 'true';
+    isOpen = false;
     status(
-      isOpen
-        ? 'เปิดรับคะแนนโหวตแล้ว · เลือกครบ 8 หมวดแล้วกดบันทึกคะแนนได้ทันที'
-        : 'คุณสามารถเลือกเมนูครบ 8 หมวดแล้วกด “บันทึกคะแนนของฉัน” เพื่อเก็บไว้ในเครื่องได้ทันที',
-      isOpen ? '' : 'closed'
+      'ขณะนี้ระบบกลางยังไม่เปิดรับคะแนน — คุณสามารถเลือกเมนูและบันทึกเป็นฉบับร่างในเครื่องนี้ได้',
+      'closed'
     );
     render();
   }

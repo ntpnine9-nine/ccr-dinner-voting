@@ -21,9 +21,13 @@ try {
   Object.assign(state, fromSession, fromLocal);
 } catch {}
 
-function saveLocal(markConfirmed = false) {
+function saveLocal(markConfirmed = false, savedAt = null) {
   if (markConfirmed) {
-    state.savedAt = new Date().toISOString();
+    state.savedAt = savedAt || new Date().toISOString();
+    state.cloudConfirmed = true;
+  } else {
+    state.savedAt = null;
+    state.cloudConfirmed = false;
   }
   try {
     localStorage.setItem(PARTY_STORAGE_KEY, JSON.stringify(state));
@@ -65,9 +69,11 @@ function render() {
     }
   }
 
-  const savedBadge = state.savedAt
-    ? `<br><small style="color:#a7f3d0">✓ บันทึกไว้เรียบร้อยเมื่อ ${escapeHTML(new Date(state.savedAt).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }))} น. · ข้อมูลซิงก์ไปหน้าสรุปแล้ว</small>`
-    : '<br><small>เลือกครบ 3 ข้อแล้ว กดปุ่ม “บันทึกตัวเลือกของฉัน” ด้านล่างได้เลย</small>';
+  const savedBadge = (state.cloudConfirmed && state.savedAt)
+    ? `<br><small style="color:#a7f3d0">✓ บันทึกลงระบบกลางแล้วเมื่อ ${escapeHTML(new Date(state.savedAt).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }))} น. · ข้อมูลซิงก์ไปหน้าสรุปแล้ว</small>`
+    : (complete
+      ? '<br><small>ฉบับร่างในเครื่องนี้เท่านั้น ยังไม่ได้ส่งเข้าระบบกลาง — กรอกรหัสเชิญแล้วกดปุ่มบันทึกเพื่อส่งเข้าระบบกลาง</small>'
+      : '<br><small>เลือกครบ 3 ข้อแล้ว กรอกรหัสเชิญและกดปุ่ม “บันทึกตัวเลือกของฉัน” เพื่อส่งเข้าระบบกลาง</small>');
 
   if ($('prefSummary')) {
     $('prefSummary').innerHTML = complete
@@ -108,26 +114,41 @@ if ($('prefToken')) {
     setSharedToken(formatted);
     render();
   });
+  window.addEventListener('hashchange', () => {
+    const fromHash = getSharedToken();
+    if (fromHash && $('prefToken').value !== fromHash) {
+      $('prefToken').value = fromHash;
+      render();
+    }
+  });
 }
 
-function msg(t, bad = false, actionHtml = '') {
+function msg(t, type = 'normal', actionHtml = '') {
   if (!$('prefMessage')) return;
-  $('prefMessage').innerHTML = `<div class="flash-message ${bad ? 'bad' : ''}">${escapeHTML(t)}${actionHtml}</div>`;
+  let cls = 'flash-message';
+  if (type === true || type === 'bad' || type === 'error') cls += ' bad';
+  else if (type === 'warn' || type === 'amber') cls += ' warn';
+  else if (type === 'good' || type === 'success') cls += ' good';
+  $('prefMessage').innerHTML = `<div class="${cls}">${escapeHTML(t)}${actionHtml}</div>`;
 }
 
 $('savePreferences')?.addEventListener('click', async () => {
   if (!state.attendance) {
     document.getElementById('blockAttendance')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    return msg('กรุณาเลือกข้อ 01: สถานะการมาร่วมงาน (RSVP) ก่อนบันทึก', true);
+    return msg('กรุณาเลือกข้อ 01: สถานะการมาร่วมงาน (RSVP) ก่อนบันทึก', 'bad');
   }
   if (!state.giftChoice) {
     document.getElementById('blockGift')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    return msg('กรุณาเลือกข้อ 02: รูปแบบการจับของขวัญ ก่อนบันทึก', true);
+    return msg('กรุณาเลือกข้อ 02: รูปแบบการจับของขวัญ ก่อนบันทึก', 'bad');
   }
   if (!state.themeChoice) {
     document.getElementById('blockTheme')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    return msg('กรุณาเลือกข้อ 03: โทนสีการแต่งกาย (Visual Mood) ก่อนบันทึก', true);
+    return msg('กรุณาเลือกข้อ 03: โทนสีการแต่งกาย (Visual Mood) ก่อนบันทึก', 'bad');
   }
+
+  // Save as local draft so user work is never lost
+  saveLocal(false);
+  render();
 
   const rawCode = $('prefToken') ? $('prefToken').value.trim() : '';
   const code = formatInviteCode(rawCode);
@@ -136,27 +157,35 @@ $('savePreferences')?.addEventListener('click', async () => {
     setSharedToken(code);
   }
 
-  // Always persist confirmed choices locally so the user never loses their selection
-  saveLocal(true);
-  render();
-
-  const nextActionHtml = ' <div style="margin-top:10px"><a class="event-btn event-btn-light" style="padding:8px 14px;font-size:.86rem" href="./vote.html">ไปขั้นที่ 3: โหวตเมนูอาหาร 8 หมวด ↗</a> <a class="event-btn event-btn-ghost" style="padding:8px 14px;font-size:.86rem" href="./guide.html">ดูหน้าสรุปของฉัน ↗</a></div>';
-
-  // If no invite code entered or campaign is currently closed, confirm local save immediately
-  if (!code || !isOpen || !configured) {
-    const note = !isOpen
-      ? '✓ บันทึกตัวเลือกทั้ง 3 ข้อไว้ในเครื่องเรียบร้อยแล้ว! (ขณะนี้ระบบกลางยังไม่เปิดรับคำตอบจริง ข้อมูลของคุณแสดงในหน้าสรุปคู่มือวันงานทันที)'
-      : '✓ บันทึกตัวเลือกทั้ง 3 ข้อไว้ในเครื่องเรียบร้อยแล้ว! (หากต้องการส่งเข้าระบบกลาง สามารถกรอกรหัสเชิญ CCR26-... แล้วกดบันทึกซ้ำได้)';
-    return msg(note, false, nextActionHtml);
+  // State B: Campaign Closed
+  if (!isOpen) {
+    return msg(
+      'ขณะนี้ยังไม่เปิดรับคำตอบ (ระบบกลางปิดรับคะแนน) — ตัวเลือกทั้ง 3 ข้อถูกเก็บเป็นฉบับร่างในเครื่องนี้เท่านั้น ยังไม่ได้ส่งเข้าระบบกลาง',
+      'warn'
+    );
   }
 
-  if (!/^CCR26(?:-[A-Z2-9]{5}){4}$/.test(code)) {
-    return msg('✓ บันทึกไว้ในเครื่องแล้ว · แต่รูปแบบรหัสเชิญไม่ถูกต้อง (ตัวอย่าง CCR26-XXXXX-XXXXX-XXXXX-XXXXX) กรุณาตรวจสอบรหัสเชิญหากต้องการส่งเข้าระบบกลาง', true, nextActionHtml);
+  // State C: Missing or Invalid Code
+  if (!code || !/^CCR26(?:-[A-Z2-9]{5}){4}$/.test(code)) {
+    return msg(
+      'กรุณากรอกรหัสเชิญส่วนตัว (รูปแบบ CCR26-XXXXX-XXXXX-XXXXX-XXXXX) เพื่อส่งคำตอบเข้าระบบกลาง — ตัวเลือกทั้ง 3 ข้อถูกเก็บเป็นฉบับร่างในเครื่องนี้เท่านั้น ยังไม่ได้ส่งเข้าระบบกลาง',
+      'warn'
+    );
+  }
+
+  if (!configured) {
+    return msg(
+      'ยังไม่ได้ตั้งค่าการเชื่อมต่อฐานข้อมูลกลาง — ตัวเลือกทั้ง 3 ข้อถูกเก็บเป็นฉบับร่างในเครื่องนี้เท่านั้น ยังไม่ได้ส่งเข้าระบบกลาง',
+      'bad'
+    );
   }
 
   saving = true;
   render();
-  msg('กำลังบันทึกตัวเลือกของคุณเข้าระบบกลาง…');
+  msg('กำลังบันทึกตัวเลือกของคุณเข้าระบบกลาง…', 'normal');
+
+  const nextActionHtml = ' <div style="margin-top:10px"><a class="event-btn event-btn-light" style="padding:8px 14px;font-size:.86rem" href="./vote.html">ไปขั้นที่ 3: โหวตเมนูอาหาร 8 หมวด ↗</a> <a class="event-btn event-btn-ghost" style="padding:8px 14px;font-size:.86rem" href="./guide.html">ดูหน้าสรุปของฉัน ↗</a></div>';
+
   try {
     const r = await api('preferences.submit', {
       code,
@@ -164,16 +193,26 @@ $('savePreferences')?.addEventListener('click', async () => {
       giftChoice: state.giftChoice,
       themeChoice: state.themeChoice
     });
-    saveLocal(true);
+    saveLocal(true, r.saved_at);
+    const timeStr = r.saved_at ? new Date(r.saved_at).toLocaleString('th-TH') : '';
     msg(
-      '✓ บันทึกเข้าระบบกลางและในเครื่องเรียบร้อย (' +
-        new Date(r.saved_at).toLocaleString('th-TH') +
-        ') · ใช้รหัสเดิมเพื่อแก้ไขได้ก่อนปิดโหวต',
-      false,
+      `✓ บันทึกลงระบบกลางแล้ว · ยืนยันข้อมูลเรียบร้อย${timeStr ? ` (${timeStr})` : ''}`,
+      'good',
       nextActionHtml
     );
   } catch (e) {
-    msg('✓ บันทึกไว้ในเครื่องแล้ว · แต่ส่งเข้าระบบกลางไม่สำเร็จ: ' + e.message, true, nextActionHtml);
+    // State D: Network/Server Error
+    const retryBtn = '<div style="margin-top:10px"><button type="button" class="event-btn event-btn-light" id="retryPartyBtn" style="padding:8px 16px;font-size:.85rem">ลองส่งใหม่อีกครั้ง ↻</button></div>';
+    msg(
+      `ส่งเข้าระบบกลางไม่สำเร็จ (${escapeHTML(e.message || 'NETWORK_ERROR')}) — ตัวเลือกถูกเก็บเป็นฉบับร่างในเครื่องนี้แล้ว`,
+      'bad',
+      retryBtn
+    );
+    setTimeout(() => {
+      $('retryPartyBtn')?.addEventListener('click', () => {
+        $('savePreferences')?.click();
+      });
+    }, 50);
   } finally {
     saving = false;
     render();
@@ -185,6 +224,7 @@ $('resetPreferences')?.addEventListener('click', () => {
   state.giftChoice = '';
   state.themeChoice = '';
   state.savedAt = null;
+  state.cloudConfirmed = false;
   try {
     localStorage.removeItem(PARTY_STORAGE_KEY);
     sessionStorage.removeItem('ccr_party_choices_v1');
@@ -199,6 +239,7 @@ async function init() {
   render();
   const box = $('partyStatus');
   if (!configured) {
+    isOpen = false;
     box.className = 'system-status error';
     box.innerHTML = '<span class="status-dot"></span><span>โหมดบันทึกในเครื่องพร้อมใช้งาน (ยังไม่ได้เชื่อมฐานข้อมูลกลาง)</span>';
     return;
@@ -210,12 +251,14 @@ async function init() {
     box.innerHTML = `<span class="status-dot"></span><span>${
       isOpen
         ? 'เปิดรับคำตอบออนไลน์แล้ว · เลือกครบ 3 ข้อแล้วกดบันทึกได้เลย'
-        : 'คุณสามารถเลือกและกด “บันทึกตัวเลือกของฉัน” เพื่อเก็บคำตอบไว้ในเครื่องได้ทันที (ระบบส่งออนไลน์รอผู้จัดเปิดรอบโหวต)'
+        : 'ขณะนี้ระบบกลางยังไม่เปิดรับคำตอบ — คุณสามารถเลือกและบันทึกเป็นฉบับร่างในเครื่องนี้ได้'
     }</span>`;
     render();
   } catch (e) {
+    isOpen = false;
     box.className = 'system-status closed';
-    box.innerHTML = '<span class="status-dot"></span><span>คุณสามารถเลือกและกดบันทึกคำตอบไว้ในเครื่องได้ทันที</span>';
+    box.innerHTML = '<span class="status-dot"></span><span>ขณะนี้ระบบกลางยังไม่เปิดรับคำตอบ — คุณสามารถเลือกและบันทึกเป็นฉบับร่างในเครื่องนี้ได้</span>';
+    render();
   }
 }
 

@@ -351,6 +351,7 @@ function buildSimulatedData() {
 
 async function enterPreviewMode() {
   previewMode = true;
+  $('previewBanner')?.classList.remove('hidden');
   if (!cats.length) {
     try {
       const catalog = await getCatalog();
@@ -360,10 +361,10 @@ async function enterPreviewMode() {
   }
   $('dashboard').classList.remove('hidden');
   $('logout').hidden = false;
-  $('logout').textContent = 'รีเซ็ตข้อมูลทดสอบ';
+  $('logout').textContent = 'รีเซ็ตแดชบอร์ด';
   $('refresh').disabled = false;
 
-  const { simResults, simPrefs, simInvites, simSubmissions, local } = buildSimulatedData();
+  const { simResults, simPrefs, simInvites, simSubmissions } = buildSimulatedData();
   lastResults = simResults;
   numBallots = simResults.count;
   tallies = simResults.tallies;
@@ -373,33 +374,35 @@ async function enterPreviewMode() {
   renderPreferences(simPrefs);
   renderSubmissions(simSubmissions);
 
-  const eligibleVal = Number(localStorage.getItem('ccr_eligible_voters_v1') || 50);
+  const eligibleVal = Number(simResults.eligibleVoters || 50);
   if ($('eligibleVoters')) $('eligibleVoters').value = eligibleVal;
-  if ($('saveEligibleVoters')) $('saveEligibleVoters').disabled = false;
+  if ($('saveEligibleVoters')) {
+    $('saveEligibleVoters').disabled = true;
+    $('saveEligibleVoters').title = '(ต้องเข้าสู่ระบบ)';
+  }
   if ($('reloadSubmissions')) $('reloadSubmissions').disabled = false;
 
-  const storedCodes = JSON.parse(localStorage.getItem('ccr_generated_invites_v1') || '[]');
-  if (storedCodes.length) {
-    latestCodes = storedCodes;
-    $('codes').textContent = storedCodes.map(x => `${x.id},${x.code}`).join('\n');
-    $('downloadCodes').disabled = false;
-  }
+  $('codes').textContent = 'รหัสเชิญตัวอย่าง (โหมดตัวอย่างไม่สร้างรหัสจริงบน Supabase)';
+  $('downloadCodes').disabled = true;
+  if ($('copyAllCodes')) $('copyAllCodes').disabled = true;
 
-  const campaignOpen = simResults.status === 'open';
-  $('state').textContent = campaignOpen
-    ? '● เปิดรับคะแนน (Organizer Access)'
-    : '● ปิดรับคะแนน (Organizer Access)';
-  $('state').style.background = campaignOpen ? '#e6f4ea' : '#fff3e1';
-  $('state').style.color = campaignOpen ? '#0d5c46' : '#8a5300';
-  $('lastRefresh').textContent =
-    'ข้อมูลในระบบผู้จัดงาน · อัปเดตเมื่อ ' + new Date().toLocaleTimeString('th-TH');
+  $('state').textContent = '● โหมดตัวอย่าง (ไม่บันทึกลงฐานข้อมูล)';
+  $('state').style.background = '#fff3e1';
+  $('state').style.color = '#8a5300';
+  $('lastRefresh').textContent = 'ข้อมูลจำลอง · อัปเดตเมื่อ ' + new Date().toLocaleTimeString('th-TH');
 
-  $('open').disabled = campaignOpen;
-  $('close').disabled = !campaignOpen;
-  $('freeze').disabled = false;
+  $('open').disabled = true;
+  $('open').title = '(ต้องเข้าสู่ระบบ)';
+  $('close').disabled = true;
+  $('close').title = '(ต้องเข้าสู่ระบบ)';
+  $('freeze').disabled = true;
+  $('freeze').title = '(ต้องเข้าสู่ระบบ)';
+  $('generate').disabled = true;
+  $('generate').title = '(ต้องเข้าสู่ระบบ)';
 
   notice(
-    '👑 แดชบอร์ดผู้จัดงานพร้อมใช้งานเต็มรูปแบบ — คุณสามารถสร้างรหัสเชิญ, ปรับจำนวนเป้าหมาย, เปิด/ปิดรับโหวต, แก้ไขหรือลบข้อมูลในตาราง และคำนวณคุมงบ ฿2,000 / ฿2,200 ได้อิสระทันทีครับ'
+    'โหมดตัวอย่าง — ข้อมูลไม่ถูกบันทึกขึ้นระบบกลาง เข้าสู่ระบบผู้ดูแลระบบด้านล่างเพื่อจัดการข้อมูลจริงบน Supabase',
+    'info'
   );
 }
 
@@ -432,7 +435,12 @@ document.querySelectorAll('.admin-sidebar nav a[href^="#"]').forEach(link => {
 
 async function onSession() {
   const logged = !!session?.access_token;
-  if (logged) previewMode = false;
+  if (logged) {
+    previewMode = false;
+    $('previewBanner')?.classList.add('hidden');
+  } else {
+    $('previewBanner')?.classList.remove('hidden');
+  }
   $('authPanel').classList.toggle('hidden', logged);
   $('dashboard').classList.remove('hidden');
   $('logout').hidden = !logged && !previewMode;
@@ -461,6 +469,7 @@ $('login').addEventListener('click', async () => {
   if (!/^\S+@\S+\.\S+$/.test(email)) return notice('กรุณากรอกอีเมลให้ถูกต้อง', true);
   if (password.length < 8) return notice('กรุณากรอกรหัสผ่านผู้ดูแล', true);
   $('login').disabled = true;
+  notice('กำลังเข้าสู่ระบบ…', 'info');
   try {
     const s = await signIn(email, password);
     saveSession(s);
@@ -469,19 +478,15 @@ $('login').addEventListener('click', async () => {
     await onSession();
   } catch (e) {
     saveSession(null);
-    let errMsg = 'เข้าสู่ระบบไม่ได้: ' + e.message;
-    if (e.message && (e.message.includes('Invalid login credentials') || e.message.includes('invalid_credentials'))) {
-      if (email.toLowerCase() === 'ntpnine9@gmail.com') {
-        notice('👑 ยืนยันสิทธิ์เจ้าของโครงการ (Organizer Access) เรียบร้อยแล้ว! แดชบอร์ดพร้อมใช้งานเต็มรูปแบบด้านล่าง (สามารถกดลิงก์ยืนยันในอีเมล ntpnine9@gmail.com เพื่อเชื่อมโยง Supabase Cloud อัตโนมัติ)', 'good');
-        $('authPanel').classList.add('hidden');
-        $('logout').hidden = false;
-        $('logout').textContent = 'ออกจากระบบผู้จัดงาน';
-        await enterPreviewMode();
-        return;
-      }
-      errMsg = 'เข้าสู่ระบบไม่ได้: บัญชี ' + email + ' ยังไม่ได้กดยืนยันลิงก์ในอีเมล หรือรหัสผ่านไม่ถูกต้อง';
+    let errMsg = e.message || 'Login failed';
+    if (errMsg.includes('Invalid login credentials') || errMsg.includes('invalid_credentials')) {
+      errMsg = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง หรือยังไม่ได้สร้างบัญชีผู้ดูแลในระบบ';
+    } else if (errMsg.includes('Email not confirmed') || errMsg.includes('email_not_confirmed')) {
+      errMsg = 'บัญชีนี้ยังไม่ได้รับการยืนยันอีเมล (Confirm email) ใน Supabase Dashboard';
+    } else if (errMsg.includes('ADMIN_UNAUTHORIZED')) {
+      errMsg = 'เข้าสู่ระบบสำเร็จแต่บัญชีนี้ไม่มีสิทธิ์ผู้ดูแล (UUID ยังไม่ถูกเพิ่มในตาราง public.admin_users)';
     }
-    notice(errMsg, true);
+    notice('เข้าสู่ระบบไม่สำเร็จ: ' + errMsg, true);
   } finally {
     $('login').disabled = false;
   }
@@ -538,24 +543,37 @@ async function refresh() {
     renderPreferences(pref);
     renderSubmissions(sub.items || []);
     if ($('eligibleVoters')) $('eligibleVoters').value = Number(r.eligibleVoters || 50);
-    if ($('saveEligibleVoters')) $('saveEligibleVoters').disabled = false;
+    if ($('saveEligibleVoters')) {
+      $('saveEligibleVoters').disabled = false;
+      $('saveEligibleVoters').removeAttribute('title');
+    }
     if ($('reloadSubmissions')) $('reloadSubmissions').disabled = false;
     $('state').textContent = r.status === 'open' ? '● เปิดรับคะแนน' : '● ปิดรับคะแนน';
     $('state').style.background = r.status === 'open' ? '#eaf6ea' : '#fff3e1';
     $('lastRefresh').textContent = 'อัปเดตเมื่อ ' + new Date().toLocaleTimeString('th-TH');
     $('open').disabled = r.status === 'open' || !!r.resultsFrozenAt;
+    $('open').removeAttribute('title');
     $('close').disabled = r.status === 'closed';
+    $('close').removeAttribute('title');
     $('freeze').disabled = r.status === 'open' || !!r.resultsFrozenAt;
+    $('freeze').removeAttribute('title');
+    $('generate').disabled = false;
+    $('generate').removeAttribute('title');
+    $('previewBanner')?.classList.add('hidden');
     notice(
       r.resultsFrozenAt
         ? 'ผลถูก Freeze แล้ว · ' + new Date(r.resultsFrozenAt).toLocaleString('th-TH')
         : 'เชื่อมฐานข้อมูลกลางและโหลดผลคะแนนจริงแล้ว'
     );
   } catch (e) {
+    let msg = e.message || 'Unknown error';
+    if (msg.includes('ADMIN_UNAUTHORIZED')) {
+      msg = 'เข้าสู่ระบบสำเร็จแต่บัญชีนี้ไม่มีสิทธิ์ผู้ดูแล (UUID ยังไม่ถูกเพิ่มในตาราง public.admin_users)';
+    }
     if (/ADMIN_UNAUTHORIZED|JWT|token|session/i.test(e.message)) {
       saveSession(null);
     }
-    notice('ไม่สามารถเข้าถึงข้อมูลผู้ดูแล: ' + e.message, true);
+    notice('ไม่สามารถเข้าถึงข้อมูลผู้ดูแล: ' + msg, true);
     $('dashboard').classList.add('hidden');
     $('authPanel').classList.remove('hidden');
   }
@@ -564,11 +582,8 @@ async function refresh() {
 $('refresh').addEventListener('click', refresh);
 
 $('open').addEventListener('click', async () => {
-  if (previewMode) {
-    localStorage.setItem('ccr_campaign_open_override', 'true');
-    notice('✓ เปิดรับคะแนนโหวตออนไลน์เรียบร้อยแล้ว (หน้าโหวตอาหารเปิดรับการส่งคะแนนทันที)', 'good');
-    await refresh();
-    return;
+  if (previewMode || !session?.access_token) {
+    return notice('ต้องเข้าสู่ระบบผู้ดูแลระบบจริงก่อนเปิดรับโหวต', true);
   }
   const ans = prompt(
     'การเปิดรับโหวตจริงต้องได้รับอนุมัติจากเจ้าของโครงการ\n\nพิมพ์ เปิดโหวตจริง เพื่อยืนยัน'
@@ -576,6 +591,7 @@ $('open').addEventListener('click', async () => {
   if (ans !== 'เปิดโหวตจริง') return;
   try {
     await call('admin.status', { status: 'open' });
+    notice('✓ เปิดรับคะแนนโหวตออนไลน์เรียบร้อยแล้วบน Supabase', 'good');
     await refresh();
   } catch (e) {
     notice(e.message, true);
@@ -583,18 +599,16 @@ $('open').addEventListener('click', async () => {
 });
 
 $('close').addEventListener('click', async () => {
+  if (previewMode || !session?.access_token) {
+    return notice('ต้องเข้าสู่ระบบผู้ดูแลระบบจริงก่อนปิดรับโหวต', true);
+  }
   if (
     !confirm('ยืนยันปิดรับคะแนนจริงหรือไม่? หลังปิดแล้วผู้เข้าร่วมจะไม่สามารถส่งคะแนนได้')
   )
     return;
-  if (previewMode) {
-    localStorage.setItem('ccr_campaign_open_override', 'false');
-    notice('✓ ปิดรับคะแนนเรียบร้อยแล้ว (หน้าโหวตอาหารจะล็อกและแจ้งสถานะปิดรับโหวต)', 'info');
-    await refresh();
-    return;
-  }
   try {
     await call('admin.status', { status: 'closed' });
+    notice('✓ ปิดรับคะแนนเรียบร้อยแล้วบน Supabase', 'info');
     await refresh();
   } catch (e) {
     notice(e.message, true);
@@ -602,20 +616,18 @@ $('close').addEventListener('click', async () => {
 });
 
 $('freeze').addEventListener('click', async () => {
+  if (previewMode || !session?.access_token) {
+    return notice('ต้องเข้าสู่ระบบผู้ดูแลระบบจริงก่อน Freeze ผล', true);
+  }
   if (
     !confirm(
       'Freeze ผลหลังปิดโหวต? หลัง Freeze จะล็อกการแก้ไขผลลัพธ์'
     )
   )
     return;
-  if (previewMode) {
-    localStorage.setItem('ccr_campaign_frozen_override', 'true');
-    notice('✓ Freeze ผลคะแนนสรุปเรียบร้อยแล้ว', 'info');
-    await refresh();
-    return;
-  }
   try {
     await call('admin.freeze');
+    notice('✓ Freeze ผลคะแนนสรุปเรียบร้อยแล้วบน Supabase', 'info');
     await refresh();
   } catch (e) {
     notice(e.message, true);
@@ -623,33 +635,12 @@ $('freeze').addEventListener('click', async () => {
 });
 
 $('generate').addEventListener('click', async () => {
+  if (previewMode || !session?.access_token) {
+    return notice('ต้องเข้าสู่ระบบผู้ดูแลระบบจริงก่อนสร้างรหัส', true);
+  }
   const count = Number($('inviteCount').value);
   if (!Number.isInteger(count) || count < 1 || count > 200)
     return notice('จำนวนรหัสต้องเป็น 1–200 รหัส', true);
-
-  if (previewMode) {
-    const existing = JSON.parse(localStorage.getItem('ccr_generated_invites_v1') || '[]');
-    const newCodes = [];
-    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    for (let i = 0; i < count; i++) {
-      let rand = '';
-      for (let j = 0; j < 20; j++) rand += alphabet[Math.floor(Math.random() * alphabet.length)];
-      const code = `CCR26-${rand.slice(0, 5)}-${rand.slice(5, 10)}-${rand.slice(10, 15)}-${rand.slice(15, 20)}`;
-      const id = 'inv_' + Math.random().toString(36).slice(2, 10);
-      newCodes.push({ id, code, active: true, createdAt: new Date().toISOString() });
-    }
-    const combined = [...newCodes, ...existing];
-    localStorage.setItem('ccr_generated_invites_v1', JSON.stringify(combined));
-    latestCodes = combined;
-    $('codes').textContent = combined.map(x => `${x.id},${x.code}`).join('\n');
-    $('downloadCodes').disabled = false;
-    notice(
-      `✓ สร้างรหัสเชิญใหม่ ${count} รหัสเรียบร้อยแล้ว (รวมทั้งหมด ${combined.length} รหัส) สามารถกดปุ่ม CSV ↓ เพื่อดาวน์โหลดไฟล์ได้ทันที`,
-      'good'
-    );
-    await refresh();
-    return;
-  }
 
   if (
     !confirm(`สร้างรหัสเชิญส่วนตัว ${count} รหัส? ต้องดาวน์โหลดทันที เพราะระบบเก็บเฉพาะ Hash`)
@@ -659,9 +650,11 @@ $('generate').addEventListener('click', async () => {
   try {
     const r = await call('admin.invites', { count });
     latestCodes = r.items || [];
-    $('codes').textContent = latestCodes.map(x => `${x.id},${x.code}`).join('\n');
+    const baseUrl = 'https://ntpnine9-nine.github.io/ccr-dinner-voting/vote.html';
+    $('codes').textContent = latestCodes.map(x => `${x.id},${x.code},${baseUrl}#code=${x.code}`).join('\n');
     $('downloadCodes').disabled = false;
-    notice('สร้างรหัสแล้ว กรุณาดาวน์โหลดและเก็บไฟล์เป็นความลับ');
+    if ($('copyAllCodes')) $('copyAllCodes').disabled = false;
+    notice(`✓ สร้างรหัสเชิญสำเร็จ ${latestCodes.length} รหัสบน Supabase แล้ว กรุณาดาวน์โหลดหรือคัดลอกลิงก์เก็บไว้`, 'good');
     await refresh();
   } catch (e) {
     notice('สร้างรหัสไม่สำเร็จ: ' + e.message, true);
@@ -670,16 +663,34 @@ $('generate').addEventListener('click', async () => {
   }
 });
 
+$('copyAllCodes')?.addEventListener('click', async () => {
+  if (!latestCodes.length) return notice('ยังไม่มีรหัสเชิญที่จะคัดลอก', true);
+  const baseUrl = 'https://ntpnine9-nine.github.io/ccr-dinner-voting/vote.html';
+  const text = latestCodes
+    .map((item, idx) => {
+      const code = item.code || item;
+      return `${idx + 1}. รหัส: ${code}\n   ลิงก์โหวต: ${baseUrl}#code=${code}`;
+    })
+    .join('\n\n');
+  try {
+    await navigator.clipboard.writeText(text);
+    notice(`✓ คัดลอกทุกลิงก์โหวต (${latestCodes.length} ลิงก์) ลง Clipboard เรียบร้อยแล้ว`, 'good');
+  } catch {
+    notice('ไม่สามารถเข้าถึง Clipboard อัตโนมัติ กรุณาคัดลอกจากกล่องข้อความด้านล่าง', true);
+  }
+});
+
 $('downloadCodes').addEventListener('click', () => {
   if (latestCodes.length)
     download(
       'ccr-invite-codes-private.csv',
-      csv([['invite_id', 'invite_code'], ...latestCodes.map(x => [x.id, x.code])]),
+      csv([['invite_id', 'invite_code', 'vote_link'], ...latestCodes.map(x => [x.id, x.code, `https://ntpnine9-nine.github.io/ccr-dinner-voting/vote.html#code=${x.code}`])]),
       'text/csv;charset=utf-8'
     );
 });
 
 function renderInvites(items) {
+  const baseUrl = 'https://ntpnine9-nine.github.io/ccr-dinner-voting/vote.html';
   $('inviteList').innerHTML = items.length
     ? items
         .map(x => {
@@ -687,36 +698,41 @@ function renderInvites(items) {
           if (x.hasBallot) parts.push('✓ โหวตอาหาร');
           if (x.hasPreferences) parts.push('✓ RSVP/Mood');
           const participation = parts.length ? parts.join(' · ') : '—';
+          const link = x.code ? `${baseUrl}#code=${x.code}` : '';
           return `<tr><td><code>${escapeHTML(String(x.id).slice(0, 14))}</code></td><td>${
             x.active ? 'Active' : 'Revoked'
           }</td><td>${participation}</td><td>${new Date(x.createdAt).toLocaleString(
             'th-TH'
-          )}</td><td><button class="mini-btn" data-revoke="${x.id}" ${
-            !x.active ? 'disabled' : ''
-          }>ยกเลิก</button></td></tr>`;
+          )}</td><td><div class="admin-btnrow">
+            ${link ? `<button class="mini-btn" data-copy-link="${escapeHTML(link)}">คัดลอกลิงก์</button>` : ''}
+            <button class="mini-btn" data-revoke="${x.id}" ${
+            !x.active || previewMode ? 'disabled title="(ต้องเข้าสู่ระบบ)"' : ''
+          }>ยกเลิก</button></div></td></tr>`;
         })
         .join('')
     : '<tr><td colspan="5" class="muted">ยังไม่มีรหัสเชิญ</td></tr>';
 
+  document.querySelectorAll('[data-copy-link]').forEach(btn =>
+    btn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(btn.dataset.copyLink);
+        notice('✓ คัดลอกลิงก์โหวตส่วนตัวลง Clipboard เรียบร้อยแล้ว', 'good');
+      } catch {
+        prompt('คัดลอกลิงก์โหวต:', btn.dataset.copyLink);
+      }
+    })
+  );
+
   document.querySelectorAll('[data-revoke]').forEach(btn =>
     btn.addEventListener('click', async () => {
+      if (previewMode || !session?.access_token) {
+        return notice('ต้องเข้าสู่ระบบผู้ดูแลระบบจริงก่อนยกเลิกรหัส', true);
+      }
       const inviteId = btn.dataset.revoke;
       if (!confirm(`ยืนยันยกเลิกรหัส ${inviteId}?`)) return;
-      if (previewMode) {
-        const storedInvites = JSON.parse(localStorage.getItem('ccr_generated_invites_v1') || '[]');
-        const target = storedInvites.find(x => x.id === inviteId);
-        if (target) {
-          target.active = false;
-          localStorage.setItem('ccr_generated_invites_v1', JSON.stringify(storedInvites));
-          notice(`✓ ยกเลิกรหัส ${inviteId} เรียบร้อยแล้ว`, 'info');
-          await refresh();
-        } else {
-          notice(`✓ ยกเลิกรหัส ${inviteId} เรียบร้อยแล้ว`, 'info');
-        }
-        return;
-      }
       try {
         await call('admin.invites.revoke', { inviteId });
+        notice(`✓ ยกเลิกรหัส ${inviteId} บน Supabase เรียบร้อยแล้ว`, 'good');
         await refresh();
       } catch (e) {
         notice(e.message, true);
@@ -780,14 +796,10 @@ function renderSubmissions(items) {
             <td>${recordTime(item)}</td>
             <td>
               <div class="admin-btnrow">
-                <button class="mini-btn" data-edit-record="${inviteId}">แก้ไข</button>
-                <button class="mini-btn" data-delete-ballot="${inviteId}" ${
-            !item.ballot ? 'disabled' : ''
-          }>ลบคะแนน</button>
-                <button class="mini-btn" data-delete-pref="${inviteId}" ${
-            !item.preferences ? 'disabled' : ''
-          }>ลบ RSVP</button>
-                <button class="mini-btn" data-delete-all="${inviteId}">ลบข้อมูล</button>
+                <button class="mini-btn" data-edit-record="${inviteId}" ${previewMode ? 'disabled title="(ต้องเข้าสู่ระบบ)"' : ''}>แก้ไข</button>
+                <button class="mini-btn" data-delete-ballot="${inviteId}" ${!item.ballot || previewMode ? 'disabled title="(ต้องเข้าสู่ระบบ)"' : ''}>ลบคะแนน</button>
+                <button class="mini-btn" data-delete-pref="${inviteId}" ${!item.preferences || previewMode ? 'disabled title="(ต้องเข้าสู่ระบบ)"' : ''}>ลบ RSVP</button>
+                <button class="mini-btn" data-delete-all="${inviteId}" ${previewMode ? 'disabled title="(ต้องเข้าสู่ระบบ)"' : ''}>ลบข้อมูล</button>
               </div>
             </td>
           </tr>`;
@@ -820,6 +832,9 @@ function renderSubmissions(items) {
 }
 
 function openSubmissionEditor(inviteId) {
+  if (previewMode || !session?.access_token) {
+    return notice('ต้องเข้าสู่ระบบผู้ดูแลระบบจริงก่อนแก้ไขข้อมูลบน Supabase', true);
+  }
   const item = submissions.find(x => x.inviteId === inviteId);
   if (!item) return notice('ไม่พบรายการที่เลือก กรุณารีเฟรชข้อมูล', true);
   selectedInviteId = inviteId;
@@ -850,64 +865,17 @@ function openSubmissionEditor(inviteId) {
 }
 
 async function deleteRecordPart(op, inviteId, label) {
-  if (!confirm(`ยืนยัน${label}?\n\nรายการ: ${String(inviteId)}`)) return;
-
-  if (previewMode) {
-    if (op === 'admin.submission.delete') {
-      const deletedIds = JSON.parse(localStorage.getItem('ccr_deleted_submissions_v1') || '[]');
-      if (!deletedIds.includes(inviteId)) deletedIds.push(inviteId);
-      localStorage.setItem('ccr_deleted_submissions_v1', JSON.stringify(deletedIds));
-
-      const all = JSON.parse(localStorage.getItem('ccr_all_submitted_ballots_v1') || '[]');
-      const filtered = all.filter(b => b.receipt !== inviteId && inviteId !== 'LOCAL-YOU');
-      localStorage.setItem('ccr_all_submitted_ballots_v1', JSON.stringify(filtered));
-
-      if (inviteId === 'LOCAL-YOU' || inviteId.startsWith('LOCAL')) {
-        localStorage.removeItem(VOTE_SAVED_KEY);
-        localStorage.removeItem(VOTE_PICKS_KEY);
-        sessionStorage.removeItem('ccr_vote_choices_v3');
-      }
-      notice('🗑️ ลบรายการโหวตนี้ออกจากระบบเรียบร้อยแล้ว (อัปเดตผลรวมทันที)');
-    } else if (op === 'admin.ballot.delete') {
-      const mods = JSON.parse(localStorage.getItem('ccr_modified_submissions_v1') || '{}');
-      if (!mods[inviteId]) mods[inviteId] = {};
-      mods[inviteId].ballot = null;
-      localStorage.setItem('ccr_modified_submissions_v1', JSON.stringify(mods));
-
-      if (inviteId === 'LOCAL-YOU' || inviteId.startsWith('LOCAL')) {
-        localStorage.removeItem(VOTE_SAVED_KEY);
-        localStorage.removeItem(VOTE_PICKS_KEY);
-        sessionStorage.removeItem('ccr_vote_choices_v3');
-      }
-      notice('🗑️ ลบคะแนนอาหารของรายการนี้เรียบร้อยแล้ว');
-    } else if (op === 'admin.preferences.delete') {
-      const mods = JSON.parse(localStorage.getItem('ccr_modified_submissions_v1') || '{}');
-      if (!mods[inviteId]) mods[inviteId] = {};
-      mods[inviteId].preferences = null;
-      localStorage.setItem('ccr_modified_submissions_v1', JSON.stringify(mods));
-
-      if (inviteId === 'LOCAL-YOU' || inviteId.startsWith('LOCAL')) {
-        localStorage.removeItem(PARTY_STORAGE_KEY);
-        sessionStorage.removeItem('ccr_party_choices_v1');
-      }
-      notice('🗑️ ลบข้อมูล RSVP ของรายการนี้เรียบร้อยแล้ว');
-    }
-
-    if (selectedInviteId === inviteId) {
-      selectedInviteId = null;
-      $('submissionEditor')?.classList.add('hidden');
-    }
-    await refresh();
-    return;
+  if (previewMode || !session?.access_token) {
+    return notice('ต้องเข้าสู่ระบบผู้ดูแลระบบจริงก่อนลบข้อมูลบน Supabase', true);
   }
-
+  if (!confirm(`ยืนยัน${label}?\n\nรายการ: ${String(inviteId)}`)) return;
   try {
     await call(op, { inviteId });
     if (selectedInviteId === inviteId) {
       selectedInviteId = null;
       $('submissionEditor')?.classList.add('hidden');
     }
-    notice('ดำเนินการเรียบร้อยและบันทึก Audit Log แล้ว');
+    notice('✓ ดำเนินการเรียบร้อยและบันทึก Audit Log แล้ว', 'good');
     await refresh();
   } catch (e) {
     notice('ไม่สามารถลบข้อมูล: ' + e.message, true);
@@ -920,41 +888,18 @@ $('closeSubmissionEditor')?.addEventListener('click', () => {
 });
 
 $('saveBallotEdit')?.addEventListener('click', async () => {
+  if (previewMode || !session?.access_token) {
+    return notice('ต้องเข้าสู่ระบบผู้ดูแลระบบจริงก่อนแก้ไขข้อมูลบน Supabase', true);
+  }
   if (!selectedInviteId) return;
   const choices = {};
   document.querySelectorAll('[data-ballot-cat]').forEach(select => {
     choices[select.dataset.ballotCat] = select.value;
   });
-
-  if (previewMode) {
-    const mods = JSON.parse(localStorage.getItem('ccr_modified_submissions_v1') || '{}');
-    if (!mods[selectedInviteId]) mods[selectedInviteId] = {};
-    mods[selectedInviteId].ballot = { choices, updatedAt: new Date().toISOString() };
-    localStorage.setItem('ccr_modified_submissions_v1', JSON.stringify(mods));
-
-    const all = JSON.parse(localStorage.getItem('ccr_all_submitted_ballots_v1') || '[]');
-    const idx = all.findIndex(b => b.receipt === selectedInviteId);
-    if (idx >= 0) {
-      all[idx].picks = choices;
-      all[idx].choices = choices;
-      all[idx].savedAt = new Date().toISOString();
-      localStorage.setItem('ccr_all_submitted_ballots_v1', JSON.stringify(all));
-    }
-    if (selectedInviteId === 'LOCAL-YOU' || selectedInviteId.startsWith('LOCAL')) {
-      localStorage.setItem(VOTE_PICKS_KEY, JSON.stringify(choices));
-      sessionStorage.setItem('ccr_vote_choices_v3', JSON.stringify(choices));
-    }
-
-    notice('✓ บันทึกแก้ไขคะแนนอาหารเรียบร้อยแล้ว (อัปเดตอันดับและคำนวณงบทันที)', 'good');
-    await refresh();
-    openSubmissionEditor(selectedInviteId);
-    return;
-  }
-
   try {
     await call('admin.ballot.save', { inviteId: selectedInviteId, choices });
     const keep = selectedInviteId;
-    notice('บันทึก/อัปเดตคะแนนอาหารเรียบร้อย');
+    notice('✓ บันทึก/อัปเดตคะแนนอาหารบน Supabase เรียบร้อย', 'good');
     await refresh();
     openSubmissionEditor(keep);
   } catch (e) {
@@ -963,33 +908,13 @@ $('saveBallotEdit')?.addEventListener('click', async () => {
 });
 
 $('savePreferencesEdit')?.addEventListener('click', async () => {
+  if (previewMode || !session?.access_token) {
+    return notice('ต้องเข้าสู่ระบบผู้ดูแลระบบจริงก่อนแก้ไขข้อมูลบน Supabase', true);
+  }
   if (!selectedInviteId) return;
   const attendance = $('editAttendance').value;
   const giftChoice = $('editGift').value;
   const themeChoice = $('editTheme').value;
-
-  if (previewMode) {
-    const mods = JSON.parse(localStorage.getItem('ccr_modified_submissions_v1') || '{}');
-    if (!mods[selectedInviteId]) mods[selectedInviteId] = {};
-    mods[selectedInviteId].preferences = {
-      attendance,
-      giftChoice,
-      themeChoice,
-      updatedAt: new Date().toISOString()
-    };
-    localStorage.setItem('ccr_modified_submissions_v1', JSON.stringify(mods));
-
-    if (selectedInviteId === 'LOCAL-YOU' || selectedInviteId.startsWith('LOCAL')) {
-      const p = { attendance, giftChoice, themeChoice, savedAt: new Date().toISOString() };
-      localStorage.setItem(PARTY_STORAGE_KEY, JSON.stringify(p));
-      sessionStorage.setItem('ccr_party_choices_v1', JSON.stringify(p));
-    }
-    notice('✓ บันทึกแก้ไข RSVP เรียบร้อยแล้ว (อัปเดตสถิติทันที)', 'good');
-    await refresh();
-    openSubmissionEditor(selectedInviteId);
-    return;
-  }
-
   try {
     await call('admin.preferences.save', {
       inviteId: selectedInviteId,
@@ -998,7 +923,7 @@ $('savePreferencesEdit')?.addEventListener('click', async () => {
       themeChoice
     });
     const keep = selectedInviteId;
-    notice('บันทึก/อัปเดต RSVP เรียบร้อย');
+    notice('✓ บันทึก/อัปเดต RSVP บน Supabase เรียบร้อย', 'good');
     await refresh();
     openSubmissionEditor(keep);
   } catch (e) {
@@ -1007,20 +932,15 @@ $('savePreferencesEdit')?.addEventListener('click', async () => {
 });
 
 $('saveEligibleVoters')?.addEventListener('click', async () => {
+  if (previewMode || !session?.access_token) {
+    return notice('ต้องเข้าสู่ระบบผู้ดูแลระบบจริงก่อนบันทึกจำนวนเป้าหมาย', true);
+  }
   const count = Number($('eligibleVoters').value);
   if (!Number.isInteger(count) || count < 1 || count > 200)
     return notice('จำนวนผู้มีสิทธิ์เป้าหมายต้องเป็น 1–200 คน', true);
-
-  if (previewMode) {
-    localStorage.setItem('ccr_eligible_voters_v1', String(count));
-    notice('✓ บันทึกจำนวนผู้มีสิทธิ์เป้าหมายเป็น ' + count + ' คนเรียบร้อยแล้ว', 'good');
-    await refresh();
-    return;
-  }
-
   try {
     await call('admin.eligible_voters', { count });
-    notice('อัปเดตจำนวนผู้มีสิทธิ์เป้าหมายเป็น ' + count + ' คนแล้ว');
+    notice('✓ อัปเดตจำนวนผู้มีสิทธิ์เป้าหมายเป็น ' + count + ' คนบน Supabase แล้ว', 'good');
     await refresh();
   } catch (e) {
     notice('อัปเดตจำนวนเป้าหมายไม่สำเร็จ: ' + e.message, true);

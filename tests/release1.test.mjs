@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {FIXED_ALLOWANCE,lineCost,popularityWinner,optimizeMenuSet,comparePlans} from '../decision-engine.js';
-import {escapeHTML,formatInviteCode,csv} from '../common.js';
+import {escapeHTML,formatInviteCode,csv,extractInviteCodeFromUrl} from '../common.js';
 const d=JSON.parse(fs.readFileSync(new URL('../menus.json',import.meta.url),'utf8'));
 assert.equal(d.categories.length,8,'8 categories');
 assert.deepEqual(d.categories.map(c=>c.key),['A','B','C','D','E','F','G','H']);
@@ -45,7 +45,7 @@ const domContracts={
   'vote.html':['globalStatus','submitStatus','chosenCount','categoryNumber','categoryTitle','categoryDescription','categoryTabs','voteForm','prev','next','summary','foodTotal','grandTotal','budgetTag','reviewStatus','submit','token','main'],
   'venue.html':['main'],
   'guide.html':['main','guideCampaignState','myEventPass','guideSavedMenu'],
-  'admin.html':['adminMain','refresh','logout','notice','authPanel','email','password','login','previewDashboard','dashboard','overview','state','stats','manage','open','close','freeze','inviteCount','generate','downloadCodes','codes','inviteList','votes','lastRefresh','rankings','preferences','prefCount','prefStats','attendanceResults','giftResults','themeResults','decisions','popular','budget2k','budget22','engineStatus','draft','costInfo','tradeoffs','exportCSV','exportJSON']
+  'admin.html':['adminMain','refresh','logout','notice','previewBanner','authPanel','email','password','login','previewDashboard','dashboard','overview','state','stats','manage','open','close','freeze','inviteCount','generate','downloadCodes','copyAllCodes','codes','inviteList','votes','lastRefresh','rankings','preferences','prefCount','prefStats','attendanceResults','giftResults','themeResults','decisions','popular','budget2k','budget22','engineStatus','draft','costInfo','tradeoffs','exportCSV','exportJSON']
 };
 for(const [page,ids] of Object.entries(domContracts)){
   const html=fs.readFileSync(new URL('../'+page,import.meta.url),'utf8');
@@ -77,4 +77,41 @@ for(const imgFile of allJpegs){
     idx+=2+segLen;
   }
 }
+
+// URL Fragment / Hash parsing assertions
+globalThis.window = { location: { hash: '#code=CCR26-ABCDE-FGHJK-LMNPQ-RSTUV' } };
+assert.equal(extractInviteCodeFromUrl(), 'CCR26-ABCDE-FGHJK-LMNPQ-RSTUV');
+globalThis.window.location.hash = '#token=ccr26abcdefghjklmnpqrstuv';
+assert.equal(extractInviteCodeFromUrl(), 'CCR26-ABCDE-FGHJK-LMNPQ-RSTUV');
+globalThis.window.location.hash = '#CCR26-ABCDE-FGHJK-LMNPQ-RSTUV';
+assert.equal(extractInviteCodeFromUrl(), 'CCR26-ABCDE-FGHJK-LMNPQ-RSTUV');
+delete globalThis.window;
+
+// 4 UI States verification in vote.js and party.js
+const voteJs=fs.readFileSync(new URL('../vote.js',import.meta.url),'utf8');
+const partyJs=fs.readFileSync(new URL('../party.js',import.meta.url),'utf8');
+const adminJs=fs.readFileSync(new URL('../admin.js',import.meta.url),'utf8');
+
+// State A: Cloud Confirmed
+assert.ok(voteJs.includes('✓ บันทึกลงระบบกลางแล้ว · รหัสใบโหวต:'), 'vote.js State A copy');
+assert.ok(partyJs.includes('✓ บันทึกลงระบบกลางแล้ว · ยืนยันข้อมูลเรียบร้อย'), 'party.js State A copy');
+
+// State B: Campaign Closed
+assert.ok(voteJs.includes('ขณะนี้ยังไม่เปิดรับโหวต (ระบบกลางปิดรับคะแนน) — ชุดเมนูทั้ง 8 หมวดถูกเก็บเป็นฉบับร่างในเครื่องนี้เท่านั้น ยังไม่ได้ส่งเข้าระบบกลาง'), 'vote.js State B copy');
+assert.ok(partyJs.includes('ขณะนี้ยังไม่เปิดรับคำตอบ (ระบบกลางปิดรับคะแนน) — ตัวเลือกทั้ง 3 ข้อถูกเก็บเป็นฉบับร่างในเครื่องนี้เท่านั้น ยังไม่ได้ส่งเข้าระบบกลาง'), 'party.js State B copy');
+
+// State C: Missing or Invalid Code
+assert.ok(voteJs.includes('กรุณากรอกรหัสเชิญส่วนตัว (รูปแบบ CCR26-XXXXX-XXXXX-XXXXX-XXXXX) เพื่อส่งคะแนนเข้าระบบกลาง — ชุดเมนูถูกเก็บเป็นฉบับร่างในเครื่องนี้เท่านั้น ยังไม่ได้ส่งเข้าระบบกลาง'), 'vote.js State C copy');
+assert.ok(partyJs.includes('กรุณากรอกรหัสเชิญส่วนตัว (รูปแบบ CCR26-XXXXX-XXXXX-XXXXX-XXXXX) เพื่อส่งคำตอบเข้าระบบกลาง — ตัวเลือกทั้ง 3 ข้อถูกเก็บเป็นฉบับร่างในเครื่องนี้เท่านั้น ยังไม่ได้ส่งเข้าระบบกลาง'), 'party.js State C copy');
+
+// State D: Server/Network Error with Retry
+assert.ok(voteJs.includes('ส่งเข้าระบบกลางไม่สำเร็จ')&&voteJs.includes('retrySubmitBtn'), 'vote.js State D copy & retry');
+assert.ok(partyJs.includes('ส่งเข้าระบบกลางไม่สำเร็จ')&&partyJs.includes('retryPartyBtn'), 'party.js State D copy & retry');
+
+// Admin Preview Banner and Honest Error Mappings
+assert.ok(adminJs.includes('โหมดตัวอย่าง — ข้อมูลไม่ถูกบันทึกขึ้นระบบกลาง เข้าสู่ระบบผู้ดูแลระบบด้านล่างเพื่อจัดการข้อมูลจริงบน Supabase'), 'admin.js preview banner copy');
+assert.ok(adminJs.includes('อีเมลหรือรหัสผ่านไม่ถูกต้อง หรือยังไม่ได้สร้างบัญชีผู้ดูแลในระบบ'), 'admin.js invalid_credentials mapping');
+assert.ok(adminJs.includes('บัญชีนี้ยังไม่ได้รับการยืนยันอีเมล (Confirm email) ใน Supabase Dashboard'), 'admin.js email_not_confirmed mapping');
+assert.ok(adminJs.includes('เข้าสู่ระบบสำเร็จแต่บัญชีนี้ไม่มีสิทธิ์ผู้ดูแล (UUID ยังไม่ถูกเพิ่มในตาราง public.admin_users)'), 'admin.js ADMIN_UNAUTHORIZED mapping');
+
 console.log('PASS · Release 1 + Authentic Visuals + 4-Step Journey + Local Ballot Save + Admin Preview checks');

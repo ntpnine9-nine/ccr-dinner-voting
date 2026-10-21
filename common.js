@@ -37,7 +37,24 @@ export function formatInviteCode(raw){
   return upper.replace(/[^A-Z0-9-]/g,'');
 }
 
+export function extractInviteCodeFromUrl(){
+  if (typeof window === 'undefined' || !window.location.hash) return '';
+  try {
+    const hash = window.location.hash.replace(/^#/, '');
+    const params = new URLSearchParams(hash.includes('=') ? hash : `code=${hash}`);
+    const raw = params.get('code') || params.get('token') || (hash.toUpperCase().startsWith('CCR26') ? hash : '');
+    return formatInviteCode(raw || '');
+  } catch {
+    return '';
+  }
+}
+
 export function getSharedToken(){
+  const fromUrl = extractInviteCodeFromUrl();
+  if (fromUrl) {
+    setSharedToken(fromUrl);
+    return fromUrl;
+  }
   try{return formatInviteCode(localStorage.getItem(TOKEN_STORAGE_KEY)||'');}catch{return '';}
 }
 export function setSharedToken(raw){
@@ -56,7 +73,8 @@ export function getSavedJourneyState(){
     attendance: rawParty.attendance || '',
     giftChoice: rawParty.giftChoice || rawParty.gift || '',
     themeChoice: rawParty.themeChoice || rawParty.theme || '',
-    savedAt: rawParty.savedAt || null
+    savedAt: rawParty.savedAt || null,
+    cloudConfirmed: Boolean(rawParty.cloudConfirmed)
   };
   const partyCount=[party.attendance,party.giftChoice,party.themeChoice].filter(Boolean).length;
   const partyDone=partyCount===3;
@@ -67,14 +85,14 @@ export function getSavedJourneyState(){
   const pickKeys=['A','B','C','D','E','F','G','H'].filter(k=>Boolean(picks[k]));
   const voteCount=pickKeys.length;
   const voteDone=voteCount===8;
-  const hasSavedVote=Boolean(savedBallot?.savedAt);
+  const hasSavedVote=Boolean(savedBallot?.savedAt && savedBallot?.cloudConfirmed);
 
   return {
     party,
     partyCount,
     partyDone,
     partyComplete: partyDone,
-    partySaved: Boolean(party.savedAt),
+    partySaved: party.cloudConfirmed,
     picks,
     votePicks: picks,
     voteCount,
@@ -90,38 +108,38 @@ export function renderJourneyProgress(){
   const st=getSavedJourneyState();
 
   const partyText = st.partySaved
-    ? '✓ บันทึกครบ 3 ข้อแล้ว'
+    ? '✓ บันทึกลงระบบกลางแล้ว'
     : st.partyDone
-    ? 'เลือกครบ 3/3 ข้อแล้ว'
+    ? 'ฉบับร่างในเครื่อง (3/3 ข้อ) — ยังไม่ได้ส่งเข้าระบบกลาง'
     : `เลือกแล้ว ${st.partyCount}/3 ข้อ`;
   document.querySelectorAll('[data-step-status="party"], [data-journey-badge="party"]').forEach(el=>{
     el.textContent=partyText;
   });
   document.querySelectorAll('[data-journey-step="2"]').forEach(el=>{
-    el.classList.toggle('done', st.partyDone || st.partySaved);
+    el.classList.toggle('done', st.partySaved);
   });
 
   const voteText = st.hasSavedVote
-    ? `✓ บันทึกครบ 8 หมวด (${money(st.savedBallot.grandTotal||0)})`
+    ? `✓ บันทึกลงระบบกลางแล้ว (${money(st.savedBallot.grandTotal||0)})`
     : st.voteDone
-    ? 'เลือกครบ 8/8 หมวดแล้ว'
+    ? `ฉบับร่างในเครื่องนี้เท่านั้น ยังไม่ได้ส่งเข้าระบบกลาง`
     : `เลือกแล้ว ${st.voteCount}/8 หมวด`;
   document.querySelectorAll('[data-step-status="vote"], [data-journey-badge="vote"]').forEach(el=>{
     el.textContent=voteText;
   });
   document.querySelectorAll('[data-journey-step="3"]').forEach(el=>{
-    el.classList.toggle('done', st.voteDone || st.hasSavedVote);
+    el.classList.toggle('done', st.hasSavedVote);
   });
 
   const attLabel = PARTY_LABELS.attendance[st.party.attendance] || 'ยังไม่ได้เลือก';
   const giftLabel = PARTY_LABELS.giftChoice[st.party.giftChoice] || 'ยังไม่ได้เลือก';
   const themeLabel = PARTY_LABELS.themeChoice[st.party.themeChoice] || 'ยังไม่ได้เลือก';
   const voteLabel = st.hasSavedVote
-    ? `✓ บันทึกครบ 8 หมวดแล้ว (${money(st.savedBallot.grandTotal||0)}/โต๊ะ)`
+    ? `✓ บันทึกลงระบบกลางแล้ว (${money(st.savedBallot.grandTotal||0)}/โต๊ะ)`
     : st.voteDone
-    ? 'เลือกครบ 8/8 หมวด (รอคลิกบันทึก)'
+    ? `ฉบับร่างในเครื่องนี้เท่านั้น ยังไม่ได้ส่งเข้าระบบกลาง (${money(st.savedBallot?.grandTotal||0)}/โต๊ะ)`
     : st.voteCount > 0
-    ? `เลือกไว้ ${st.voteCount}/8 หมวด`
+    ? `เลือกไว้ ${st.voteCount}/8 หมวด (ฉบับร่าง)`
     : 'ยังไม่ได้เลือกเมนู';
 
   const setPass = (key, text, isDone) => {
