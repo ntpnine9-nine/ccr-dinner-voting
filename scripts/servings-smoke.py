@@ -45,6 +45,6 @@ for category,value in [('A',{'A1':3}),('A',{'A1':1}),('A',{'A1':1,'A2':2}),('A',
 status,res=api('submit',deviceToken=tokens[2],choices=ballot,catalogVersion=1);assert status==409
 status,res=api('admin.ballot.save',inviteId='00000000-0000-0000-0000-000000000000',choices=ballot);assert status==403
 b=ok('submit',deviceToken=tokens[1],participantLabel='',choices={k:k+'2' for k in 'ABCDEFGH'})
-state['receipts'].append(b['receipt']);record()
+state['receipts'].append(b['receipt']);state['passed']=True;record()
 print('PASS · live catalog v2 · split menus · same-receipt retry · 11 invalid quotas rejected · stale client rejected · anonymous and legacy capability paths · admin permission enforced')
 print('Disposable test checkpoint:',str(checkpoint))
