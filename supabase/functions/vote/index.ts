@@ -1,3 +1,4 @@
+import { normalizeParticipantLabel } from './participant-label.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 const url=Deno.env.get('SUPABASE_URL')!;
 const secret=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')||JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS')||'{}').default;
@@ -59,11 +60,12 @@ Deno.serve(async(req:Request)=>{try{
     return json(req,{ok:true,catalogVersion:c.campaign.catalog_version,status:c.campaign.status,targetBudget:c.campaign.target_budget,considerationBudget:c.campaign.consideration_budget,categories:c.categories});
   }
   if(op==='preferences.submit'){
-    let identity;try{identity=submissionIdentity(body)}catch(e){return fail(req,(e as Error).message)}
+    let identity,label;try{identity=submissionIdentity(body);label=normalizeParticipantLabel(body.participantLabel)}catch(e){return fail(req,(e as Error).message)}
     const attendance=String(body.attendance||''),giftChoice=String(body.giftChoice||''),themeChoice=String(body.themeChoice||'');
-    const {data,error}=await admin.rpc(identity.open?'ccr_submit_open_preferences':'submit_event_preferences',{
+    const {data,error}=await admin.rpc('ccr_submit_labeled_preferences',{
       p_campaign_id:CAMP,
       p_token_hash:await sha(identity.value),
+      p_label:label,p_open:identity.open,
       p_attendance:attendance,
       p_gift_choice:giftChoice,
       p_theme_choice:themeChoice
@@ -73,13 +75,13 @@ Deno.serve(async(req:Request)=>{try{
     return json(req,{ok:true,receipt:data[0].receipt||null,saved_at:data[0].saved_at});
   }
   if(op==='submit'){
-    let identity;try{identity=submissionIdentity(body)}catch(e){return fail(req,(e as Error).message)}
+    let identity,label;try{identity=submissionIdentity(body);label=normalizeParticipantLabel(body.participantLabel)}catch(e){return fail(req,(e as Error).message)}
     if(!body.choices||typeof body.choices!=='object'||Array.isArray(body.choices))return fail(req,'INVALID_CHOICES');
     const keys=Object.keys(body.choices),expected=['A','B','C','D','E','F','G','H'];
     if(keys.length!==8||!expected.every(k=>typeof body.choices[k]==='string'&&new RegExp('^'+k+'[1-7]$').test(body.choices[k])))return fail(req,'SELECT_EIGHT_CATEGORIES');
     const {data:campaign,error:ce}=await admin.from('campaigns').select('catalog_version').eq('id',CAMP).single();if(ce)return fail(req,'UNAVAILABLE',503);
     if(body.catalogVersion!=null&&Number(body.catalogVersion)!==Number(campaign.catalog_version))return fail(req,'CATALOG_VERSION_MISMATCH',409);
-    const {data,error}=await admin.rpc(identity.open?'ccr_submit_open_ballot':'submit_ballot',{p_campaign_id:CAMP,p_token_hash:await sha(identity.value),p_choices:body.choices});
+    const {data,error}=await admin.rpc('ccr_submit_labeled_ballot',{p_campaign_id:CAMP,p_token_hash:await sha(identity.value),p_choices:body.choices,p_label:label,p_open:identity.open});
     if(error){const e=error.message;return fail(req,e.includes('VOTING_CLOSED')?'ปิดรับคะแนนแล้ว':e.includes('INVITE_REQUIRED')?'กรุณากรอกรหัสเชิญ':e.includes('INVALID_INVITE')?'รหัสเชิญไม่ถูกต้องหรือถูกยกเลิก':e.includes('INVALID_MENU_OPTION')?'รายการอาหารไม่ตรงกับแค็ตตาล็อกปัจจุบัน':'SAVE_REJECTED',400)}
     if(!data?.[0]?.receipt)return fail(req,'SAVE_NOT_CONFIRMED',503);
     return json(req,{ok:true,receipt:String(data[0].receipt),saved_at:data[0].saved_at});
@@ -123,17 +125,17 @@ Deno.serve(async(req:Request)=>{try{
   }
   if(op==='admin.invites.list'){
     const [inv,ballots,prefs]=await Promise.all([
-      admin.from('invite_codes').select('id,active,created_at,revoked_at').eq('campaign_id',CAMP).order('created_at',{ascending:false}).limit(500),
+      admin.from('invite_codes').select('id,active,created_at,revoked_at,participant_label').eq('campaign_id',CAMP).order('created_at',{ascending:false}).limit(500),
       admin.from('ballots').select('invite_id').eq('campaign_id',CAMP),
       admin.from('event_preferences').select('invite_id').eq('campaign_id',CAMP)
     ]);if(inv.error||ballots.error||prefs.error)return fail(req,'READ_FAILURE',503);
     const voted=new Set((ballots.data||[]).map((x:any)=>x.invite_id));
     const preffed=new Set((prefs.data||[]).map((x:any)=>x.invite_id));
-    return json(req,{ok:true,items:(inv.data||[]).map((x:any)=>({id:x.id,active:x.active,createdAt:x.created_at,revokedAt:x.revoked_at,hasBallot:voted.has(x.id),hasPreferences:preffed.has(x.id)}))});
+    return json(req,{ok:true,items:(inv.data||[]).map((x:any)=>({id:x.id,participantLabel:x.participant_label,active:x.active,createdAt:x.created_at,revokedAt:x.revoked_at,hasBallot:voted.has(x.id),hasPreferences:preffed.has(x.id)}))});
   }
   if(op==='admin.submissions.list'){
     const [inv,ballots,prefs]=await Promise.all([
-      admin.from('invite_codes').select('id,active,created_at,revoked_at').eq('campaign_id',CAMP).order('created_at',{ascending:false}).limit(500),
+      admin.from('invite_codes').select('id,active,created_at,revoked_at,participant_label').eq('campaign_id',CAMP).order('created_at',{ascending:false}).limit(500),
       admin.from('ballots').select('id,invite_id,choices,created_at,updated_at').eq('campaign_id',CAMP),
       admin.from('event_preferences').select('invite_id,attendance,gift_choice,theme_choice,created_at,updated_at').eq('campaign_id',CAMP)
     ]);
@@ -145,6 +147,7 @@ Deno.serve(async(req:Request)=>{try{
       const pref:any=prefMap.get(x.id)||null;
       return {
         inviteId:x.id,
+        participantLabel:x.participant_label,
         active:x.active,
         createdAt:x.created_at,
         revokedAt:x.revoked_at,

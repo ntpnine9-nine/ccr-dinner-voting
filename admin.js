@@ -11,7 +11,7 @@ import {
   VOTE_SAVED_KEY,
   VOTE_PICKS_KEY,
   PARTY_STORAGE_KEY
-} from './common.js?v=20261022-cloud1';
+} from './common.js?v=20261022-label1';
 import {
   FIXED_ALLOWANCE,
   lineCost,
@@ -681,6 +681,12 @@ $('generate').addEventListener('click', async () => {
   }
 });
 
+$('copyPublicVoteLink')?.addEventListener('click', async () => {
+  const link = 'https://ntpnine9-nine.github.io/ccr-dinner-voting/vote.html';
+  try { await navigator.clipboard.writeText(link); notice('คัดลอกลิงก์แล้ว ผู้ร่วมงานตั้งชื่อหรือนามแฝงเองได้ ไม่ต้องสร้างรหัสล่วงหน้า'); }
+  catch { prompt('คัดลอกลิงก์โหวต:', link); }
+});
+
 $('copyAllCodes')?.addEventListener('click', async () => {
   if (!latestCodes.length) return notice('ยังไม่มีรหัสเชิญที่จะคัดลอก', true);
   const baseUrl = 'https://ntpnine9-nine.github.io/ccr-dinner-voting/vote.html';
@@ -717,7 +723,7 @@ function renderInvites(items) {
           if (x.hasPreferences) parts.push('✓ RSVP/Mood');
           const participation = parts.length ? parts.join(' · ') : '—';
           const link = x.code ? `${baseUrl}#code=${x.code}` : '';
-          return `<tr><td><code>${escapeHTML(String(x.id).slice(0, 14))}</code></td><td>${
+          return `<tr><td>${escapeHTML(x.participantLabel || 'ไม่ระบุชื่อ')}<br><small><code>${escapeHTML(String(x.id).slice(0, 14))}</code></small></td><td>${
             x.active ? 'Active' : 'Revoked'
           }</td><td>${participation}</td><td>${new Date(x.createdAt).toLocaleString(
             'th-TH'
@@ -806,13 +812,9 @@ function renderSubmissions(items) {
           const prefs = escapeHTML(preferenceSummary(item.preferences));
           const inviteId = escapeHTML(String(item.inviteId));
           const isLocal = item.inviteId.startsWith('LOCAL') || item.inviteId === 'LOCAL-YOU';
-          const label = item.label
-            ? escapeHTML(item.label)
-            : isLocal
-            ? 'LOCAL-YOU (เครื่องของคุณ)'
-            : inviteId.slice(0, 14);
+          const label = escapeHTML(item.participantLabel || item.label || (isLocal ? 'LOCAL-YOU (เครื่องของคุณ)' : 'ไม่ระบุชื่อ'));
           return `<tr>
-            <td><code>${label}</code></td>
+            <td>${label}<br><small><code>${inviteId.slice(0, 14)}</code></small></td>
             <td>${item.active ? 'Active' : 'Revoked'}</td>
             <td>${food}</td>
             <td>${prefs}</td>
@@ -861,7 +863,7 @@ function openSubmissionEditor(inviteId) {
   const item = submissions.find(x => x.inviteId === inviteId);
   if (!item) return notice('ไม่พบรายการที่เลือก กรุณารีเฟรชข้อมูล', true);
   selectedInviteId = inviteId;
-  $('editInviteId').textContent = item.label || String(inviteId).slice(0, 16);
+  $('editInviteId').textContent = (item.participantLabel || item.label || 'ไม่ระบุชื่อ') + ' · ' + String(inviteId).slice(0, 16);
   $('ballotEditor').innerHTML = cats
     .map(cat => {
       const current = item.ballot?.choices?.[cat.key] || cat.options[0]?.id || '';
@@ -1215,8 +1217,8 @@ $('exportJSON').addEventListener('click', () => {
 $('exportSubmissionsCSV').addEventListener('click', () => {
   if (previewMode || !session?.access_token) return notice('กรุณาเข้าสู่ระบบก่อนส่งออกข้อมูลจริง', true);
   download('ccr-responses.csv', csv([
-    ['participant_id','active','ballot_id',...'ABCDEFGH','attendance','gift_choice','theme_choice','ballot_updated_at','preferences_updated_at'],
-    ...submissions.map(r => [r.inviteId,r.active,r.ballot?.id,...[...'ABCDEFGH'].map(k => r.ballot?.choices?.[k] || ''),r.preferences?.attendance,r.preferences?.giftChoice,r.preferences?.themeChoice,r.ballot?.updatedAt,r.preferences?.updatedAt])
+    ['participant_id','participant_label','active','ballot_id',...'ABCDEFGH','attendance','gift_choice','theme_choice','ballot_updated_at','preferences_updated_at'],
+    ...submissions.map(r => [r.inviteId,r.participantLabel || '',r.active,r.ballot?.id,...[...'ABCDEFGH'].map(k => r.ballot?.choices?.[k] || ''),r.preferences?.attendance,r.preferences?.giftChoice,r.preferences?.themeChoice,r.ballot?.updatedAt,r.preferences?.updatedAt])
   ]), 'text/csv;charset=utf-8');
 });
 $('exportSubmissionsJSON').addEventListener('click', () => {

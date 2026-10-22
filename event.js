@@ -1,4 +1,4 @@
-import { renderJourneyProgress, getSavedJourneyState, escapeHTML, money, PARTY_STORAGE_KEY, VOTE_SAVED_KEY, VOTE_PICKS_KEY, TOKEN_STORAGE_KEY } from './common.js?v=20261022-cloud1';
+import { renderJourneyProgress, getSavedJourneyState, escapeHTML, money, PARTY_STORAGE_KEY, VOTE_SAVED_KEY, VOTE_PICKS_KEY, TOKEN_STORAGE_KEY } from './common.js?v=20261022-label1';
 const target=new Date('2026-12-18T18:00:00+07:00');
 const $=id=>document.getElementById(id);
 function tick(){

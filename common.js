@@ -7,6 +7,29 @@ export const VOTE_PICKS_KEY = 'ccr_dinner_2026_picks_v1';
 export const VOTE_SAVED_KEY = 'ccr_dinner_2026_saved_ballot_v1';
 export const TOKEN_STORAGE_KEY = 'ccr_invite_token_2026_v1';
 export const DEVICE_STORAGE_KEY = 'ccr_device_token_2026_v1';
+export const PARTICIPANT_LABEL_KEY = 'ccr_participant_label_2026_v1';
+
+export function normalizeParticipantLabel(raw){
+  if(typeof raw!=='string') throw Error('กรุณาใช้ข้อความสำหรับชื่อหรือรหัสที่ตั้งเอง');
+  const label=raw.normalize('NFC').trim();
+  if([...label].length>80 || /[\u0000-\u001f\u007f-\u009f]/u.test(label))
+    throw Error('ชื่อหรือรหัสที่ตั้งเองต้องยาวไม่เกิน 80 ตัวอักษร และไม่มีอักขระควบคุม');
+  return label;
+}
+export function getParticipantLabel(){
+  try{return localStorage.getItem(PARTICIPANT_LABEL_KEY)||'';}catch{return '';}
+}
+export function setParticipantLabel(raw){
+  try{localStorage.setItem(PARTICIPANT_LABEL_KEY,String(raw));}catch{}
+}
+export function submissionParticipant(raw=getParticipantLabel()){
+  const participantLabel=normalizeParticipantLabel(raw);
+  const previous=getSharedToken();
+  // Existing invitation links remain capabilities; a display label never becomes one.
+  const code=/^CCR26(?:-[A-Z2-9]{5}){4}$/.test(previous)?previous:'';
+  setParticipantLabel(participantLabel);
+  return {participantLabel,code,deviceToken:code?undefined:getDeviceToken()};
+}
 
 // A random capability, not a fingerprint. Retrying or using the other form updates
 // the same participant. Refuse to submit if it cannot be kept for the next page.
@@ -199,5 +222,8 @@ export async function getCatalog(){
     return {ok:true,status:'closed',catalogVersion:1,categories:local.categories,offlineFallback:true,fallbackError:err?.message||''};
   }
 }
-export const csv = rows=>'\ufeff'+rows.map(row=>row.map(x=>'"'+String(x??'').replaceAll('"','""')+'"').join(',')).join('\r\n');
+export const csv = rows=>'\ufeff'+rows.map(row=>row.map(x=>{
+  const value=typeof x==='string'&&/^[\s]*[=+@-]/u.test(x)?"'"+x:String(x??'');
+  return '"'+value.replaceAll('"','""')+'"';
+}).join(',')).join('\r\n');
 export function download(name,content,type){const a=document.createElement('a'),url=URL.createObjectURL(new Blob([content],{type}));a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}

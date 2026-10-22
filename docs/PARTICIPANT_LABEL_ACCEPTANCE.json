@@ -1,0 +1,44 @@
+{
+  "date": "2026-10-22",
+  "baseCommit": "cff9e2a0f72a84c54f8b5d7a5c3c39abf4b3bce1",
+  "migration": "20261022042042_optional_participant_labels",
+  "edgeVersion": 8,
+  "publicApiChecks": [
+    "Thai/numeric/emoji alias accepted",
+    "duplicate alias accepted separately",
+    "anonymous submission accepted",
+    "special characters stored as text",
+    "duplicate labels have different ballot IDs",
+    "RSVP accepts same free label",
+    "rename updates original ballot",
+    "old client without label remains compatible",
+    "oversized, non-text and control-character labels rejected"
+  ],
+  "databaseVerification": {
+    "duplicateAliasesSeparate": true,
+    "renamedAliasOnOriginalBallot": true,
+    "omittedLabelPreservesExisting": true,
+    "ballotAndRsvpShareIdentity": true,
+    "legacyInvitationWithAlias": true,
+    "originalBallotUnchanged": true,
+    "originalPreferencesUnchanged": true
+  },
+  "testDataCleanup": true,
+  "finalCounts": {
+    "ballots": 1,
+    "preferences": 1,
+    "invites": 100
+  },
+  "security": {
+    "aliasIsCredential": false,
+    "serviceOnlyRpc": true,
+    "securityInvoker": true,
+    "htmlEscaped": true,
+    "csvFormulaProtection": true
+  },
+  "limits": [
+    "80 Unicode code points after NFC normalization/trim",
+    "An alias does not restore another browser's responses",
+    "Browser identity cannot enforce one verified human per vote"
+  ]
+}

@@ -95,15 +95,18 @@
 
         <div class="admin-card">
           <span class="section-kicker">03 / INVITATION CODES</span>
-          <h2>ออกบัตรเชิญส่วนตัว</h2>
-          <p class="muted small">รอบนี้เปิดให้ผู้ร่วมงานส่งจากลิงก์ได้โดยไม่ต้องมีรหัสเชิญ · สร้างรหัสเชิญส่วนตัวเพิ่มได้หากต้องการใช้รหัสเดียวกันข้ามเครื่อง</p>
-          <div class="admin-btnrow">
+          <h2>แชร์ลิงก์ให้ผู้ร่วมงาน</h2>
+          <p class="muted small">ส่งลิงก์เว็บเดียวให้ผู้ร่วมงานได้เลย แต่ละคนตั้งชื่อ นามแฝง หรือข้อความเองในฟอร์มได้ ไม่ต้องสร้างรหัสล่วงหน้า · รหัสเชิญด้านล่างเป็นทางเลือกสำหรับลิงก์ส่วนตัวข้ามเครื่อง</p>
+          <button id="copyPublicVoteLink" class="btn btn-dark" type="button">คัดลอกลิงก์โหวตให้ทุกคน ↗</button>
+          <details style="margin-top:16px"><summary>ตัวเลือกเพิ่มเติม: ลิงก์เชิญส่วนตัวสำหรับใช้ข้ามเครื่อง</summary>
+          <div class="admin-btnrow" style="margin-top:12px">
             <label class="input-block" style="margin:0;max-width:110px"><span>จำนวนรหัส</span><input class="text-field" id="inviteCount" type="number" value="50" min="1" max="200"></label>
             <button id="generate" class="btn btn-dark" style="align-self:end">สร้างรหัส</button>
             <button id="downloadCodes" class="btn btn-outline" style="align-self:end" disabled>CSV ↓</button>
             <button id="copyAllCodes" class="btn btn-outline" style="align-self:end" disabled>คัดลอกทุกลิงก์</button>
           </div>
           <pre id="codes" class="code-output" aria-label="รหัสเชิญที่สร้าง" style="margin-top:14px">ยังไม่มีรหัสที่สร้างในเซสชันนี้</pre>
+          </details>
         </div>
       </section>
 
@@ -116,7 +119,7 @@
         </div>
         <div class="data-scroll">
           <table>
-            <thead><tr><th>Invite ID</th><th>สถานะ</th><th>การมีส่วนร่วม</th><th>สร้างเมื่อ</th><th>จัดการ</th></tr></thead>
+            <thead><tr><th>ชื่อ / นามแฝง · รหัสอ้างอิง</th><th>สถานะ</th><th>การมีส่วนร่วม</th><th>สร้างเมื่อ</th><th>จัดการ</th></tr></thead>
             <tbody id="inviteList"><tr><td colspan="5" class="muted">ยังไม่มีรหัสเชิญ</td></tr></tbody>
           </table>
         </div>
@@ -177,7 +180,7 @@
         <div class="data-scroll">
           <table>
             <thead>
-              <tr><th>Invite ID</th><th>สถานะ</th><th>Food Vote</th><th>RSVP / Mood</th><th>อัปเดตล่าสุด</th><th>จัดการ</th></tr>
+              <tr><th>ชื่อ / นามแฝง · รหัสอ้างอิง</th><th>สถานะ</th><th>Food Vote</th><th>RSVP / Mood</th><th>อัปเดตล่าสุด</th><th>จัดการ</th></tr>
             </thead>
             <tbody id="submissionRows"><tr><td colspan="6" class="muted">เข้าสู่ระบบผู้ดูแลเพื่อโหลดข้อมูลจริง</td></tr></tbody>
           </table>
@@ -264,6 +267,6 @@
     </div>
   </main>
 </div>
-<script type="module" src="./admin.js?v=20261022-cloud2"></script>
+<script type="module" src="./admin.js?v=20261022-label1"></script>
 </body>
 </html>

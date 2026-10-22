@@ -2,14 +2,14 @@ import {
   api,
   configured,
   escapeHTML,
-  formatInviteCode,
   PARTY_STORAGE_KEY,
   PARTY_LABELS,
   getSharedToken,
-  getDeviceToken,
-  setSharedToken,
+  getParticipantLabel,
+  setParticipantLabel,
+  submissionParticipant,
   renderJourneyProgress
-} from './common.js?v=20261022-cloud1';
+} from './common.js?v=20261022-label1';
 
 const $ = id => document.getElementById(id);
 const state = { attendance: '', giftChoice: '', themeChoice: '', savedAt: null };
@@ -64,8 +64,8 @@ function render() {
       btn.textContent = 'กำลังบันทึก…';
     } else if (!complete) {
       btn.textContent = `เลือกให้ครบ 3 หัวข้อ (${count}/3) · กดเพื่อดูหัวข้อที่ยังไม่ได้เลือก`;
-    } else if (isOpen && $('prefToken')?.value.trim()) {
-      btn.textContent = 'บันทึกและส่งคำตอบด้วยรหัสเชิญ ↗';
+    } else if (isOpen) {
+      btn.textContent = 'บันทึกคำตอบเข้าระบบกลาง ↗';
     } else {
       btn.textContent = state.savedAt ? 'อัปเดตตัวเลือกของฉัน ✓' : 'บันทึกตัวเลือกของฉัน ✓';
     }
@@ -108,21 +108,13 @@ document.querySelectorAll('[data-group]').forEach(group => {
 });
 
 if ($('prefToken')) {
-  const existingToken = getSharedToken();
-  if (existingToken) $('prefToken').value = existingToken;
+  getSharedToken(); // Preserve existing invitation links without showing a code to type.
+  $('prefToken').value = getParticipantLabel();
   $('prefToken').addEventListener('input', () => {
-    const formatted = formatInviteCode($('prefToken').value);
-    $('prefToken').value = formatted;
-    setSharedToken(formatted);
-    render();
+    setParticipantLabel($('prefToken').value);
   });
-  window.addEventListener('hashchange', () => {
-    const fromHash = getSharedToken();
-    if (fromHash && $('prefToken').value !== fromHash) {
-      $('prefToken').value = fromHash;
-      render();
-    }
-  });
+  window.addEventListener('storage', () => { $('prefToken').value = getParticipantLabel(); });
+  window.addEventListener('hashchange', () => { getSharedToken(); });
 }
 
 function msg(t, type = 'normal', actionHtml = '') {
@@ -135,6 +127,7 @@ function msg(t, type = 'normal', actionHtml = '') {
 }
 
 $('savePreferences')?.addEventListener('click', async () => {
+  if (saving) return;
   if (!state.attendance) {
     document.getElementById('blockAttendance')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return msg('กรุณาเลือกข้อ 01: สถานะการมาร่วมงาน (RSVP) ก่อนบันทึก', 'bad');
@@ -151,13 +144,6 @@ $('savePreferences')?.addEventListener('click', async () => {
   // Save as local draft so user work is never lost
   saveLocal(false);
   render();
-
-  const rawCode = $('prefToken') ? $('prefToken').value.trim() : '';
-  const code = formatInviteCode(rawCode);
-  if ($('prefToken') && rawCode) {
-    $('prefToken').value = code;
-    setSharedToken(code);
-  }
 
   // Refresh admission at submission time: a page may have been open for hours.
   try {
@@ -176,12 +162,9 @@ $('savePreferences')?.addEventListener('click', async () => {
     );
   }
 
-  // State C: Missing or Invalid Code
-  if ((code && !/^CCR26(?:-[A-Z2-9]{5}){4}$/.test(code)) || (!code && votingMode !== 'open')) {
-    return msg(
-      'กรุณากรอกรหัสเชิญส่วนตัว (รูปแบบ CCR26-XXXXX-XXXXX-XXXXX-XXXXX) เพื่อส่งคำตอบเข้าระบบกลาง — ตัวเลือกทั้ง 3 ข้อถูกเก็บเป็นฉบับร่างในเครื่องนี้เท่านั้น ยังไม่ได้ส่งเข้าระบบกลาง',
-      'warn'
-    );
+  // Restricted rounds require the original personal link; labels are never credentials.
+  if (votingMode !== 'open' && !getSharedToken()) {
+    return msg('รอบนี้ใช้ลิงก์เชิญส่วนตัว กรุณาเปิดลิงก์ที่ผู้จัดส่งให้ — ยังไม่ได้ส่งข้อมูลเข้าระบบกลาง', 'warn');
   }
 
   if (!configured) {
@@ -199,8 +182,7 @@ $('savePreferences')?.addEventListener('click', async () => {
 
   try {
     const r = await api('preferences.submit', {
-      code,
-      deviceToken: code ? undefined : getDeviceToken(),
+      ...submissionParticipant($('prefToken')?.value || ''),
       attendance: state.attendance,
       giftChoice: state.giftChoice,
       themeChoice: state.themeChoice

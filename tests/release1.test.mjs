@@ -100,9 +100,13 @@ assert.ok(partyJs.includes('✓ บันทึกลงระบบกลาง
 assert.ok(voteJs.includes('ขณะนี้ยังไม่เปิดรับโหวต (ระบบกลางปิดรับคะแนน) — ชุดเมนูทั้ง 8 หมวดถูกเก็บเป็นฉบับร่างในเครื่องนี้เท่านั้น ยังไม่ได้ส่งเข้าระบบกลาง'), 'vote.js State B copy');
 assert.ok(partyJs.includes('ขณะนี้ยังไม่เปิดรับคำตอบ (ระบบกลางปิดรับคะแนน) — ตัวเลือกทั้ง 3 ข้อถูกเก็บเป็นฉบับร่างในเครื่องนี้เท่านั้น ยังไม่ได้ส่งเข้าระบบกลาง'), 'party.js State B copy');
 
-// State C: Missing or Invalid Code
-assert.ok(voteJs.includes('กรุณากรอกรหัสเชิญส่วนตัว (รูปแบบ CCR26-XXXXX-XXXXX-XXXXX-XXXXX) เพื่อส่งคะแนนเข้าระบบกลาง — ชุดเมนูถูกเก็บเป็นฉบับร่างในเครื่องนี้เท่านั้น ยังไม่ได้ส่งเข้าระบบกลาง'), 'vote.js State C copy');
-assert.ok(partyJs.includes('กรุณากรอกรหัสเชิญส่วนตัว (รูปแบบ CCR26-XXXXX-XXXXX-XXXXX-XXXXX) เพื่อส่งคำตอบเข้าระบบกลาง — ตัวเลือกทั้ง 3 ข้อถูกเก็บเป็นฉบับร่างในเครื่องนี้เท่านั้น ยังไม่ได้ส่งเข้าระบบกลาง'), 'party.js State C copy');
+// In restricted rounds only a personal link authorizes submission; free-text labels never do.
+for(const source of [voteJs,partyJs]) {
+  assert.ok(source.includes("votingMode !== 'open' && !getSharedToken()"));
+  assert.ok(source.includes('รอบนี้ใช้ลิงก์เชิญส่วนตัว'));
+  assert.ok(source.includes('...submissionParticipant('));
+  assert.ok(!source.includes('formatInviteCode'));
+}
 
 // State D: Server/Network Error with Retry
 assert.ok(voteJs.includes('ส่งเข้าระบบกลางไม่สำเร็จ')&&voteJs.includes('retrySubmitBtn'), 'vote.js State D copy & retry');

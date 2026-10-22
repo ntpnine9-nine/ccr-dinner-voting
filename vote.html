@@ -148,9 +148,9 @@
           <span class="eyebrow">03 / SAVE YOUR VOTE</span>
           <h3>บันทึกชุดเมนูของคุณ</h3>
           <p class="muted small">เมื่อเลือกครบ 8 หมวดแล้ว กดปุ่ม <b>“บันทึกคะแนนของฉัน”</b> ด้านล่างเพื่อส่งเข้าฐานข้อมูลกลางและให้ผู้จัดงานเห็นคะแนนจริง</p>
-          <label for="token" class="field-label">รหัสเชิญ (ไม่บังคับในรอบโหวตเปิด)</label>
-          <input id="token" type="text" class="text-field" placeholder="CCR26-XXXXX-XXXXX-XXXXX-XXXXX (เว้นว่างได้)" autocomplete="off" spellcheck="false" maxlength="39">
-          <p class="input-hint">เว้นว่างได้ ระบบจำเบราว์เซอร์นี้เพื่ออัปเดตคะแนนเดิม · เปลี่ยนเครื่องหรือล้างข้อมูลเบราว์เซอร์จะเป็นคนละรหัส</p>
+          <label for="token" class="field-label">ชื่อ / นามแฝง / รหัสที่คุณตั้งเอง (ไม่บังคับ)</label>
+          <input id="token" type="text" class="text-field" placeholder="เช่น นาย, ABC, 123, 🌙 หรือเว้นว่าง" autocomplete="off" spellcheck="false" maxlength="160">
+          <p class="input-hint">ตั้งข้อความได้อิสระ ไม่ต้องใช้ชื่อจริง สูงสุด 80 ตัวอักษร · เว้นว่างได้ ชื่อซ้ำกันได้ ผู้จัดงานเห็นข้อความนี้ ระบบจำเบราว์เซอร์เพื่ออัปเดตใบเดิม</p>
           <div class="completed-banner" id="reviewStatus">เลือกให้ครบ 8 หมวดเพื่อบันทึกชุดเมนูของคุณ</div>
           <button type="button" id="submit" class="btn btn-dark full">บันทึกคะแนนของฉัน ✓</button>
           <button type="button" id="resetVoteBtn" class="btn btn-outline full" style="margin-top:8px">ล้างฉบับร่างในเครื่อง / เลือกใหม่</button>
@@ -190,6 +190,6 @@
     <a href="./admin.html">สำหรับผู้จัดงาน</a>
   </div>
 </footer>
-<script type="module" src="./vote.js?v=20261022-cloud1"></script>
+<script type="module" src="./vote.js?v=20261022-label1"></script>
 </body>
 </html>
