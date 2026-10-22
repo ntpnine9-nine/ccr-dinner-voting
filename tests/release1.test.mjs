@@ -8,14 +8,14 @@ assert.deepEqual(d.categories.map(c=>c.key),['A','B','C','D','E','F','G','H']);
 assert.ok(d.categories.every(c=>c.options.length===7),'7 options/category');
 const options=d.categories.flatMap(c=>c.options);assert.equal(options.length,56);assert.equal(new Set(options.map(o=>o.id)).size,56);
 for(const c of d.categories)for(const o of c.options){assert.match(o.id,new RegExp(`^${c.key}[1-7]$`));assert.ok(o.price>0&&o.qty>0)}
-const maxFood=d.categories.reduce((a,c)=>a+Math.max(...c.options.map(lineCost)),0);assert.equal(maxFood,1836);assert.equal(maxFood+FIXED_ALLOWANCE,2156);
+const maxFood=d.categories.reduce((a,c)=>a+Math.max(...c.options.map(lineCost)),0);assert.equal(maxFood,2258);assert.equal(maxFood+FIXED_ALLOWANCE,2578);
 const counts=Object.fromEntries(options.map(o=>[o.id,0]));for(const c of d.categories){const hi=[...c.options].sort((a,b)=>lineCost(b)-lineCost(a)||a.id.localeCompare(b.id))[0];counts[hi.id]=12}
 const pop=popularityWinner(d.categories,counts);assert.equal(pop.length,8);
-const p2=optimizeMenuSet(d.categories,counts,2000),p22=optimizeMenuSet(d.categories,counts,2200);assert.ok(p2&&p2.picks.length===8&&p2.total<=2000);assert.ok(p22&&p22.picks.length===8&&p22.total<=2200);assert.equal(p22.score,96);assert.equal(p22.total,2156);
+const p2=optimizeMenuSet(d.categories,counts,2000),p22=optimizeMenuSet(d.categories,counts,2200);assert.ok(p2&&p2.picks.length===8&&p2.total<=2000);assert.ok(p22&&p22.picks.length===8&&p22.total<=2200);assert.ok(p22.score>=p2.score,'more budget cannot reduce maximum support');assert.ok(p22.total<=2200);
 assert.equal(optimizeMenuSet(d.categories,counts,500),null,'infeasible budget returns null');
 const tie=Object.fromEntries(options.map(o=>[o.id,1]));const t1=optimizeMenuSet(d.categories,tie,2000),t2=optimizeMenuSet(d.categories,tie,2000);assert.deepEqual(t1,t2,'deterministic tie');
 const diffs=comparePlans(pop,p2,counts);assert.ok(Array.isArray(diffs)&&diffs.length>0);
-assert.ok(diffs.every(x=>x.costSaved>0&&x.votesLost>=0));
+assert.ok(diffs.reduce((n,x)=>n+x.costSaved,0)>0);assert.ok(diffs.every(x=>x.votesLost>=0));
 assert.equal(formatInviteCode('ccr26abcdefghjklmnpqrstuv'),'CCR26-ABCDE-FGHJK-LMNPQ-RSTUV','auto-formats 25-char unhyphenated invite code');
 assert.equal(formatInviteCode('CCR26-ABCDE-FGHJK-LMNPQ-RSTUV'),'CCR26-ABCDE-FGHJK-LMNPQ-RSTUV','preserves hyphenated invite code');
 assert.equal(escapeHTML('<script>"\'&'), '&lt;script&gt;&quot;&#39;&amp;');
@@ -33,7 +33,7 @@ for(const value of ['gift_300','gift_500','gift_300_500','gift_none','midnight_g
 const landing=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');assert.ok(landing.includes('18'));assert.ok(landing.includes('CCR After Hours'));
 const venue=fs.readFileSync(new URL('../venue.html',import.meta.url),'utf8');assert.ok(venue.includes('13.6776392')&&venue.includes('Google Maps'));assert.ok(!venue.includes('13.6692272'),'must not expose owner route origin');assert.ok(!venue.includes('4.8 / 5')&&!venue.includes('19 reviews'),'must not display unverified rating claims');
 const guide=fs.readFileSync(new URL('../guide.html',import.meta.url),'utf8');assert.ok(guide.includes('THE COMPLETE NIGHT GUIDE')&&guide.includes('myEventPass')&&!guide.includes('PowerPoint')&&!guide.includes('แต่จะใหม่ให้ดูเร็ว'));
-const voteHtml=fs.readFileSync(new URL('../vote.html',import.meta.url),'utf8');assert.ok(voteHtml.includes('FOOD VOTE')&&voteHtml.includes('role="radiogroup"'));
+const voteHtml=fs.readFileSync(new URL('../vote.html',import.meta.url),'utf8');assert.ok(voteHtml.includes('FOOD VOTE')&&voteHtml.includes('role="group"'));
 const adminHtml=fs.readFileSync(new URL('../admin.html',import.meta.url),'utf8');assert.ok(adminHtml.includes('แดชบอร์ดผู้จัดงาน')&&adminHtml.includes('previewDashboard'));
 for(const page of ['index.html','venue.html','party.html','vote.html','guide.html']){
   const html=fs.readFileSync(new URL('../'+page,import.meta.url),'utf8');

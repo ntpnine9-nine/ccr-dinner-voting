@@ -66,7 +66,7 @@ check("open public submissions enabled", admission["open"] and admission["voting
 status, _ = request("/functions/v1/vote", {"campaign": campaign, "op": "admin.results"})
 check("unauthenticated admin denied", status == 403)
 
-choices = {k: k + "1" for k in "ABCDEFGH"}
+choices = {k: {k + "1": 2 if k in "ABCEF" else 1} for k in "ABCDEFGH"}
 device_a, device_b = secrets.token_hex(32), secrets.token_hex(32)
 
 try:

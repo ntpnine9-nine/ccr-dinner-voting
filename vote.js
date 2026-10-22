@@ -1,31 +1,8 @@
-import {
-  configured,
-  getCatalog,
-  api,
-  money,
-  escapeHTML,
-  VOTE_PICKS_KEY,
-  VOTE_SAVED_KEY,
-  getSharedToken,
-  getParticipantLabel,
-  setParticipantLabel,
-  submissionParticipant,
-  renderJourneyProgress
-} from './common.js?v=20261022-label1';
-import { FIXED_ALLOWANCE, lineCost } from './decision-engine.js';
-
-const $ = id => document.getElementById(id);
-let cats = [];
-let step = 0;
-let selected = {};
-let isOpen = false;
-let votingMode = 'invite';
-let submitting = false;
-let success = false;
-let savedBallot = null;
-let catalogVersion = null;
-const keys = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
-
+import {configured,getCatalog,api,money,escapeHTML,VOTE_PICKS_KEY,VOTE_SAVED_KEY,getSharedToken,getParticipantLabel,setParticipantLabel,submissionParticipant,renderJourneyProgress} from './common.js?v=20261022-servings1';
+import {FIXED_ALLOWANCE} from './decision-engine.js?v=20261022-servings1';
+import {CATEGORY_KEYS as keys,quotaFor,billingMultiplier,normalizeChoices,usedServings,completedCategories,setServing,ballotLines,isLegacyBallot} from './ballot-model.js?v=20261022-servings1';
+const $=id=>document.getElementById(id);
+let cats=[],step=0,selected={},savedBallot=null,isOpen=false,votingMode='invite',catalogVersion=null,submitting=false;
 const CATEGORY_VISUALS = {
   A: {
     img: './assets/food-tomyum-pot.jpg',
@@ -77,505 +54,92 @@ const CATEGORY_VISUALS = {
   }
 };
 
-const scrollBehavior = () =>
-  matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
 
+const scrollBehavior=()=>matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth';
 try {
-  const fromLocal = JSON.parse(localStorage.getItem(VOTE_PICKS_KEY) || '{}');
-  const fromSession = JSON.parse(sessionStorage.getItem('ccr_vote_choices_v3') || '{}');
-  const merged = { ...fromSession, ...fromLocal };
-  if (merged && typeof merged === 'object' && !Array.isArray(merged)) {
-    selected = merged;
-  }
-  const savedRaw = JSON.parse(localStorage.getItem(VOTE_SAVED_KEY) || 'null');
-  if (savedRaw) {
-    savedBallot = savedRaw;
-    if (savedRaw.picks && Object.keys(selected).length === 0) {
-      selected = { ...savedRaw.picks };
-    }
-  }
-} catch {}
-
-function saveDraft() {
-  try {
-    sessionStorage.setItem('ccr_vote_choices_v3', JSON.stringify(selected));
-    localStorage.setItem(VOTE_PICKS_KEY, JSON.stringify(selected));
-  } catch {}
+  savedBallot=JSON.parse(localStorage.getItem(VOTE_SAVED_KEY)||'null');
+  selected=normalizeChoices(JSON.parse(localStorage.getItem(VOTE_PICKS_KEY)||'null')||savedBallot?.picks||{},{complete:false});
+} catch {selected={};}
+function saveDraft(){
+  const items=ballotLines(cats,selected),foodTotal=items.reduce((n,o)=>n+o.lineTotal,0);
+  savedBallot={picks:structuredClone(selected),items,foodTotal,grandTotal:foodTotal+FIXED_ALLOWANCE,cloudConfirmed:false,savedAt:null,ballotVersion:2,catalogVersion};
+  persist();
+}
+function persist(){
+  try {localStorage.setItem(VOTE_PICKS_KEY,JSON.stringify(selected));localStorage.setItem(VOTE_SAVED_KEY,JSON.stringify(savedBallot));sessionStorage.setItem('ccr_vote_choices_v3',JSON.stringify(selected));} catch {}
   renderJourneyProgress();
 }
-
-function saveLocalDraft() {
-  const rows = cats
-    .filter(cat => selected[cat.key])
-    .map(cat => {
-      const opt = cat.options.find(o => o.id === selected[cat.key]);
-      return opt
-        ? {
-            key: cat.key,
-            categoryLabel: cat.label,
-            id: opt.id,
-            name: opt.name,
-            qty: opt.qty,
-            price: opt.price,
-            lineTotal: lineCost(opt)
-          }
-        : null;
-    })
-    .filter(Boolean);
-  const food = rows.reduce((sum, r) => sum + r.lineTotal, 0);
-  const total = food + FIXED_ALLOWANCE;
-  savedBallot = {
-    picks: { ...selected },
-    items: rows,
-    foodTotal: food,
-    grandTotal: total,
-    receipt: null,
-    cloudConfirmed: false,
-    savedAt: null,
-    draftSavedAt: new Date().toISOString()
-  };
-  try {
-    localStorage.setItem(VOTE_SAVED_KEY, JSON.stringify(savedBallot));
-    localStorage.setItem(VOTE_PICKS_KEY, JSON.stringify(selected));
-    sessionStorage.setItem('ccr_vote_choices_v3', JSON.stringify(selected));
-  } catch {}
-  renderJourneyProgress();
-  return savedBallot;
-}
-
-function saveConfirmedBallot(receiptCode, savedAt) {
-  const rows = cats
-    .filter(cat => selected[cat.key])
-    .map(cat => {
-      const opt = cat.options.find(o => o.id === selected[cat.key]);
-      return opt
-        ? {
-            key: cat.key,
-            categoryLabel: cat.label,
-            id: opt.id,
-            name: opt.name,
-            qty: opt.qty,
-            price: opt.price,
-            lineTotal: lineCost(opt)
-          }
-        : null;
-    })
-    .filter(Boolean);
-  const food = rows.reduce((sum, r) => sum + r.lineTotal, 0);
-  const total = food + FIXED_ALLOWANCE;
-  savedBallot = {
-    picks: { ...selected },
-    items: rows,
-    foodTotal: food,
-    grandTotal: total,
-    receipt: receiptCode,
-    cloudConfirmed: true,
-    savedAt: savedAt || new Date().toISOString()
-  };
-  try {
-    localStorage.setItem(VOTE_SAVED_KEY, JSON.stringify(savedBallot));
-    localStorage.setItem(VOTE_PICKS_KEY, JSON.stringify(selected));
-    sessionStorage.setItem('ccr_vote_choices_v3', JSON.stringify(selected));
-  } catch {}
-  renderJourneyProgress();
-  return savedBallot;
-}
-
-function status(message, type = '') {
-  const s = $('globalStatus');
-  if (!s) return;
-  s.className = 'system-status ' + type;
-  s.innerHTML = '<span class="status-dot"></span><span>' + escapeHTML(message) + '</span>';
-}
-
-function show(message, type = 'normal', extraHtml = '') {
-  const el = $('submitStatus');
-  if (!el) return;
-  let cls = 'flash-message';
-  if (type === true || type === 'bad' || type === 'error') cls += ' bad';
-  else if (type === 'warn' || type === 'amber') cls += ' warn';
-  else if (type === 'good' || type === 'success') cls += ' good';
-  el.innerHTML =
-    '<div class="' +
-    cls +
-    '" role="status">' +
-    escapeHTML(message) +
-    extraHtml +
-    '</div>';
-}
-
-function render(restoreFocusId = '') {
-  if (cats.length !== 8) return;
-  const c = cats[step];
-  const tally = keys.filter(k => selected[k]).length;
-
-  $('chosenCount').textContent = String(tally);
-  if ($('receiptCountInline')) $('receiptCountInline').textContent = `${tally}/8`;
-  $('categoryNumber').textContent = String(step + 1).padStart(2, '0');
-  $('categoryTitle').textContent = `${c.icon || ''} หมวด ${c.key} · ${c.label}`;
-  $('categoryDescription').textContent = c.desc || '';
-
-  const vis = CATEGORY_VISUALS[c.key] || CATEGORY_VISUALS.A;
-  if ($('categoryPhoto')) {
-    $('categoryPhoto').src = vis.img;
-    $('categoryPhoto').alt = vis.title;
-  }
-  if ($('categoryPhotoTag')) $('categoryPhotoTag').textContent = vis.tag;
-  if ($('categoryPhotoTitle')) $('categoryPhotoTitle').textContent = vis.title;
-  if ($('categoryPhotoCaption')) $('categoryPhotoCaption').textContent = vis.caption;
-
-  if ($('helperProgressText')) {
-    if (tally === 8) {
-      $('helperProgressText').innerHTML =
-        '<b style="color:#0d5c46">✓ เลือกครบทั้ง 8 หมวดแล้ว!</b> กดปุ่ม <b>“บันทึกคะแนนของฉัน”</b> ทางขวา (หรือด้านล่าง) เพื่อยืนยันชุดเมนูได้ทันที';
-    } else {
-      const missingKeys = keys.filter(k => !selected[k]);
-      $('helperProgressText').innerHTML = `เลือกแล้ว <b>${tally}/8 หมวด</b> · ยังขาดหมวด <b>${missingKeys.join(', ')}</b>`;
-    }
-  }
-
-  $('categoryTabs').innerHTML = cats
-    .map(
-      (cat, i) =>
-        `<button type="button" role="tab" tabindex="${i === step ? '0' : '-1'}" aria-selected="${
-          i === step
-        }" aria-label="หมวด ${cat.key} ${escapeHTML(cat.label)}${
-          selected[cat.key] ? ' เลือกแล้ว' : ''
-        }" class="category-tab ${i === step ? 'active' : ''} ${
-          selected[cat.key] ? 'done' : ''
-        }" data-tab="${i}">${cat.key}${selected[cat.key] ? ' ✓' : ''}</button>`
-    )
-    .join('');
-
-  const tabBtns = [...document.querySelectorAll('[data-tab]')];
-  tabBtns.forEach((el, idx) => {
-    el.addEventListener('click', () => {
-      step = Number(el.dataset.tab);
-      render();
-      document.querySelector('.category-heading')?.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
-    });
-    el.addEventListener('keydown', e => {
-      if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(e.key)) return;
-      e.preventDefault();
-      if (e.key === 'Home') step = 0;
-      else if (e.key === 'End') step = cats.length - 1;
-      else step = (idx + (e.key === 'ArrowRight' ? 1 : -1) + cats.length) % cats.length;
-      render();
-      document.querySelector(`[data-tab="${step}"]`)?.focus();
-    });
+function status(message,type=''){$('globalStatus').className='system-status '+type;$('globalStatus').innerHTML='<span class="status-dot"></span><span>'+escapeHTML(message)+'</span>';}
+function show(message,type='',extra=''){$('submitStatus').innerHTML=`<div class="flash-message ${type}" role="status">${escapeHTML(message)}${extra}</div>`;}
+function render(focusId='',focusQty=false){
+  if(cats.length!==8)return;
+  const c=cats[step],quota=quotaFor(c.key),used=usedServings(selected,c.key),done=completedCategories(selected),tally=done.length;
+  $('chosenCount').textContent=tally;
+  if($('receiptCountInline'))$('receiptCountInline').textContent=`${tally}/8`;
+  $('categoryNumber').textContent=String(step+1).padStart(2,'0');
+  $('categoryTitle').textContent=`${c.icon||''} หมวด ${c.key} · ${c.label}`;
+  $('categoryDescription').textContent=`เลือกรวม ${quota} เสิร์ฟ · เลือกแล้ว ${used}/${quota} · ${quota===2?'เมนูเดียว 2 เสิร์ฟ หรือ 2 เมนูอย่างละ 1 เสิร์ฟ':c.key==='H'?'เลือกข้าว 1 เมนู คิดราคา 2 เสิร์ฟ':'เลือก 1 เมนู จำนวน 1 เสิร์ฟ'}`;
+  const vis=CATEGORY_VISUALS[c.key];
+  if($('categoryPhoto')){$('categoryPhoto').src=vis.img;$('categoryPhoto').alt='ภาพอาหารประกอบจากร้านครัวซอย 11';}
+  if($('categoryPhotoTag'))$('categoryPhotoTag').textContent=`CATEGORY ${c.key} · ${c.label}`;
+  if($('categoryPhotoTitle'))$('categoryPhotoTitle').textContent=c.label;
+  if($('categoryPhotoCaption'))$('categoryPhotoCaption').textContent='ภาพอาหารประกอบจากร้าน · เลือกตามชื่อเมนูและจำนวนเสิร์ฟด้านล่าง';
+  if($('helperProgressText'))$('helperProgressText').textContent=tally===8?'✓ เลือกจำนวนเสิร์ฟครบทั้ง 8 หมวดแล้ว กดบันทึกคะแนนเพื่อส่งเข้าระบบกลาง':`ครบโควตาแล้ว ${tally}/8 หมวด · ยังขาดหมวด ${keys.filter(k=>!done.includes(k)).join(', ')}`;
+  $('categoryTabs').innerHTML=cats.map((cat,i)=>`<button type="button" role="tab" tabindex="${i===step?0:-1}" aria-selected="${i===step}" aria-label="หมวด ${cat.key} ${escapeHTML(cat.label)} เลือกแล้ว ${usedServings(selected,cat.key)} จาก ${quotaFor(cat.key)} เสิร์ฟ" class="category-tab ${i===step?'active':''} ${done.includes(cat.key)?'done':''}" data-tab="${i}">${cat.key}${done.includes(cat.key)?' ✓':''}</button>`).join('');
+  document.querySelectorAll('[data-tab]').forEach(el=>{
+    el.addEventListener('click',()=>{step=Number(el.dataset.tab);render();});
+    el.addEventListener('keydown',e=>{if(!['ArrowRight','ArrowLeft','Home','End'].includes(e.key))return;e.preventDefault();step=e.key==='Home'?0:e.key==='End'?7:(Number(el.dataset.tab)+(e.key==='ArrowRight'?1:-1)+8)%8;render();document.querySelector(`[data-tab="${step}"]`)?.focus();});
   });
-
-  $('voteForm').innerHTML = c.options
-    .map(o => {
-      const unavail = o.availabilityStatus === 'unavailable';
-      const picked = selected[c.key] === o.id;
-      return `<label class="choice ${picked ? 'selected' : ''} ${
-        unavail ? 'unavailable' : ''
-      }"><input type="radio" name="categoryPick" value="${escapeHTML(o.id)}" ${
-        picked ? 'checked' : ''
-      } ${unavail ? 'disabled' : ''} aria-label="${escapeHTML(
-        o.name
-      )}"><span class="choice-details"><span class="choice-title">${escapeHTML(
-        o.name
-      )}</span><span class="choice-desc">${escapeHTML(o.note || 'อาหารจานกลาง')} · ${Number(
-        o.qty
-      )} ${o.portionCheck ? 'ชุด / ตรวจขนาด' : 'รายการเสิร์ฟ'}${
-        o.portionCheck ? ' · ตรวจปริมาณกับร้าน' : ''
-      }</span><span class="data-badges"><small>ราคาอ้างอิงครัวซอย 11</small>${
-        unavail ? '<small class="danger-badge">งดชั่วคราว</small>' : ''
-      }</span></span><span class="choice-price">${money(lineCost(o))}<small>${money(
-        o.price
-      )}/ที่</small></span></label>`;
-    })
-    .join('');
-
-  document.querySelectorAll('input[name=categoryPick]').forEach(el =>
-    el.addEventListener('change', () => {
-      selected[c.key] = el.value;
-      savedBallot = null;
-      success = false;
-      saveLocalDraft();
-      render(el.value);
-    })
-  );
-
-  if (restoreFocusId) {
-    const targetInput = [...document.querySelectorAll('input[name=categoryPick]')].find(
-      i => i.value === restoreFocusId
-    );
-    targetInput?.focus({ preventScroll: true });
-  }
-
-  $('prev').disabled = step === 0;
-  $('next').textContent = step === 7 ? 'ไปกล่องบันทึกคะแนน ↓' : 'หมวดถัดไป →';
-
-  const rows = cats
-    .filter(cat => selected[cat.key])
-    .map(cat => ({ cat, opt: cat.options.find(o => o.id === selected[cat.key]) }))
-    .filter(r => r.opt);
-  const food = rows.reduce((sum, r) => sum + lineCost(r.opt), 0);
-  const total = food + FIXED_ALLOWANCE;
-
-  $('summary').innerHTML = rows.length
-    ? rows
-        .map(
-          r =>
-            `<div class="receipt-row"><span class="receipt-key">${
-              r.cat.key
-            }</span><span class="receipt-name">${escapeHTML(r.opt.name)}<br><span class="muted small">${
-              r.opt.qty
-            } ที่ · หมวด ${r.cat.key}</span></span><span class="receipt-sum">${money(
-              lineCost(r.opt)
-            )}</span></div>`
-        )
-        .join('')
-    : '<p class="muted small">ยังไม่มีเมนูที่เลือก เริ่มคลิกเลือกจากหมวด A หรือกดปุ่ม “ลองเลือกชุดแนะนำครบ 8 หมวด” ได้เลย</p>';
-
-  $('foodTotal').textContent = money(food);
-  $('grandTotal').textContent = money(total);
-
-  const badge = $('budgetTag');
-  badge.textContent =
-    total > 2200
-      ? 'เกินเพดานพิจารณา ฿2,200 · ผลโหวตใช้จัดอันดับความนิยม'
-      : total > 2000
-      ? 'อยู่ในกรอบเพดาน ฿2,200 (เกินงบหลัก ฿2,000 เล็กน้อย)'
-      : '✓ อยู่ในงบเป้าหมายหลัก ฿2,000 ต่อโต๊ะ';
-  badge.style.background = total > 2200 ? '#fff0ee' : total > 2000 ? '#fff4df' : '#edf6ed';
-  badge.style.color = total > 2200 ? '#9d3636' : total > 2000 ? '#87601f' : '#347050';
-
-  const hasSaved = Boolean(savedBallot && savedBallot.savedAt && savedBallot.cloudConfirmed);
-  if (success || hasSaved) {
-    const timeStr = savedBallot?.savedAt
-      ? new Date(savedBallot.savedAt).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
-      : '';
-    $('reviewStatus').innerHTML =
-      tally === 8
-        ? `✓ บันทึกลงระบบกลางแล้ว · รหัสใบโหวต: ${escapeHTML(savedBallot?.receipt || '—')}${timeStr ? ` (เมื่อ ${escapeHTML(timeStr)} น.)` : ''}`
-        : `เลือกแล้ว ${tally} จาก 8 หมวด · เลือกให้ครบ 8 หมวดเพื่ออัปเดตการบันทึก`;
-  } else {
-    $('reviewStatus').textContent =
-      tally === 8
-        ? (savedBallot && !savedBallot.cloudConfirmed
-            ? 'ฉบับร่างในเครื่องนี้เท่านั้น ยังไม่ได้ส่งเข้าระบบกลาง — กรอกรหัสเชิญแล้วกดบันทึกเพื่อส่งคะแนน'
-            : '✓ เลือกครบทั้ง 8 หมวดแล้ว! กรอกรหัสเชิญแล้วกดปุ่ม “บันทึกคะแนนของฉัน” ด้านล่างเพื่อส่งเข้าระบบกลาง')
-        : `เลือกแล้ว ${tally} จาก 8 หมวด · คลิกเลือกให้ครบทุกหมวดก่อนบันทึก`;
-  }
-
-  // Keep #submit clickable whenever not actively submitting so users never hit a dead disabled button
-  $('submit').disabled = submitting;
-  if (submitting) {
-    $('submit').textContent = 'กำลังบันทึกคะแนน…';
-  } else if (tally < 8) {
-    const missingKey = keys.find(k => !selected[k]) || 'A';
-    $('submit').textContent = `เลือกให้ครบ 8 หมวด (${tally}/8) · ไปหมวด ${missingKey} →`;
-  } else if (isOpen) {
-    $('submit').textContent = 'บันทึกคะแนนเข้าระบบกลาง ↗';
-  } else {
-    $('submit').textContent = hasSaved ? 'อัปเดตการบันทึกชุดเมนูของฉัน ✓' : 'บันทึกคะแนนของฉัน ✓';
-  }
+  $('voteForm').innerHTML=c.options.map(o=>{
+    const qty=selected[c.key]?.[o.id]||0,unavailable=o.availabilityStatus==='unavailable',disabled=unavailable||(!qty&&used>=quota),max=quota-used+qty;
+    return `<div class="choice ${qty?'selected':''} ${unavailable?'unavailable':''}"><label class="serving-option"><input type="checkbox" name="categoryPick" value="${o.id}" ${qty?'checked':''} ${disabled||submitting?'disabled':''}><span class="choice-details"><span class="choice-title">${escapeHTML(o.name)}</span><span class="choice-desc">${escapeHTML(o.note||'อาหารจานกลาง')}</span><span class="data-badges"><small>ราคาอ้างอิงครัวซอย 11</small>${unavailable?'<small class="danger-badge">งดชั่วคราว</small>':''}</span></span><span class="choice-price">${money(o.price*(qty||1)*billingMultiplier(c.key))}<small>${money(o.price)}/เสิร์ฟ${c.key==='H'?' × 2':''}</small></span></label>${qty?`<div class="serving-control"><label for="qty-${o.id}">จำนวนเสิร์ฟ</label><select id="qty-${o.id}" class="text-field" ${submitting?'disabled':''} data-quantity="${o.id}" aria-label="จำนวนเสิร์ฟ ${escapeHTML(o.name)}">${Array.from({length:max},(_,i)=>`<option value="${i+1}" ${qty===i+1?'selected':''}>${i+1} เสิร์ฟ</option>`).join('')}</select>${c.key==='H'?'<small>เลือก 1 เมนู · คิดราคา 2 เสิร์ฟ</small>':''}</div>`:''}</div>`;
+  }).join('');
+  const update=(id,qty,focusQty=false)=>{if(submitting)return;try{selected=setServing(selected,c.key,id,qty);saveDraft();render(id,focusQty);}catch(e){show(e.message,'bad');}};
+  document.querySelectorAll('[name=categoryPick]').forEach(el=>el.addEventListener('change',()=>update(el.value,el.checked?1:0)));
+  document.querySelectorAll('[data-quantity]').forEach(el=>el.addEventListener('change',()=>update(el.dataset.quantity,Number(el.value),true)));
+  if(focusId)(focusQty?document.querySelector(`[data-quantity="${focusId}"]`):document.querySelector(`[name=categoryPick][value="${focusId}"]`))?.focus({preventScroll:true});
+  $('prev').disabled=step===0;$('next').textContent=step===7?'ไปกล่องบันทึกคะแนน ↓':'หมวดถัดไป →';
+  const items=ballotLines(cats,selected),food=items.reduce((n,o)=>n+o.lineTotal,0),total=food+FIXED_ALLOWANCE;
+  $('summary').innerHTML=items.length?items.map(o=>`<div class="receipt-row"><span class="receipt-key">${o.key}</span><span class="receipt-name">${escapeHTML(o.name)}<br><span class="muted small">${o.qty} เสิร์ฟ${o.key==='H'?' (เลือกข้าว 1 เมนู)':''} × ${money(o.price)}</span></span><span class="receipt-sum">${money(o.lineTotal)}</span></div>`).join(''):'<p class="muted small">เลือกเมนูและจำนวนเสิร์ฟจากหมวด A–H</p>';
+  $('foodTotal').textContent=money(food);$('grandTotal').textContent=money(total);
+  $('budgetTag').textContent=total>2200?'เกินเพดาน ฿2,200 · ยังส่งความชอบได้ ผู้จัดงานจะจัดชุดตามงบ':total>2000?'อยู่ในเพดานพิจารณา ฿2,200':'✓ อยู่ในงบเป้าหมาย ฿2,000 ต่อโต๊ะ';
+  const legacy=isLegacyBallot(savedBallot?.picks),confirmed=savedBallot?.cloudConfirmed&&!legacy;
+  $('reviewStatus').textContent=legacy?'ใบโหวตเดิมยังอยู่ในระบบ กรุณาตรวจจำนวนเสิร์ฟตามกติกาใหม่แล้วกดบันทึกอีกครั้ง':confirmed?`✓ บันทึกลงระบบกลางแล้ว · รหัสใบโหวต: ${savedBallot.receipt} · ${new Date(savedBallot.savedAt).toLocaleString('th-TH')}`:tally===8?'เลือกครบแล้ว · ฉบับร่างในเครื่องนี้เท่านั้น ยังไม่ได้ส่งเข้าระบบกลาง':`ครบโควตาแล้ว ${tally}/8 หมวด · เลือกให้ครบก่อนบันทึก`;
+  $('submit').disabled=submitting;
+  $('submit').textContent=submitting?'กำลังบันทึกคะแนน…':tally<8?`ไปหมวด ${keys.find(k=>!done.includes(k))} · เลือกให้ครบโควตา →`:confirmed?'อัปเดตคะแนนเข้าระบบกลาง ↗':'บันทึกคะแนนเข้าระบบกลาง ↗';
 }
-
-$('prev').addEventListener('click', () => {
-  step = Math.max(0, step - 1);
-  render();
+$('prev').addEventListener('click',()=>{step=Math.max(0,step-1);render();});
+$('next').addEventListener('click',()=>{if(step<7){step++;render();}else{$('saveVoteBox')?.scrollIntoView({behavior:scrollBehavior(),block:'center'});$('submit').focus();}});
+$('quickSample')?.addEventListener('click',()=>{
+  if(submitting)return;cats.forEach(c=>{const left=quotaFor(c.key)-usedServings(selected,c.key),o=c.options.find(o=>o.availabilityStatus!=='unavailable');if(left&&o)selected=setServing(selected,c.key,o.id,(selected[c.key]?.[o.id]||0)+left);});
+  saveDraft();render();show('เติมจำนวนเสิร์ฟที่เหลือให้ครบแล้ว ตรวจเมนูก่อนกดบันทึกเข้าระบบกลาง');
 });
-
-$('next').addEventListener('click', () => {
-  if (step < 7) {
-    step++;
-    render();
-    document.querySelector('.category-heading')?.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
-  } else {
-    $('saveVoteBox')?.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
-    $('submit')?.focus();
-  }
-});
-
-$('quickSample')?.addEventListener('click', () => {
-  if (!cats.length) return;
-  cats.forEach(cat => {
-    if (!selected[cat.key]) {
-      const avail = cat.options.filter(o => o.availabilityStatus !== 'unavailable');
-      if (avail.length) selected[cat.key] = avail[0].id;
-    }
-  });
-  // If already all selected, pick first available of each category
-  if (keys.every(k => selected[k])) {
-    cats.forEach(cat => {
-      const avail = cat.options.filter(o => o.availabilityStatus !== 'unavailable');
-      if (avail.length && !selected[cat.key]) selected[cat.key] = avail[0].id;
-    });
-  }
-  saveDraft();
-  render();
-  show('✓ เลือกชุดเมนูแนะนำครบทั้ง 8 หมวดให้แล้ว! คุณสามารถคลิกเปลี่ยนรายหมวด หรือกดปุ่ม “บันทึกคะแนนของฉัน” ได้เลย');
-});
-
-function handleClearAllPicks() {
-  selected = {};
-  success = false;
+function clearPicks(){if(submitting)return;selected={};savedBallot=null;step=0;try{localStorage.removeItem(VOTE_PICKS_KEY);localStorage.removeItem(VOTE_SAVED_KEY);sessionStorage.removeItem('ccr_vote_choices_v3');}catch{}renderJourneyProgress();render();show('ล้างฉบับร่างในเครื่องแล้ว คะแนนที่ส่งเข้าระบบกลางยังคงอยู่ — เลือกใหม่แล้วกดส่งเพื่ออัปเดตคะแนนเดิม');}
+$('clearPicks')?.addEventListener('click',clearPicks);$('resetVoteBtn')?.addEventListener('click',clearPicks);
+getSharedToken();$('token').value=getParticipantLabel();$('token').addEventListener('input',()=>setParticipantLabel($('token').value));
+window.addEventListener('storage',()=>{$('token').value=getParticipantLabel();});window.addEventListener('hashchange',()=>getSharedToken());
+$('submit').addEventListener('click',async()=>{
+  if(submitting||cats.length!==8)return;
+  const done=completedCategories(selected);
+  if(done.length!==8){step=cats.findIndex(c=>!done.includes(c.key));render();$('categoryTitle').scrollIntoView({behavior:scrollBehavior(),block:'center'});show('กรุณาเลือกจำนวนเสิร์ฟให้ครบโควตาทั้ง 8 หมวด','warn');return;}
+  submitting=true;render();
   try {
-    localStorage.removeItem(VOTE_SAVED_KEY);
-    localStorage.removeItem(VOTE_PICKS_KEY);
-    sessionStorage.removeItem('ccr_vote_choices_v3');
-  } catch {}
-  savedBallot = null;
-  step = 0;
-  renderJourneyProgress();
-  render();
-  show('ล้างฉบับร่างในเครื่องแล้ว คะแนนที่ส่งเข้าระบบกลางยังคงอยู่ — เลือกใหม่แล้วกดส่งเพื่ออัปเดตคะแนนเดิม');
+    normalizeChoices(selected);
+    if(!configured)throw Error('ยังไม่ได้ตั้งค่าการเชื่อมต่อระบบกลาง');
+    const current=await api('status');isOpen=current.open;votingMode=current.votingMode||'invite';
+    if(Number(current.catalogVersion)!==Number(catalogVersion))throw Error('แค็ตตาล็อกเปลี่ยนแล้ว กรุณารีเฟรชหน้าเว็บและตรวจจำนวนเสิร์ฟก่อนส่งอีกครั้ง');
+    if(!isOpen){saveDraft();show('ขณะนี้ยังไม่เปิดรับโหวต (ระบบกลางปิดรับคะแนน) — ชุดเมนูทั้ง 8 หมวดถูกเก็บเป็นฉบับร่างในเครื่องนี้เท่านั้น ยังไม่ได้ส่งเข้าระบบกลาง','warn');return;}
+    if(votingMode !== 'open' && !getSharedToken()){show('รอบนี้ใช้ลิงก์เชิญส่วนตัว กรุณาเปิดลิงก์จากผู้จัดงาน','warn');return;}
+    const result=await api('submit',{...submissionParticipant($('token').value),choices:selected,catalogVersion});
+    if(!result.receipt||!result.saved_at)throw Error('ยังไม่ได้รับการยืนยันการบันทึก');
+    saveDraft();savedBallot={...savedBallot,receipt:result.receipt,savedAt:result.saved_at,cloudConfirmed:true};persist();
+    show(`✓ บันทึกลงระบบกลางแล้ว · รหัสใบโหวต: ${result.receipt} · ${new Date(result.saved_at).toLocaleString('th-TH')}`,'good');
+  }catch(e){show('ส่งเข้าระบบกลางไม่สำเร็จ — '+e.message,'bad','<br><button type="button" class="mini-btn" id="retrySubmitBtn">ลองส่งอีกครั้ง</button>');$('retrySubmitBtn')?.addEventListener('click',()=>$('submit').click());}
+  finally{submitting=false;render();}
+});
+async function init(){
+  status('กำลังโหลดเมนูและกติกาจากระบบกลาง…');
+  try {const data=await getCatalog();cats=data.categories;catalogVersion=data.catalogVersion;isOpen=data.status==='open';render();renderJourneyProgress();status(data.offlineFallback?'เชื่อมต่อระบบกลางไม่ได้ · เลือกฉบับร่างได้ แต่ยังส่งคะแนนไม่ได้':isOpen?'เปิดรับคะแนน · A B C E F รวมหมวดละ 2 เสิร์ฟ · D G หมวดละ 1 · H เลือก 1 คิดราคา 2':'ปิดรับคะแนน · เลือกเป็นฉบับร่างได้');}
+  catch(e){status(e.message,'bad');show('โหลดเมนูไม่สำเร็จ กรุณารีเฟรชหน้าเว็บ','bad');}
 }
-
-$('clearPicks')?.addEventListener('click', handleClearAllPicks);
-$('resetVoteBtn')?.addEventListener('click', handleClearAllPicks);
-
-if ($('token')) {
-  getSharedToken(); // Preserve existing invitation links without showing a code to type.
-  $('token').value = getParticipantLabel();
-  $('token').addEventListener('input', () => {
-    setParticipantLabel($('token').value);
-  });
-  window.addEventListener('storage', () => { $('token').value = getParticipantLabel(); });
-  window.addEventListener('hashchange', () => { getSharedToken(); });
-}
-
-$('submit').addEventListener('click', async () => {
-  if (submitting) return;
-
-  const missingIdx = cats.findIndex(c => !selected[c.key]);
-  if (missingIdx !== -1) {
-    step = missingIdx;
-    render();
-    document.querySelector('.category-heading')?.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
-    return show(
-      `ยังเลือกไม่ครบ 8 หมวด — ขาดหมวด ${cats[missingIdx].key} (${cats[missingIdx].label}) ระบบเปิดหมวดนี้ให้คุณเลือกต่อแล้ว`,
-      'bad'
-    );
-  }
-
-  // Save as local draft so user work is never lost
-  saveLocalDraft();
-  render();
-
-  // Refresh admission at submission time: a page may have been open for hours.
-  try {
-    const admission = await api('status');
-    isOpen = !!admission.open;
-    votingMode = admission.votingMode || 'invite';
-  } catch (e) {
-    return show('ตรวจสถานะระบบกลางไม่สำเร็จ: ' + e.message + ' — ยังไม่ได้ส่งข้อมูล กรุณาลองใหม่', 'bad');
-  }
-
-  // State B: Campaign Closed
-  if (!isOpen) {
-    success = false;
-    render();
-    return show(
-      'ขณะนี้ยังไม่เปิดรับโหวต (ระบบกลางปิดรับคะแนน) — ชุดเมนูทั้ง 8 หมวดถูกเก็บเป็นฉบับร่างในเครื่องนี้เท่านั้น ยังไม่ได้ส่งเข้าระบบกลาง',
-      'warn'
-    );
-  }
-
-  // Restricted rounds require the original personal link; labels are never credentials.
-  if (votingMode !== 'open' && !getSharedToken()) {
-    return show('รอบนี้ใช้ลิงก์เชิญส่วนตัว กรุณาเปิดลิงก์ที่ผู้จัดส่งให้ — ยังไม่ได้ส่งข้อมูลเข้าระบบกลาง', 'warn');
-  }
-
-  if (!configured) {
-    success = false;
-    render();
-    return show(
-      'ยังไม่ได้ตั้งค่าการเชื่อมต่อฐานข้อมูลกลาง — ชุดเมนูถูกเก็บเป็นฉบับร่างในเครื่องนี้เท่านั้น ยังไม่ได้ส่งเข้าระบบกลาง',
-      'bad'
-    );
-  }
-
-  submitting = true;
-  render();
-  show('กำลังส่งคะแนนเข้าสู่ฐานข้อมูลกลาง…', 'normal');
-
-  const nextStepButtons = '<div style="margin-top:10px"><a class="btn btn-dark" href="./guide.html">ดูบัตรสรุปของฉัน & คู่มือวันงาน ↗</a><p>เปลี่ยนเมนูแล้วส่งอีกครั้งเพื่ออัปเดตใบโหวตเดิมในเบราว์เซอร์นี้</p></div>';
-
-  try {
-    const r = await api('submit', {
-      ...submissionParticipant($('token')?.value || ''),
-      catalogVersion,
-      choices: Object.fromEntries(keys.map(k => [k, selected[k]]))
-    });
-    if (!r.receipt || !r.saved_at) throw Error('ระบบยังไม่ยืนยันใบโหวต กรุณาลองส่งใหม่');
-    saveConfirmedBallot(r.receipt, r.saved_at);
-    success = true;
-    const timeStr = r.saved_at ? new Date(r.saved_at).toLocaleString('th-TH') : '';
-    show(
-      `✓ บันทึกลงระบบกลางแล้ว · รหัสใบโหวต: ${r.receipt}${timeStr ? ` · ${timeStr}` : ''}`,
-      'good',
-      nextStepButtons
-    );
-  } catch (e) {
-    success = false;
-    // State D: Network/Server Error
-    const retryBtn = '<div style="margin-top:10px"><button type="button" class="btn btn-dark" id="retrySubmitBtn" style="padding:8px 16px;font-size:.85rem">ลองส่งใหม่อีกครั้ง ↻</button></div>';
-    show(
-      `ส่งเข้าระบบกลางไม่สำเร็จ (${escapeHTML(e.message || 'NETWORK_ERROR')}) — ชุดเมนูถูกเก็บเป็นฉบับร่างในเครื่องนี้แล้ว`,
-      'bad',
-      retryBtn
-    );
-    setTimeout(() => {
-      $('retrySubmitBtn')?.addEventListener('click', () => {
-        $('submit')?.click();
-      });
-    }, 50);
-  } finally {
-    submitting = false;
-    render();
-  }
-});
-
-async function init() {
-  renderJourneyProgress();
-  try {
-    const catalog = await getCatalog();
-    cats = catalog.categories;
-    catalogVersion = catalog.catalogVersion;
-    for (const [k, id] of Object.entries(selected)) {
-      if (!cats.find(c => c.key === k)?.options.some(o => o.id === id)) {
-        delete selected[k];
-      }
-    }
-    render();
-    if (catalog.offlineFallback) {
-      isOpen = false;
-      status(
-        'พร้อมให้เลือกเมนูทั้ง 8 หมวดและบันทึกเป็นฉบับร่างในเครื่องได้ทันที (โหมดออฟไลน์)',
-        'closed'
-      );
-      render();
-      return;
-    }
-    if (!configured) {
-      isOpen = false;
-      status('พร้อมให้เลือกเมนูทั้ง 8 หมวดและบันทึกเป็นฉบับร่างในเครื่องได้ทันที', 'closed');
-      return;
-    }
-    const r = await api('status');
-    isOpen = !!r.open;
-    votingMode = r.votingMode || 'invite';
-    status(
-      isOpen
-        ? 'เปิดรับคะแนนโหวตแล้ว · เลือกครบ 8 หมวดแล้วกดบันทึกคะแนนได้ทันที'
-        : 'ขณะนี้ระบบกลางยังไม่เปิดรับคะแนน — คุณสามารถเลือกเมนูและบันทึกเป็นฉบับร่างในเครื่องนี้ได้',
-      isOpen ? '' : 'closed'
-    );
-    render();
-  } catch (e) {
-    isOpen = false;
-    status(
-      'ขณะนี้ระบบกลางยังไม่เปิดรับคะแนน — คุณสามารถเลือกเมนูและบันทึกเป็นฉบับร่างในเครื่องนี้ได้',
-      'closed'
-    );
-    render();
-  }
-}
-
 init();

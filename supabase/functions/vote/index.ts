@@ -1,3 +1,4 @@
+import {normalizeChoices,tallyChoices,isLegacyBallot} from './ballot-model.js';
 import { normalizeParticipantLabel } from './participant-label.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 const url=Deno.env.get('SUPABASE_URL')!;
@@ -36,11 +37,11 @@ function submissionIdentity(body:Record<string,any>){
 async function catalog(){
   const [campaign,categories,options]=await Promise.all([
     admin.from('campaigns').select('id,title,status,target_budget,consideration_budget,catalog_version,results_frozen_at').eq('id',CAMP).single(),
-    admin.from('menu_categories').select('category_key,label,position,icon,description').eq('campaign_id',CAMP).order('position'),
+    admin.from('menu_categories').select('category_key,label,position,icon,description,serving_quota,billing_multiplier').eq('campaign_id',CAMP).order('position'),
     admin.from('menu_options').select('id,category_key,name,unit_price,default_qty,note,source_image,portion_check,price_status,availability_status,catalog_version').eq('campaign_id',CAMP).order('id')
   ]);
   if(campaign.error||categories.error||options.error)throw Error('CATALOG_UNAVAILABLE');
-  const cats=(categories.data||[]).map((c:any)=>({key:c.category_key,label:c.label,icon:c.icon,desc:c.description,options:(options.data||[]).filter((o:any)=>o.category_key===c.category_key).map((o:any)=>({id:o.id,name:o.name,price:o.unit_price,qty:o.default_qty,note:o.note,source:o.source_image,portionCheck:o.portion_check,priceStatus:o.price_status,availabilityStatus:o.availability_status,catalogVersion:o.catalog_version}))}));
+  const cats=(categories.data||[]).map((c:any)=>({key:c.category_key,servingQuota:c.serving_quota,billingMultiplier:c.billing_multiplier,label:c.label,icon:c.icon,desc:c.description,options:(options.data||[]).filter((o:any)=>o.category_key===c.category_key).map((o:any)=>({id:o.id,name:o.name,price:o.unit_price,qty:o.default_qty,note:o.note,source:o.source_image,portionCheck:o.portion_check,priceStatus:o.price_status,availabilityStatus:o.availability_status,catalogVersion:o.catalog_version}))}));
   return {campaign:campaign.data,categories:cats};
 }
 Deno.serve(async(req:Request)=>{try{
@@ -76,12 +77,10 @@ Deno.serve(async(req:Request)=>{try{
   }
   if(op==='submit'){
     let identity,label;try{identity=submissionIdentity(body);label=normalizeParticipantLabel(body.participantLabel)}catch(e){return fail(req,(e as Error).message)}
-    if(!body.choices||typeof body.choices!=='object'||Array.isArray(body.choices))return fail(req,'INVALID_CHOICES');
-    const keys=Object.keys(body.choices),expected=['A','B','C','D','E','F','G','H'];
-    if(keys.length!==8||!expected.every(k=>typeof body.choices[k]==='string'&&new RegExp('^'+k+'[1-7]$').test(body.choices[k])))return fail(req,'SELECT_EIGHT_CATEGORIES');
+    let choices;try{choices=normalizeChoices(body.choices)}catch(e){return fail(req,(e as Error).message)}
     const {data:campaign,error:ce}=await admin.from('campaigns').select('catalog_version').eq('id',CAMP).single();if(ce)return fail(req,'UNAVAILABLE',503);
     if(body.catalogVersion!=null&&Number(body.catalogVersion)!==Number(campaign.catalog_version))return fail(req,'CATALOG_VERSION_MISMATCH',409);
-    const {data,error}=await admin.rpc('ccr_submit_labeled_ballot',{p_campaign_id:CAMP,p_token_hash:await sha(identity.value),p_choices:body.choices,p_label:label,p_open:identity.open});
+    const {data,error}=await admin.rpc('ccr_submit_labeled_ballot',{p_campaign_id:CAMP,p_token_hash:await sha(identity.value),p_choices:choices,p_label:label,p_open:identity.open});
     if(error){const e=error.message;return fail(req,e.includes('VOTING_CLOSED')?'ปิดรับคะแนนแล้ว':e.includes('INVITE_REQUIRED')?'กรุณากรอกรหัสเชิญ':e.includes('INVALID_INVITE')?'รหัสเชิญไม่ถูกต้องหรือถูกยกเลิก':e.includes('INVALID_MENU_OPTION')?'รายการอาหารไม่ตรงกับแค็ตตาล็อกปัจจุบัน':'SAVE_REJECTED',400)}
     if(!data?.[0]?.receipt)return fail(req,'SAVE_NOT_CONFIRMED',503);
     return json(req,{ok:true,receipt:String(data[0].receipt),saved_at:data[0].saved_at});
@@ -104,8 +103,9 @@ Deno.serve(async(req:Request)=>{try{
     const activeSet=new Set(allInv.filter((x:any)=>x.active).map((x:any)=>x.id));
     let rows:any[]=[];for(let from=0;from<10000;from+=500){const {data,error}=await admin.from('ballots').select('invite_id,choices').eq('campaign_id',CAMP).range(from,from+499);if(error)return fail(req,'READ_FAILURE',503);rows.push(...(data||[]));if(!data||data.length<500)break}
     const activeRows=rows.filter((r:any)=>!r.invite_id||activeSet.has(r.invite_id));
-    const tallies:Record<string,number>={};for(const row of activeRows)for(const id of Object.values(row.choices||{})){if(typeof id==='string')tallies[id]=(tallies[id]||0)+1}
-    return json(req,{ok:true,count:activeRows.length,invites:allInv.length,activeInvites:activeSet.size,status:campaign.status,eligibleVoters:campaign.eligible_voters,catalogVersion:campaign.catalog_version,resultsFrozenAt:campaign.results_frozen_at,tallies});
+    const tallies:Record<string,number>={};for(const row of activeRows)tallyChoices(row.choices,tallies);
+    const legacyCount=activeRows.filter(row=>isLegacyBallot(row.choices)).length;
+    return json(req,{ok:true,count:activeRows.length,invites:allInv.length,activeInvites:activeSet.size,status:campaign.status,eligibleVoters:campaign.eligible_voters,catalogVersion:campaign.catalog_version,resultsFrozenAt:campaign.results_frozen_at,tallies,legacyCount,tallyUnit:"serving"});
   }
   if(op==='admin.preferences.results'){
     const [prefRes,invRes]=await Promise.all([
@@ -151,7 +151,7 @@ Deno.serve(async(req:Request)=>{try{
         active:x.active,
         createdAt:x.created_at,
         revokedAt:x.revoked_at,
-        ballot:ballot?{id:ballot.id,choices:ballot.choices,createdAt:ballot.created_at,updatedAt:ballot.updated_at}:null,
+        ballot:ballot?{id:ballot.id,legacy:isLegacyBallot(ballot.choices),choices:ballot.choices,createdAt:ballot.created_at,updatedAt:ballot.updated_at}:null,
         preferences:pref?{attendance:pref.attendance,giftChoice:pref.gift_choice,themeChoice:pref.theme_choice,createdAt:pref.created_at,updatedAt:pref.updated_at}:null
       };
     })});

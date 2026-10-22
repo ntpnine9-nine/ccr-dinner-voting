@@ -1,3 +1,4 @@
+import {quotaFor,billingMultiplier,normalizeChoices,choiceSummary,isLegacyBallot,tallyChoices} from './ballot-model.js?v=20261022-servings1';
 import { CONFIG } from './config.js';
 import {
   configured,
@@ -11,14 +12,14 @@ import {
   VOTE_SAVED_KEY,
   VOTE_PICKS_KEY,
   PARTY_STORAGE_KEY
-} from './common.js?v=20261022-label1';
+} from './common.js?v=20261022-servings1';
 import {
   FIXED_ALLOWANCE,
   lineCost,
   popularityWinner,
   optimizeMenuSet,
   comparePlans
-} from './decision-engine.js';
+} from './decision-engine.js?v=20261022-servings1';
 
 const $ = id => document.getElementById(id);
 const AUTH_KEY = 'ccr_admin_session_v3';
@@ -289,9 +290,7 @@ function buildSimulatedData() {
   simSubmissions.forEach(sub => {
     if (sub.ballot && sub.ballot.choices) {
       countBallots++;
-      for (const dishId of Object.values(sub.ballot.choices)) {
-        if (dishId) simTallies[dishId] = (simTallies[dishId] || 0) + 1;
-      }
+      try{tallyChoices(sub.ballot.choices,simTallies);}catch{}
     }
   });
 
@@ -804,10 +803,7 @@ function renderSubmissions(items) {
     ? answered
         .map(item => {
           const food = item.ballot
-            ? Object.entries(item.ballot.choices || {})
-                .sort(([a], [b]) => a.localeCompare(b))
-                .map(([, id]) => escapeHTML(String(id)))
-                .join(' · ')
+            ? cats.map(c=>escapeHTML(choiceSummary(item.ballot.choices,c.key))).join(' · ') + (isLegacyBallot(item.ballot.choices)?'<br><small>กติกาเดิม · แสดงเมนูเดิมเต็มโควตาใหม่ กรุณาตรวจยืนยัน</small>':'')
             : '—';
           const prefs = escapeHTML(preferenceSummary(item.preferences));
           const inviteId = escapeHTML(String(item.inviteId));
@@ -864,24 +860,8 @@ function openSubmissionEditor(inviteId) {
   if (!item) return notice('ไม่พบรายการที่เลือก กรุณารีเฟรชข้อมูล', true);
   selectedInviteId = inviteId;
   $('editInviteId').textContent = (item.participantLabel || item.label || 'ไม่ระบุชื่อ') + ' · ' + String(inviteId).slice(0, 16);
-  $('ballotEditor').innerHTML = cats
-    .map(cat => {
-      const current = item.ballot?.choices?.[cat.key] || cat.options[0]?.id || '';
-      return `<label class="input-block">
-        <span>หมวด ${escapeHTML(cat.key)} · ${escapeHTML(cat.label)}</span>
-        <select class="text-field" data-ballot-cat="${escapeHTML(cat.key)}">
-          ${cat.options
-            .map(
-              opt =>
-                `<option value="${escapeHTML(opt.id)}" ${opt.id === current ? 'selected' : ''}>${escapeHTML(
-                  opt.id + ' · ' + opt.name
-                )}</option>`
-            )
-            .join('')}
-        </select>
-      </label>`;
-    })
-    .join('');
+  const choices=normalizeChoices(item.ballot?.choices||{},{complete:false});
+  $('ballotEditor').innerHTML=cats.map(cat=>`<fieldset class="serving-editor"><legend>หมวด ${cat.key} · ${escapeHTML(cat.label)} · รวม ${quotaFor(cat.key)} เสิร์ฟ${cat.key==='H'?' (คิดราคา 2 เสิร์ฟ)':''}</legend>${cat.options.map(o=>`<label class="serving-edit-row"><span>${escapeHTML(o.id+' · '+o.name)} · ${money(o.price)}/เสิร์ฟ</span><select class="text-field" data-ballot-cat="${cat.key}" data-menu-id="${o.id}" aria-label="จำนวนเสิร์ฟ ${escapeHTML(o.name)}">${Array.from({length:quotaFor(cat.key)+1},(_,qty)=>`<option value="${qty}" ${(choices[cat.key]?.[o.id]||0)===qty?'selected':''}>${qty} เสิร์ฟ</option>`).join('')}</select></label>`).join('')}</fieldset>`).join('');
   $('editAttendance').value = item.preferences?.attendance || 'yes';
   $('editGift').value = item.preferences?.giftChoice || 'gift_500';
   $('editTheme').value = item.preferences?.themeChoice || 'midnight_gold';
@@ -919,10 +899,10 @@ $('saveBallotEdit')?.addEventListener('click', async () => {
   if (!selectedInviteId) return;
   const choices = {};
   document.querySelectorAll('[data-ballot-cat]').forEach(select => {
-    choices[select.dataset.ballotCat] = select.value;
+    const qty=Number(select.value),key=select.dataset.ballotCat;if(qty){choices[key]||={};choices[key][select.dataset.menuId]=qty;}
   });
   try {
-    await call('admin.ballot.save', { inviteId: selectedInviteId, choices });
+    await call('admin.ballot.save', { inviteId: selectedInviteId, choices:normalizeChoices(choices) });
     const keep = selectedInviteId;
     notice('✓ บันทึก/อัปเดตคะแนนอาหารบน Supabase เรียบร้อย', 'good');
     await refresh();
@@ -1069,8 +1049,8 @@ function renderResults(r) {
               i === 0 && numBallots ? '★ ' : ''
             }${escapeHTML(o.name)} <span class="muted">${money(
               lineCost(o)
-            )}</span></span><span class="rank-val">${o.v}</span></div><div class="meter"><div style="width:${
-              numBallots ? Math.round((o.v / numBallots) * 100) : 0
+            )}</span></span><span class="rank-val">${o.v} เสิร์ฟโหวต</span></div><div class="meter"><div style="width:${
+              numBallots ? Math.round((o.v / (numBallots*quotaFor(cat.key))) * 100) : 0
             }%"></div></div></div>`
         )
         .join('')}</article>`;
@@ -1098,7 +1078,7 @@ function planFromPicks(picks, reason) {
     picks,
     food,
     total: food + FIXED_ALLOWANCE,
-    score: picks.reduce((s, o) => s + (tallies[o.id] || 0), 0),
+    score: picks.reduce((s, o) => s + (o.score || 0), 0),
     reason
   };
 }
@@ -1106,9 +1086,11 @@ function planFromPicks(picks, reason) {
 function showPopular() {
   if (!numBallots) return notice('ยังไม่มีคะแนนจากพนักงาน จึงไม่สามารถสรุปผู้ชนะได้', true);
   currentPlanMode = 'popular';
+  const winner=popularityWinner(cats,tallies);
+  if(winner.length!==8)return notice('มีหมวดที่ไม่มีเมนูพร้อมขาย ไม่สามารถจัดชุดครบ 8 หมวดได้',true);
   currentPlan = planFromPicks(
-    popularityWinner(cats, tallies),
-    'Popularity Winner — เมนูที่ได้คะแนนโหวตสูงสุดในแต่ละหมวด'
+    winner,
+    'Popularity Winner — จัดเสิร์ฟตามคะแนนสนับสนุนสูงสุดในแต่ละหมวด'
   );
   renderPlan(currentPlan);
 }
@@ -1145,9 +1127,7 @@ function renderPlan(plan) {
         )}</td></tr>`
     )
     .join('');
-  $('engineStatus').textContent = `${plan.reason} · คะแนนสนับสนุนรวม ${plan.score}/${
-    numBallots * 8
-  } คะแนน`;
+  $('engineStatus').textContent = `${plan.reason} · คะแนนสนับสนุนถ่วงจำนวนเสิร์ฟ ${plan.score} · ใบโหวตกติกาเดิม ${lastResults?.legacyCount||0} ใบ (แสดงเมนูเดิมเต็มโควตาใหม่)`;
   const cls = plan.total > 2200 ? 'bad' : plan.total > 2000 ? 'warn' : '';
   $('costInfo').innerHTML = `<div class="summary-alert ${cls}"><strong>ค่าอาหาร 8 หมวด ${money(
     foodVal
@@ -1183,7 +1163,7 @@ $('exportCSV').addEventListener('click', () => {
     'ccr-dinner-order-DRAFT.csv',
     csv([
       ['category', 'menu', 'unit_price_thb', 'quantity', 'line_total_thb'],
-      ...currentPlan.picks.map((o, i) => [cats[i].key, o.name, o.price, o.qty, lineCost(o)]),
+      ...currentPlan.picks.flatMap((group, i) => group.items.map(o=>[cats[i].key, o.name, o.price, o.qty, lineCost(o)])),
       ['', 'FOOD TOTAL', '', '', currentPlan.food],
       ['', 'RICE RESERVE', '', '', 200],
       ['', 'OTHER RESERVE', '', '', 120],
@@ -1218,7 +1198,7 @@ $('exportSubmissionsCSV').addEventListener('click', () => {
   if (previewMode || !session?.access_token) return notice('กรุณาเข้าสู่ระบบก่อนส่งออกข้อมูลจริง', true);
   download('ccr-responses.csv', csv([
     ['participant_id','participant_label','active','ballot_id',...'ABCDEFGH','attendance','gift_choice','theme_choice','ballot_updated_at','preferences_updated_at'],
-    ...submissions.map(r => [r.inviteId,r.participantLabel || '',r.active,r.ballot?.id,...[...'ABCDEFGH'].map(k => r.ballot?.choices?.[k] || ''),r.preferences?.attendance,r.preferences?.giftChoice,r.preferences?.themeChoice,r.ballot?.updatedAt,r.preferences?.updatedAt])
+    ...submissions.map(r => [r.inviteId,r.participantLabel || '',r.active,r.ballot?.id,...[...'ABCDEFGH'].map(k => r.ballot ? choiceSummary(r.ballot.choices,k) : ''),r.preferences?.attendance,r.preferences?.giftChoice,r.preferences?.themeChoice,r.ballot?.updatedAt,r.preferences?.updatedAt])
   ]), 'text/csv;charset=utf-8');
 });
 $('exportSubmissionsJSON').addEventListener('click', () => {

@@ -9,7 +9,7 @@ import {
   setParticipantLabel,
   submissionParticipant,
   renderJourneyProgress
-} from './common.js?v=20261022-label1';
+} from './common.js?v=20261022-servings1';
 
 const $ = id => document.getElementById(id);
 const state = { attendance: '', giftChoice: '', themeChoice: '', savedAt: null };

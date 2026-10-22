@@ -8,7 +8,7 @@
   <title>Food Vote · โหวตเมนูอาหาร 8 หมวด · CCR After Hours 2026</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./styles.css?v=20261022-servings1">
   <link rel="stylesheet" href="./event.css">
 </head>
 <body class="voter-page event-page">
@@ -52,7 +52,7 @@
     <div>
       <p class="event-overline">STEP 03 · FOOD VOTE · 8 CATEGORIES · 56 DISHES</p>
       <h1>โหวตเมนูอาหาร<br><em>8 หมวดประจำโต๊ะ</em></h1>
-      <p>เลือกเมนูที่คุณอยากทานที่สุดหมวดละ 1 รายการ (ครบทั้ง 8 หมวด A–H) ระบบจะคำนวณงบต่อโต๊ะให้ดูแบบเรียลไทม์ และกดปุ่ม <b>“บันทึกคะแนนของฉัน”</b> เพื่อเก็บรายการไว้ได้ทันที</p>
+      <p>A B C E F หมวดละ 2 เสิร์ฟ · D G หมวดละ 1 เสิร์ฟ · H เลือก 1 เมนู คิดราคา 2 เสิร์ฟ ระบบจะคำนวณงบต่อโต๊ะให้ดูแบบเรียลไทม์ และกดปุ่ม <b>“บันทึกคะแนนของฉัน”</b> เพื่อเก็บรายการไว้ได้ทันที</p>
     </div>
     <div class="subhero-badge">
       <span>8/8</span>
@@ -71,7 +71,7 @@
     <div class="intro-right">
       <p>แต่ละหมวด (A ถึง H) มีเมนูให้เลือก 7 รายการ คุณสามารถคลิกแท็บหมวด A–H หรือกดปุ่ม “หมวดถัดไป” เพื่อเลือกจนครบ 8 หมวด แล้วกดส่งคะแนนเข้าระบบกลางได้เลย ไม่ต้องมีบัญชีผู้ใช้</p>
       <div class="pills">
-        <span>✓ เลือกหมวดละ 1 เมนู (รวม 8 หมวด)</span>
+        <span>✓ A B C E F หมวดละ 2 เสิร์ฟ · D G หมวดละ 1 เสิร์ฟ · H เลือก 1 เมนู คิดราคา 2 เสิร์ฟ</span>
         <span>✓ คำนวณงบโต๊ะอัตโนมัติ</span>
         <span>✓ บันทึกและกลับมาแก้ไขได้ตลอด</span>
       </div>
@@ -93,7 +93,7 @@
         </div>
 
         <div class="vote-helper-bar">
-          <p id="helperProgressText">คลิกเลือกหมวดละ 1 เมนูให้ครบทั้ง 8 หมวด (A–H) เพื่อบันทึกชุดเมนูของคุณ</p>
+          <p id="helperProgressText">A B C E F หมวดละ 2 เสิร์ฟ · D G หมวดละ 1 เสิร์ฟ · H เลือก 1 เมนู คิดราคา 2 เสิร์ฟ</p>
           <div class="vote-helper-actions">
             <button type="button" id="quickSample" class="btn btn-outline" style="padding:8px 14px;font-size:.84rem">✨ ลองเลือกชุดแนะนำครบ 8 หมวด</button>
             <button type="button" id="clearPicks" class="btn btn-outline" style="padding:8px 14px;font-size:.84rem">ล้างที่เลือก</button>
@@ -120,7 +120,7 @@
           </div>
         </div>
 
-        <div id="voteForm" class="food-options" role="radiogroup" aria-labelledby="categoryTitle"></div>
+        <div id="voteForm" class="food-options" role="group" aria-labelledby="categoryTitle"></div>
 
         <div class="vote-navigation">
           <button id="prev" type="button" class="btn btn-outline">← หมวดก่อนหน้า</button>
@@ -190,6 +190,6 @@
     <a href="./admin.html">สำหรับผู้จัดงาน</a>
   </div>
 </footer>
-<script type="module" src="./vote.js?v=20261022-label1"></script>
+<script type="module" src="./vote.js?v=20261022-servings1"></script>
 </body>
 </html>

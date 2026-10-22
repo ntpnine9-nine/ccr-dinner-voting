@@ -20,6 +20,7 @@ const files=[
   ['config.js','text/javascript; charset=utf-8'],
   ['common.js','text/javascript; charset=utf-8'],
   ['decision-engine.js','text/javascript; charset=utf-8'],
+  ['ballot-model.js','text/javascript; charset=utf-8'],
   ['vote.js','text/javascript; charset=utf-8'],
   ['admin.js','text/javascript; charset=utf-8'],
   ['event.js','text/javascript; charset=utf-8'],

@@ -1,3 +1,4 @@
+import {normalizeChoices,completedCategories,isLegacyBallot} from './ballot-model.js?v=20261022-servings1';
 import { CONFIG } from './config.js';
 export const configured = /^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(CONFIG.supabaseUrl) && CONFIG.publishableKey.length>30 && !CONFIG.publishableKey.includes('YOUR_');
 export const money = v => '฿'+Number(v).toLocaleString('en-US');
@@ -123,10 +124,10 @@ export function getSavedJourneyState(){
   if(savedBallot?.picks && Object.keys(picks).length===0){
     picks={...savedBallot.picks};
   }
-  const pickKeys=['A','B','C','D','E','F','G','H'].filter(k=>Boolean(picks[k]));
-  const voteCount=pickKeys.length;
+  try{picks=normalizeChoices(picks,{complete:false});}catch{picks={};}
+  const voteCount=completedCategories(picks).length;
   const voteDone=voteCount===8;
-  const hasSavedVote=Boolean(savedBallot?.savedAt && savedBallot?.cloudConfirmed);
+  const hasSavedVote=Boolean(savedBallot?.savedAt && savedBallot?.cloudConfirmed && !isLegacyBallot(savedBallot?.picks));
 
   return {
     party,
@@ -219,7 +220,7 @@ export async function getCatalog(){
     if(!res.ok) throw err;
     const local=await res.json();
     if(!Array.isArray(local.categories)||local.categories.length!==8) throw err;
-    return {ok:true,status:'closed',catalogVersion:1,categories:local.categories,offlineFallback:true,fallbackError:err?.message||''};
+    return {ok:true,status:'closed',catalogVersion:2,categories:local.categories,offlineFallback:true,fallbackError:err?.message||''};
   }
 }
 export const csv = rows=>'\ufeff'+rows.map(row=>row.map(x=>{

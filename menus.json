@@ -2,7 +2,7 @@
   "categories": [
     {
       "key": "A",
-      "desc": "อาหารน้ำร้อน 1 ชนิดบนโต๊ะ",
+      "desc": "เลือกรวม 2 เสิร์ฟ",
       "icon": "🍲",
       "label": "ต้ม / แกง / อาหารน้ำ",
       "options": [
@@ -15,7 +15,7 @@
           "source": "71517_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -27,7 +27,7 @@
           "source": "71517_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -39,7 +39,7 @@
           "source": "71517_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -51,7 +51,7 @@
           "source": "71517_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -63,7 +63,7 @@
           "source": "71517_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -75,26 +75,28 @@
           "source": "71517_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
           "id": "A7",
-          "qty": 1,
+          "qty": 2,
           "name": "เย็นตาโฟทะเลเดือดหม้อไฟ",
           "note": "",
           "price": 199,
           "source": "71517_0.jpg",
           "priceStatus": "reference",
           "portionCheck": true,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         }
-      ]
+      ],
+      "servingQuota": 2,
+      "billingMultiplier": 1
     },
     {
       "key": "B",
-      "desc": "เลือกปลาหรือจานหลักจากปลา 1 แบบ",
+      "desc": "เลือกรวม 2 เสิร์ฟ",
       "icon": "🐟",
       "label": "ปลา / อาหารทะเลจานหลัก",
       "options": [
@@ -107,7 +109,7 @@
           "source": "71516_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -119,7 +121,7 @@
           "source": "71516_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -131,7 +133,7 @@
           "source": "71516_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -143,7 +145,7 @@
           "source": "71516_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -155,7 +157,7 @@
           "source": "71516_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -167,26 +169,28 @@
           "source": "71516_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
           "id": "B7",
-          "qty": 1,
+          "qty": 2,
           "name": "ปลากะพงนึ่งมะนาว (เนื้อล้วน)",
           "note": "",
           "price": 250,
           "source": "71516_0.jpg",
           "priceStatus": "reference",
           "portionCheck": true,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         }
-      ]
+      ],
+      "servingQuota": 2,
+      "billingMultiplier": 1
     },
     {
       "key": "C",
-      "desc": "เมนูโปรตีนหรือกับข้าวคู่ข้าวสวย",
+      "desc": "เลือกรวม 2 เสิร์ฟ",
       "icon": "🍳",
       "label": "ผัดเนื้อสัตว์ / กับข้าว",
       "options": [
@@ -199,7 +203,7 @@
           "source": "71518_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -211,7 +215,7 @@
           "source": "71518_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -223,7 +227,7 @@
           "source": "71518_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -235,7 +239,7 @@
           "source": "71518_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -247,7 +251,7 @@
           "source": "71518_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -259,7 +263,7 @@
           "source": "71518_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -271,75 +275,77 @@
           "source": "71518_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         }
-      ]
+      ],
+      "servingQuota": 2,
+      "billingMultiplier": 1
     },
     {
       "key": "D",
-      "desc": "อาหารจานผักเพื่อเพิ่มสมดุลของโต๊ะ",
+      "desc": "เลือกรวม 1 เสิร์ฟ",
       "icon": "🥬",
       "label": "ผัก / อาหารจานผัก",
       "options": [
         {
           "id": "D1",
-          "qty": 2,
+          "qty": 1,
           "name": "ผัดผักรวม",
           "note": "",
           "price": 89,
           "source": "71518_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
           "id": "D2",
-          "qty": 2,
+          "qty": 1,
           "name": "คะน้าน้ำมันหอย",
           "note": "",
           "price": 89,
           "source": "71518_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
           "id": "D3",
-          "qty": 2,
+          "qty": 1,
           "name": "ผักบุ้งไฟแดง",
           "note": "",
           "price": 69,
           "source": "71518_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
           "id": "D4",
-          "qty": 2,
+          "qty": 1,
           "name": "กะหล่ำปลีผัดน้ำปลา",
           "note": "",
           "price": 89,
           "source": "71518_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
           "id": "D5",
-          "qty": 2,
+          "qty": 1,
           "name": "กระเฉดไฟแดง",
           "note": "",
           "price": 89,
           "source": "71518_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -351,7 +357,7 @@
           "source": "71518_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -363,14 +369,16 @@
           "source": "71518_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         }
-      ]
+      ],
+      "servingQuota": 1,
+      "billingMultiplier": 1
     },
     {
       "key": "E",
-      "desc": "ของทอดหรือย่างสำหรับแชร์กลางโต๊ะ",
+      "desc": "เลือกรวม 2 เสิร์ฟ",
       "icon": "🔥",
       "label": "ทอด / ย่าง",
       "options": [
@@ -383,7 +391,7 @@
           "source": "71515_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -395,7 +403,7 @@
           "source": "71515_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -407,7 +415,7 @@
           "source": "71515_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -419,7 +427,7 @@
           "source": "71515_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -431,7 +439,7 @@
           "source": "71515_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -443,7 +451,7 @@
           "source": "71515_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -455,106 +463,110 @@
           "source": "71515_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         }
-      ]
+      ],
+      "servingQuota": 2,
+      "billingMultiplier": 1
     },
     {
       "key": "F",
-      "desc": "ยำ ตำ หรือลาบสำหรับตัดเลี่ยนและเพิ่มรสจัด",
+      "desc": "เลือกรวม 2 เสิร์ฟ",
       "icon": "🌶️",
       "label": "ยำ / ส้มตำ / ลาบ",
       "options": [
         {
           "id": "F1",
-          "qty": 1,
+          "qty": 2,
           "name": "ตำไทย",
           "note": "",
           "price": 69,
           "source": "71517_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
           "id": "F2",
-          "qty": 1,
+          "qty": 2,
           "name": "ลาบหมู",
           "note": "",
           "price": 99,
           "source": "71517_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
           "id": "F3",
-          "qty": 1,
+          "qty": 2,
           "name": "ยำไข่ดาว",
           "note": "",
           "price": 119,
           "source": "71517_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
           "id": "F4",
-          "qty": 1,
+          "qty": 2,
           "name": "ยำหมูยอ",
           "note": "",
           "price": 119,
           "source": "71517_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
           "id": "F5",
-          "qty": 1,
+          "qty": 2,
           "name": "ยำวุ้นเส้นรวมมิตร",
           "note": "",
           "price": 129,
           "source": "71517_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
           "id": "F6",
-          "qty": 1,
+          "qty": 2,
           "name": "ยำทะเล",
           "note": "",
           "price": 129,
           "source": "71517_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
           "id": "F7",
-          "qty": 1,
+          "qty": 2,
           "name": "ยำซอย 11",
           "note": "",
           "price": 149,
           "source": "71517_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         }
-      ]
+      ],
+      "servingQuota": 2,
+      "billingMultiplier": 1
     },
     {
       "key": "G",
-      "desc": "ไข่หรือเมนูพิเศษ/เมนูน่าลอง",
+      "desc": "เลือกรวม 1 เสิร์ฟ",
       "icon": "✨",
       "label": "ไข่ / เมนูพิเศษ / เมนูน่าลอง",
       "options": [
@@ -567,7 +579,7 @@
           "source": "71518_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -579,7 +591,7 @@
           "source": "71518_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -591,7 +603,7 @@
           "source": "71518_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -603,7 +615,7 @@
           "source": "71518_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -615,7 +627,7 @@
           "source": "71518_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -627,7 +639,7 @@
           "source": "71518_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -639,14 +651,16 @@
           "source": "71518_0.jpg",
           "priceStatus": "reference",
           "portionCheck": false,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         }
-      ]
+      ],
+      "servingQuota": 1,
+      "billingMultiplier": 1
     },
     {
       "key": "H",
-      "desc": "ข้าวผัดเป็นหนึ่งใน 8 เมนู ส่วนข้าวสวยคิดแยก",
+      "desc": "เลือกรวม 1 เสิร์ฟ · เลือกข้าว 1 เมนู คิดราคา 2 เสิร์ฟ",
       "icon": "🍚",
       "label": "ข้าวผัด",
       "options": [
@@ -659,7 +673,7 @@
           "source": "71514_0.jpg",
           "priceStatus": "reference",
           "portionCheck": true,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -671,7 +685,7 @@
           "source": "71514_0.jpg",
           "priceStatus": "reference",
           "portionCheck": true,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -683,7 +697,7 @@
           "source": "71514_0.jpg",
           "priceStatus": "reference",
           "portionCheck": true,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -695,7 +709,7 @@
           "source": "71514_0.jpg",
           "priceStatus": "reference",
           "portionCheck": true,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -707,7 +721,7 @@
           "source": "71514_0.jpg",
           "priceStatus": "reference",
           "portionCheck": true,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -719,7 +733,7 @@
           "source": "71514_0.jpg",
           "priceStatus": "reference",
           "portionCheck": true,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         },
         {
@@ -731,10 +745,12 @@
           "source": "71514_0.jpg",
           "priceStatus": "reference",
           "portionCheck": true,
-          "catalogVersion": 1,
+          "catalogVersion": 2,
           "availabilityStatus": "unknown"
         }
-      ]
+      ],
+      "servingQuota": 1,
+      "billingMultiplier": 2
     }
   ],
   "campaign_id": "ccr-2026",
