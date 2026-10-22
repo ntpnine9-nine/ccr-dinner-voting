@@ -723,6 +723,7 @@ function renderInvites(items) {
             'th-TH'
           )}</td><td><div class="admin-btnrow">
             ${link ? `<button class="mini-btn" data-copy-link="${escapeHTML(link)}">คัดลอกลิงก์</button>` : ''}
+            <button class="mini-btn" data-manage-invite="${x.id}" ${previewMode ? 'disabled' : ''}>เพิ่ม/แก้คำตอบ</button>
             <button class="mini-btn" data-revoke="${x.id}" ${
             !x.active || previewMode ? 'disabled title="(ต้องเข้าสู่ระบบ)"' : ''
           }>ยกเลิก</button></div></td></tr>`;
@@ -730,6 +731,9 @@ function renderInvites(items) {
         .join('')
     : '<tr><td colspan="5" class="muted">ยังไม่มีรหัสเชิญ</td></tr>';
 
+  document.querySelectorAll('[data-manage-invite]').forEach(btn =>
+    btn.addEventListener('click', () => openSubmissionEditor(btn.dataset.manageInvite))
+  );
   document.querySelectorAll('[data-copy-link]').forEach(btn =>
     btn.addEventListener('click', async () => {
       try {
@@ -789,8 +793,9 @@ function preferenceSummary(p) {
 function renderSubmissions(items) {
   submissions = Array.isArray(items) ? items : [];
   if (!$('submissionRows')) return;
-  $('submissionRows').innerHTML = submissions.length
-    ? submissions
+  const answered = submissions.filter(item => item.ballot || item.preferences);
+  $('submissionRows').innerHTML = answered.length
+    ? answered
         .map(item => {
           const food = item.ballot
             ? Object.entries(item.ballot.choices || {})
