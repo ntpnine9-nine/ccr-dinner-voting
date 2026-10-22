@@ -43,13 +43,13 @@ Admin access uses Supabase Auth plus application authorization through `public.a
 - Re-submission updates the same record before campaign close.
 - Individual attendee responses are not shown on public pages.
 - Admin actions require authentication plus `admin_users` authorization.
-- Campaign remains CLOSED until explicit owner launch approval.
+- Owner authorized public voting on 22 October 2026. Open mode accepts a random browser-held capability without a pre-issued invite.
 
 ## Availability
 The project maintains automated verification for:
 - repository integrity
 - public gateway HTML/assets
 - backend status / CORS
-- campaign closed launch gate
+- current campaign admission state
 
 See `SECURITY.md`, `docs/OPERATIONS_TH.md`, and `docs/PRODUCTION_ACCEPTANCE.md`.

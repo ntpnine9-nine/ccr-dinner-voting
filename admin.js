@@ -11,7 +11,7 @@ import {
   VOTE_SAVED_KEY,
   VOTE_PICKS_KEY,
   PARTY_STORAGE_KEY
-} from './common.js';
+} from './common.js?v=20261022-cloud1';
 import {
   FIXED_ALLOWANCE,
   lineCost,
@@ -24,6 +24,8 @@ const $ = id => document.getElementById(id);
 const AUTH_KEY = 'ccr_admin_session_v3';
 let cats = [];
 let session = null;
+let refreshPending = null;
+let refreshingDashboard = false;
 let previewMode = false;
 let tallies = {};
 let numBallots = 0;
@@ -33,6 +35,8 @@ let currentPlan = null;
 let currentPlanMode = 'popular';
 let catalogVersion = null;
 let submissions = [];
+let auditItems = [];
+let lastPreferences = null;
 let selectedInviteId = null;
 
 function notice(message, type = false) {
@@ -42,7 +46,7 @@ function notice(message, type = false) {
 }
 
 function saveSession(s) {
-  session = s || null;
+  session = s ? { ...s, expires_at: s.expires_at || Math.floor(Date.now()/1000) + Number(s.expires_in || 3600) } : null;
   try {
     if (s) sessionStorage.setItem(AUTH_KEY, JSON.stringify(s));
     else sessionStorage.removeItem(AUTH_KEY);
@@ -83,12 +87,13 @@ async function signIn(email, password) {
 }
 
 async function refreshSession() {
-  if (!session?.refresh_token) return null;
-  const fresh = await authFetch('/auth/v1/token?grant_type=refresh_token', {
-    refresh_token: session.refresh_token
-  });
-  saveSession(fresh);
-  return fresh;
+  if (!session?.refresh_token) throw Error('กรุณาเข้าสู่ระบบใหม่');
+  if (!refreshPending) {
+    refreshPending = authFetch('/auth/v1/token?grant_type=refresh_token', {refresh_token: session.refresh_token})
+      .then(fresh => { saveSession(fresh); return fresh; })
+      .finally(() => { refreshPending = null; });
+  }
+  return refreshPending;
 }
 
 async function validToken() {
@@ -412,13 +417,11 @@ async function init() {
     cats = catalog.categories;
     catalogVersion = catalog.catalogVersion;
     session = loadSession();
-    if (session?.access_token) {
-      await onSession();
-    } else {
-      await enterPreviewMode();
-    }
+    await onSession();
   } catch (e) {
-    await enterPreviewMode();
+    saveSession(null);
+    await onSession();
+    notice('เชื่อมต่อระบบกลางไม่สำเร็จ: ' + e.message, true);
   }
 }
 
@@ -449,7 +452,11 @@ async function onSession() {
   if (logged) {
     await refresh();
   } else {
-    await enterPreviewMode();
+    previewMode = false;
+    $('previewBanner')?.classList.add('hidden');
+    $('dashboard').classList.add('hidden');
+    $('refresh').disabled = true;
+    notice('กรุณาเข้าสู่ระบบเพื่อดูและจัดการข้อมูลจริง', 'info');
   }
 }
 
@@ -524,16 +531,19 @@ $('logout').addEventListener('click', async () => {
 });
 
 async function refresh() {
+  if (refreshingDashboard) return;
   if (previewMode) {
     enterPreviewMode();
     return;
   }
+  refreshingDashboard = true;
   try {
-    const [r, inv, pref, sub] = await Promise.all([
+    const [r, inv, pref, sub, audit] = await Promise.all([
       call('admin.results'),
       call('admin.invites.list'),
       call('admin.preferences.results'),
-      call('admin.submissions.list')
+      call('admin.submissions.list'),
+      call('admin.audit.list')
     ]);
     lastResults = r;
     numBallots = r.count;
@@ -542,6 +552,9 @@ async function refresh() {
     renderInvites(inv.items || []);
     renderPreferences(pref);
     renderSubmissions(sub.items || []);
+    lastPreferences = pref;
+    auditItems = audit.items || [];
+    $('auditRows').innerHTML = auditItems.length ? auditItems.map(item => `<tr><td>${escapeHTML(new Date(item.created_at).toLocaleString('th-TH'))}</td><td>${escapeHTML(item.action)}</td><td><code>${escapeHTML(JSON.stringify(item.details))}</code></td></tr>`).join('') : '<tr><td colspan="3">ยังไม่มีประวัติการจัดการ</td></tr>';
     if ($('eligibleVoters')) $('eligibleVoters').value = Number(r.eligibleVoters || 50);
     if ($('saveEligibleVoters')) {
       $('saveEligibleVoters').disabled = false;
@@ -576,8 +589,13 @@ async function refresh() {
     notice('ไม่สามารถเข้าถึงข้อมูลผู้ดูแล: ' + msg, true);
     $('dashboard').classList.add('hidden');
     $('authPanel').classList.remove('hidden');
+  } finally {
+    refreshingDashboard = false;
   }
 }
+
+// Poll only while an authenticated dashboard is visible. No simulated fallback.
+setInterval(() => { if (session?.access_token && !previewMode && !document.hidden) refresh(); }, 20000);
 
 $('refresh').addEventListener('click', refresh);
 
@@ -947,10 +965,7 @@ $('saveEligibleVoters')?.addEventListener('click', async () => {
   }
 });
 
-$('reloadSubmissions')?.addEventListener('click', async () => {
-  await refresh();
-  notice('✓ โหลดข้อมูลรายคนและรีเฟรชตารางเรียบร้อยแล้ว');
-});
+$('reloadSubmissions')?.addEventListener('click', refresh);
 
 function prefRows(target, entries, total) {
   $(target).innerHTML = entries
@@ -1016,15 +1031,15 @@ function renderPreferences(p) {
 }
 
 function renderResults(r) {
-  const denom = r.activeInvites ?? r.invites;
+  const denom = r.eligibleVoters || r.activeInvites || r.invites;
   $('stats').innerHTML = [
     ['ผู้ส่งคะแนนอาหารแล้ว', r.count, 'จำนวนใบโหวต 8 หมวด'],
-    ['รหัสเชิญทั้งหมด', r.invites, 'รหัสที่ออกทั้งหมด'],
+    ['รหัสผู้ร่วมงานทั้งหมด', r.invites, 'รหัสเชิญและเบราว์เซอร์ที่ส่งคำตอบ'],
     ['รหัสที่ยังใช้งาน', r.activeInvites, 'ยังไม่ถูกยกเลิก'],
     [
       'อัตราการมีส่วนร่วม',
       denom ? Math.round((r.count / denom) * 100) + '%' : '—',
-      'คิดจากรหัสที่ใช้งานอยู่'
+      'คิดจากจำนวนผู้ร่วมงานเป้าหมาย'
     ]
   ]
     .map(
@@ -1181,13 +1196,27 @@ $('exportJSON').addEventListener('click', () => {
         exported_at: new Date().toISOString(),
         campaign: CONFIG.campaignId,
         catalog_version: catalogVersion,
-        results: lastResults
+        results: lastResults,
+        preferences: lastPreferences,
+        submissions: previewMode ? [] : submissions
       },
       null,
       2
     ),
     'application/json'
   );
+});
+
+$('exportSubmissionsCSV').addEventListener('click', () => {
+  if (previewMode || !session?.access_token) return notice('กรุณาเข้าสู่ระบบก่อนส่งออกข้อมูลจริง', true);
+  download('ccr-responses.csv', csv([
+    ['participant_id','active','ballot_id',...'ABCDEFGH','attendance','gift_choice','theme_choice','ballot_updated_at','preferences_updated_at'],
+    ...submissions.map(r => [r.inviteId,r.active,r.ballot?.id,...[...'ABCDEFGH'].map(k => r.ballot?.choices?.[k] || ''),r.preferences?.attendance,r.preferences?.giftChoice,r.preferences?.themeChoice,r.ballot?.updatedAt,r.preferences?.updatedAt])
+  ]), 'text/csv;charset=utf-8');
+});
+$('exportSubmissionsJSON').addEventListener('click', () => {
+  if (previewMode || !session?.access_token) return notice('กรุณาเข้าสู่ระบบก่อนส่งออกข้อมูลจริง', true);
+  download('ccr-responses-and-audit.json', JSON.stringify({exported_at:new Date().toISOString(),campaign:CONFIG.campaignId,results:lastResults,preferences:lastPreferences,submissions,audit:auditItems},null,2), 'application/json');
 });
 
 init();

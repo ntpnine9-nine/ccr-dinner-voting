@@ -1,4 +1,4 @@
-import { renderJourneyProgress, getSavedJourneyState, escapeHTML, money, PARTY_STORAGE_KEY, VOTE_SAVED_KEY, VOTE_PICKS_KEY, TOKEN_STORAGE_KEY } from './common.js';
+import { renderJourneyProgress, getSavedJourneyState, escapeHTML, money, PARTY_STORAGE_KEY, VOTE_SAVED_KEY, VOTE_PICKS_KEY, TOKEN_STORAGE_KEY } from './common.js?v=20261022-cloud1';
 const target=new Date('2026-12-18T18:00:00+07:00');
 const $=id=>document.getElementById(id);
 function tick(){
@@ -37,17 +37,16 @@ renderGuideSavedDetails();
 window.addEventListener('storage',()=>renderGuideSavedDetails());
 
 $('resetAllDataBtn')?.addEventListener('click', () => {
-  if (confirm('คุณต้องการล้างข้อมูลที่บันทึกไว้ในเบราว์เซอร์นี้ทั้งหมด (RSVP, ของขวัญ, โทนสี, คะแนนโหวตเมนูอาหาร) ใช่หรือไม่?')) {
+  if (confirm('ล้างฉบับร่างและบัตรสรุปในเครื่องนี้หรือไม่? คำตอบที่ส่งเข้าระบบกลางยังคงอยู่ หากต้องการลบข้อมูลกลางให้ติดต่อผู้จัดงาน')) {
     try {
       localStorage.removeItem(PARTY_STORAGE_KEY);
       localStorage.removeItem(VOTE_SAVED_KEY);
       localStorage.removeItem(VOTE_PICKS_KEY);
-      localStorage.removeItem(TOKEN_STORAGE_KEY);
       sessionStorage.removeItem('ccr_party_choices_v1');
       sessionStorage.removeItem('ccr_vote_choices_v3');
     } catch {}
     renderGuideSavedDetails();
-    alert('🗑️ ล้างข้อมูลที่บันทึกไว้ในเครื่องนี้เรียบร้อยแล้ว');
+    alert('ล้างฉบับร่างในเครื่องแล้ว คำตอบที่ส่งเข้าระบบกลางยังคงอยู่');
   }
 });
 

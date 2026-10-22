@@ -55,7 +55,7 @@
     <section id="authPanel" class="admin-card login-wrapper">
       <span class="section-kicker">SECURE ADMIN LOGIN</span>
       <h2>เข้าสู่ระบบผู้จัดงาน</h2>
-      <p class="muted">ใช้บัญชีผู้ดูแลระบบ (Supabase Auth) เพื่อจัดการรหัสเชิญและเปิด-ปิดรอบโหวตจริง หรือกดปุ่มโหมดจำลองด้านล่างเพื่อตรวจสอบการทำงานของแดชบอร์ดและระบบคำนวณงบโต๊ะได้ทันที</p>
+      <p class="muted">เข้าสู่ระบบเพื่อดูคะแนนจริง แก้ไขหรือลบคำตอบ และเปิด–ปิดรับโหวต · ข้อมูลจากผู้ร่วมงานอัปเดตทุก 20 วินาที</p>
       <label class="input-block" for="email"><span>อีเมลบัญชีผู้ดูแล</span><input id="email" type="email" class="text-field" placeholder="you@example.com" autocomplete="username"></label>
       <label class="input-block" for="password"><span>รหัสผ่านผู้ดูแล</span><input id="password" type="password" class="text-field" placeholder="••••••••••••" autocomplete="current-password"></label>
       <button id="login" class="btn btn-dark full">เข้าสู่ระบบผู้ดูแลจริง ↗</button>
@@ -67,7 +67,7 @@
       </div>
     </section>
 
-    <div id="dashboard">
+    <div id="dashboard" class="hidden">
       <section id="overview">
         <div class="row-between" style="margin-bottom:13px">
           <div>
@@ -96,7 +96,7 @@
         <div class="admin-card">
           <span class="section-kicker">03 / INVITATION CODES</span>
           <h2>ออกบัตรเชิญส่วนตัว</h2>
-          <p class="muted small">สร้างรหัสเชิญส่วนตัว (1–200 รหัส) เพื่อแจกจ่ายให้เพื่อนร่วมทีม พร้อมดาวน์โหลด CSV ได้ทันที</p>
+          <p class="muted small">รอบนี้เปิดให้ผู้ร่วมงานส่งจากลิงก์ได้โดยไม่ต้องมีรหัสเชิญ · สร้างรหัสเชิญส่วนตัวเพิ่มได้หากต้องการใช้รหัสเดียวกันข้ามเครื่อง</p>
           <div class="admin-btnrow">
             <label class="input-block" style="margin:0;max-width:110px"><span>จำนวนรหัส</span><input class="text-field" id="inviteCount" type="number" value="50" min="1" max="200"></label>
             <button id="generate" class="btn btn-dark" style="align-self:end">สร้างรหัส</button>
@@ -159,6 +159,10 @@
           </div>
           <button id="reloadSubmissions" class="btn btn-outline" type="button">↻ โหลดข้อมูลรายคน</button>
         </div>
+        <div class="admin-btnrow" style="margin:12px 0">
+          <button id="exportSubmissionsCSV" class="btn btn-outline" type="button">ส่งออกคำตอบทั้งหมด CSV ↓</button>
+          <button id="exportSubmissionsJSON" class="btn btn-outline" type="button">สำรองคำตอบและประวัติ JSON ↓</button>
+        </div>
 
         <div class="admin-flex" style="margin:14px 0 18px">
           <label class="input-block" style="min-width:240px;flex:1">
@@ -178,6 +182,13 @@
             <tbody id="submissionRows"><tr><td colspan="6" class="muted">เข้าสู่ระบบผู้ดูแลเพื่อโหลดข้อมูลจริง</td></tr></tbody>
           </table>
         </div>
+        <details style="margin-top:16px">
+          <summary>ประวัติการจัดการข้อมูลจริงล่าสุด (Audit Log)</summary>
+          <div class="data-scroll"><table>
+            <thead><tr><th>เวลา</th><th>คำสั่ง</th><th>รายละเอียด</th></tr></thead>
+            <tbody id="auditRows"><tr><td colspan="3">เข้าสู่ระบบเพื่อดูประวัติ</td></tr></tbody>
+          </table></div>
+        </details>
 
         <div id="submissionEditor" class="admin-preview-box hidden" style="margin-top:18px">
           <div class="row-between">
@@ -253,6 +264,6 @@
     </div>
   </main>
 </div>
-<script type="module" src="./admin.js"></script>
+<script type="module" src="./admin.js?v=20261022-cloud1"></script>
 </body>
 </html>

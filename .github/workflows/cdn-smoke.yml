@@ -37,10 +37,10 @@ jobs:
           test -s /tmp/cover.jpg
           file --mime-type /tmp/cover.jpg | grep -Fq 'image/jpeg'
           test -s /tmp/spread.jpg
-      - name: Verify API CORS and closed campaign
+      - name: Verify API CORS and admission state
         run: |
           set -euo pipefail
           curl --fail --silent --show-error -D /tmp/api.headers             "https://vjvptuecwewmqhkedybs.supabase.co/functions/v1/vote"             -H "Origin: https://raw.githack.com"             -H "Content-Type: application/json"             -H "apikey: sb_publishable_NrWLBu3I0QUioXj4rnon5Q_LbLYhsXR"             --data '{"op":"status","campaign":"ccr-2026"}'             -o /tmp/status.json
           grep -Eiq '^access-control-allow-origin: https://raw.githack.com' /tmp/api.headers
           grep -Fq '"ok":true' /tmp/status.json
-          grep -Fq '"open":false' /tmp/status.json
+          node -e 'const s=JSON.parse(require("fs").readFileSync("/tmp/status.json")); if(!s.ok || typeof s.open!=="boolean" || !["open","invite"].includes(s.votingMode))process.exit(1)'

@@ -55,7 +55,7 @@
     <div class="subhero-badge">
       <span>03</span>
       <strong>QUICK PICKS</strong>
-      <small>บันทึกไว้ในเครื่องหรือใช้รหัสเชิญส่งเข้าระบบ</small>
+      <small>ส่งเข้าฐานข้อมูลกลางเมื่อกดบันทึกและได้รับใบรับ</small>
     </div>
   </div>
 </section>
@@ -105,16 +105,16 @@
     <div>
       <p class="event-section-label light">SAVE YOUR PICKS</p>
       <h2>บันทึกตัวเลือกของคุณ</h2>
-      <p>คุณสามารถกด <b>“บันทึกตัวเลือกของฉัน”</b> เพื่อเก็บคำตอบไว้ในเครื่องและซิงก์ไปยังหน้าสรุปได้ทันที หรือกรอกรหัสเชิญส่วนตัวเพื่อส่งเข้าระบบกลางเมื่อเปิดรับคำตอบ</p>
+      <p>คุณสามารถกด <b>“บันทึกตัวเลือกของฉัน”</b> เพื่อส่งคำตอบเข้าฐานข้อมูลกลาง ผู้จัดงานจะเห็นข้อมูลจริงเมื่อระบบยืนยันสำเร็จ</p>
       <p style="margin-top:14px"><a class="event-btn event-btn-ghost" href="./vote.html">ไปขั้นที่ 3: โหวตเมนูอาหาร 8 หมวด ↗</a></p>
     </div>
     <div class="preference-submit-box">
-      <label for="prefToken">รหัสเชิญของคุณ (ใส่เมื่อต้องการส่งเข้าระบบกลาง หรือเว้นว่างเพื่อบันทึกไว้ในเครื่อง)</label>
-      <input id="prefToken" class="text-field" type="text" placeholder="CCR26-XXXXX-XXXXX-XXXXX-XXXXX (เว้นว่างได้หากบันทึกในเครื่อง)" maxlength="39" autocomplete="off" spellcheck="false">
+      <label for="prefToken">รหัสเชิญ (ไม่บังคับในรอบโหวตเปิด)</label>
+      <input id="prefToken" class="text-field" type="text" placeholder="CCR26-XXXXX-XXXXX-XXXXX-XXXXX (เว้นว่างได้)" maxlength="39" autocomplete="off" spellcheck="false">
       <div id="prefSummary" class="pref-summary">เลือกให้ครบทั้ง 3 เรื่องก่อนบันทึก</div>
       <button id="savePreferences" type="button" class="event-btn event-btn-light full">บันทึกตัวเลือกของฉัน ✓</button>
-      <button id="resetPreferences" type="button" class="event-btn event-btn-ghost full" style="margin-top:8px">🗑️ ล้างคำตอบที่บันทึกไว้ / ตอบใหม่</button>
-      <div class="privacy-strip">ข้อมูลซิงก์ข้ามหน้าอัตโนมัติในเบราว์เซอร์ของคุณ · เมื่อส่งด้วยรหัสเชิญ ระบบจะเก็บเฉพาะค่า Hash ในฐานข้อมูล</div>
+      <button id="resetPreferences" type="button" class="event-btn event-btn-ghost full" style="margin-top:8px">ล้างฉบับร่างในเครื่อง / ตอบใหม่</button>
+      <div class="privacy-strip">ระบบจำเบราว์เซอร์นี้ด้วยรหัสสุ่ม เพื่ออัปเดตคำตอบเดิมและเชื่อมกับคะแนนอาหาร · เปลี่ยนเครื่องหรือล้างข้อมูลเบราว์เซอร์จะเป็นคนละรหัส</div>
       <div id="prefMessage" role="status" aria-live="polite"></div>
     </div>
   </section>
@@ -133,5 +133,5 @@
 </section>
 </main>
 <footer class="event-footer"><div><b>CCR AFTER HOURS 2026</b><span>18 DEC · KRUASOI 11</span></div><div class="event-footer-links"><a href="./index.html">Home</a><a href="./venue.html">1 · สถานที่</a><a href="./party.html" aria-current="page">2 · ลงทะเบียน/ของขวัญ</a><a href="./vote.html">3 · โหวตเมนู</a><a href="./guide.html">4 · คู่มือ & สรุป</a><a href="./admin.html">สำหรับผู้จัดงาน</a></div></footer>
-<script type="module" src="./party.js"></script>
+<script type="module" src="./party.js?v=20261022-cloud1"></script>
 </body></html>

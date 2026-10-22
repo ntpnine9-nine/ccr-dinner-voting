@@ -69,7 +69,7 @@
       <h2>เลือกครบ <em>8 หมวด</em><br>กดบันทึกได้ทันที</h2>
     </div>
     <div class="intro-right">
-      <p>แต่ละหมวด (A ถึง H) มีเมนูให้เลือก 7 รายการ คุณสามารถคลิกแท็บหมวด A–H หรือกดปุ่ม “หมวดถัดไป” เพื่อเลือกจนครบ 8 หมวด แล้วกดบันทึกไว้ในเครื่องหรือใส่รหัสเชิญเพื่อส่งเข้าระบบกลาง</p>
+      <p>แต่ละหมวด (A ถึง H) มีเมนูให้เลือก 7 รายการ คุณสามารถคลิกแท็บหมวด A–H หรือกดปุ่ม “หมวดถัดไป” เพื่อเลือกจนครบ 8 หมวด แล้วกดส่งคะแนนเข้าระบบกลางได้เลย ไม่ต้องมีบัญชีผู้ใช้</p>
       <div class="pills">
         <span>✓ เลือกหมวดละ 1 เมนู (รวม 8 หมวด)</span>
         <span>✓ คำนวณงบโต๊ะอัตโนมัติ</span>
@@ -147,13 +147,13 @@
         <div class="access-box" id="saveVoteBox">
           <span class="eyebrow">03 / SAVE YOUR VOTE</span>
           <h3>บันทึกชุดเมนูของคุณ</h3>
-          <p class="muted small">เมื่อเลือกครบ 8 หมวดแล้ว กดปุ่ม <b>“บันทึกคะแนนของฉัน”</b> ด้านล่างเพื่อเก็บรายการไว้ในเครื่องและซิงก์ไปหน้าสรุปได้ทันที (หรือใส่รหัสเชิญเมื่อเปิดโหวตออนไลน์)</p>
-          <label for="token" class="field-label">รหัสเชิญของคุณ (เว้นว่างได้หากบันทึกไว้ในเครื่อง)</label>
+          <p class="muted small">เมื่อเลือกครบ 8 หมวดแล้ว กดปุ่ม <b>“บันทึกคะแนนของฉัน”</b> ด้านล่างเพื่อส่งเข้าฐานข้อมูลกลางและให้ผู้จัดงานเห็นคะแนนจริง</p>
+          <label for="token" class="field-label">รหัสเชิญ (ไม่บังคับในรอบโหวตเปิด)</label>
           <input id="token" type="text" class="text-field" placeholder="CCR26-XXXXX-XXXXX-XXXXX-XXXXX (เว้นว่างได้)" autocomplete="off" spellcheck="false" maxlength="39">
-          <p class="input-hint">รหัสเชิญเดียวกับหน้าลงทะเบียน RSVP & ของขวัญ</p>
+          <p class="input-hint">เว้นว่างได้ ระบบจำเบราว์เซอร์นี้เพื่ออัปเดตคะแนนเดิม · เปลี่ยนเครื่องหรือล้างข้อมูลเบราว์เซอร์จะเป็นคนละรหัส</p>
           <div class="completed-banner" id="reviewStatus">เลือกให้ครบ 8 หมวดเพื่อบันทึกชุดเมนูของคุณ</div>
           <button type="button" id="submit" class="btn btn-dark full">บันทึกคะแนนของฉัน ✓</button>
-          <button type="button" id="resetVoteBtn" class="btn btn-outline full" style="margin-top:8px">🗑️ ล้างคะแนนที่เลือกไว้ / เริ่มเลือกใหม่</button>
+          <button type="button" id="resetVoteBtn" class="btn btn-outline full" style="margin-top:8px">ล้างฉบับร่างในเครื่อง / เลือกใหม่</button>
           <div id="submitStatus" role="status" aria-live="polite"></div>
           <div class="portal-crosslink">
             <span>ดูสรุปรวม RSVP + ของขวัญ + เมนูอาหารทั้ง 8 หมวดได้ที่</span>
@@ -190,6 +190,6 @@
     <a href="./admin.html">สำหรับผู้จัดงาน</a>
   </div>
 </footer>
-<script type="module" src="./vote.js"></script>
+<script type="module" src="./vote.js?v=20261022-cloud1"></script>
 </body>
 </html>

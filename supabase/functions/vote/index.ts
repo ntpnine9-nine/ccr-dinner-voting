@@ -20,8 +20,18 @@ function limited(req:Request,limit=80){
   let b=buckets.get(key);if(!b||now>b.reset)b={count:0,reset:now+60000};b.count++;buckets.set(key,b);return b.count>limit;
 }
 async function adminUser(req:Request){const value=req.headers.get('authorization')||'';if(!value.startsWith('Bearer '))return null;const {data,error}=await auth.auth.getUser(value.slice(7));if(error||!data.user)return null;const {data:row,error:checkError}=await admin.from('admin_users').select('user_id').eq('user_id',data.user.id).maybeSingle();return !checkError&&row?data.user:null}
-async function logAdmin(userId:string,action:string,details:Record<string,unknown>={}){await admin.from('admin_action_logs').insert({campaign_id:CAMP,user_id:userId,action,details})}
 function inviteCode(){const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';const bytes=crypto.getRandomValues(new Uint8Array(20));let raw='';for(const b of bytes)raw+=alphabet[b%alphabet.length];return 'CCR26-'+raw.match(/.{1,5}/g)!.join('-')}
+function submissionIdentity(body:Record<string,any>){
+  if(body.code!=null&&typeof body.code!=='string')throw Error('INVALID_CODE');
+  const raw=String(body.code||'').trim();
+  if(raw){
+    if(raw.length>80)throw Error('INVALID_CODE');
+    const code=normalized(raw);if(!/^CCR26[A-Z2-9]{20}$/.test(code))throw Error('INVALID_CODE');
+    return {open:false,value:code};
+  }
+  if(typeof body.deviceToken!=='string'||!/^[a-f0-9]{64}$/.test(body.deviceToken))throw Error('INVALID_DEVICE_TOKEN');
+  return {open:true,value:CAMP+':open:'+body.deviceToken};
+}
 async function catalog(){
   const [campaign,categories,options]=await Promise.all([
     admin.from('campaigns').select('id,title,status,target_budget,consideration_budget,catalog_version,results_frozen_at').eq('id',CAMP).single(),
@@ -41,43 +51,45 @@ Deno.serve(async(req:Request)=>{try{
   if(!body||typeof body!=='object'||JSON.stringify(body).length>8192||body.campaign!==CAMP)return fail(req,'INVALID_REQUEST');
   const op=String(body.op||'');
   if(op==='status'){
-    const {data,error}=await admin.from('campaigns').select('status,catalog_version,results_frozen_at').eq('id',CAMP).single();
-    return error?fail(req,'UNAVAILABLE',503):json(req,{ok:true,open:data.status==='open',catalogVersion:data.catalog_version,resultsFrozenAt:data.results_frozen_at});
+    const {data,error}=await admin.from('campaigns').select('status,catalog_version,results_frozen_at,voting_mode').eq('id',CAMP).single();
+    return error?fail(req,'UNAVAILABLE',503):json(req,{ok:true,open:data.status==='open',votingMode:data.voting_mode,catalogVersion:data.catalog_version,resultsFrozenAt:data.results_frozen_at});
   }
   if(op==='catalog'){
     const c=await catalog();if(c.categories.length!==8||c.categories.some((x:any)=>x.options.length!==7))return fail(req,'CATALOG_INVALID',503);
     return json(req,{ok:true,catalogVersion:c.campaign.catalog_version,status:c.campaign.status,targetBudget:c.campaign.target_budget,considerationBudget:c.campaign.consideration_budget,categories:c.categories});
   }
   if(op==='preferences.submit'){
-    if(typeof body.code!=='string'||body.code.length>80)return fail(req,'INVALID_CODE');
-    const code=normalized(body.code);if(!/^CCR26[A-Z2-9]{20}$/.test(code))return fail(req,'INVALID_CODE');
+    let identity;try{identity=submissionIdentity(body)}catch(e){return fail(req,(e as Error).message)}
     const attendance=String(body.attendance||''),giftChoice=String(body.giftChoice||''),themeChoice=String(body.themeChoice||'');
-    const {data,error}=await admin.rpc('submit_event_preferences',{
+    const {data,error}=await admin.rpc(identity.open?'ccr_submit_open_preferences':'submit_event_preferences',{
       p_campaign_id:CAMP,
-      p_token_hash:await sha(code),
+      p_token_hash:await sha(identity.value),
       p_attendance:attendance,
       p_gift_choice:giftChoice,
       p_theme_choice:themeChoice
     });
-    if(error){const e=error.message;return fail(req,e.includes('VOTING_CLOSED')?'ปิดรับการตอบแบบสำรวจแล้ว':e.includes('INVALID_INVITE')?'รหัสเชิญไม่ถูกต้องหรือถูกยกเลิก':'PREFERENCE_SAVE_REJECTED',400)}
+    if(error){const e=error.message;return fail(req,e.includes('VOTING_CLOSED')?'ปิดรับการตอบแบบสำรวจแล้ว':e.includes('INVITE_REQUIRED')?'กรุณากรอกรหัสเชิญ':e.includes('INVALID_INVITE')?'รหัสเชิญไม่ถูกต้องหรือถูกยกเลิก':'PREFERENCE_SAVE_REJECTED',400)}
     if(!data?.[0]?.saved_at)return fail(req,'PREFERENCE_SAVE_NOT_CONFIRMED',503);
-    return json(req,{ok:true,saved_at:data[0].saved_at});
+    return json(req,{ok:true,receipt:data[0].receipt||null,saved_at:data[0].saved_at});
   }
   if(op==='submit'){
-    if(typeof body.code!=='string'||body.code.length>80)return fail(req,'INVALID_CODE');
-    const code=normalized(body.code);if(!/^CCR26[A-Z2-9]{20}$/.test(code))return fail(req,'INVALID_CODE');
+    let identity;try{identity=submissionIdentity(body)}catch(e){return fail(req,(e as Error).message)}
     if(!body.choices||typeof body.choices!=='object'||Array.isArray(body.choices))return fail(req,'INVALID_CHOICES');
     const keys=Object.keys(body.choices),expected=['A','B','C','D','E','F','G','H'];
     if(keys.length!==8||!expected.every(k=>typeof body.choices[k]==='string'&&new RegExp('^'+k+'[1-7]$').test(body.choices[k])))return fail(req,'SELECT_EIGHT_CATEGORIES');
     const {data:campaign,error:ce}=await admin.from('campaigns').select('catalog_version').eq('id',CAMP).single();if(ce)return fail(req,'UNAVAILABLE',503);
     if(body.catalogVersion!=null&&Number(body.catalogVersion)!==Number(campaign.catalog_version))return fail(req,'CATALOG_VERSION_MISMATCH',409);
-    const {data,error}=await admin.rpc('submit_ballot',{p_campaign_id:CAMP,p_token_hash:await sha(code),p_choices:body.choices});
-    if(error){const e=error.message;return fail(req,e.includes('VOTING_CLOSED')?'ปิดรับคะแนนแล้ว':e.includes('INVALID_INVITE')?'รหัสเชิญไม่ถูกต้องหรือถูกยกเลิก':e.includes('INVALID_MENU_OPTION')?'รายการอาหารไม่ตรงกับแค็ตตาล็อกปัจจุบัน':'SAVE_REJECTED',400)}
+    const {data,error}=await admin.rpc(identity.open?'ccr_submit_open_ballot':'submit_ballot',{p_campaign_id:CAMP,p_token_hash:await sha(identity.value),p_choices:body.choices});
+    if(error){const e=error.message;return fail(req,e.includes('VOTING_CLOSED')?'ปิดรับคะแนนแล้ว':e.includes('INVITE_REQUIRED')?'กรุณากรอกรหัสเชิญ':e.includes('INVALID_INVITE')?'รหัสเชิญไม่ถูกต้องหรือถูกยกเลิก':e.includes('INVALID_MENU_OPTION')?'รายการอาหารไม่ตรงกับแค็ตตาล็อกปัจจุบัน':'SAVE_REJECTED',400)}
     if(!data?.[0]?.receipt)return fail(req,'SAVE_NOT_CONFIRMED',503);
-    return json(req,{ok:true,receipt:String(data[0].receipt).slice(0,8),saved_at:data[0].saved_at});
+    return json(req,{ok:true,receipt:String(data[0].receipt),saved_at:data[0].saved_at});
   }
   if(!op.startsWith('admin.'))return fail(req,'UNKNOWN_OPERATION',404);
   const user=await adminUser(req);if(!user)return fail(req,'ADMIN_UNAUTHORIZED',403);
+  if(op==='admin.audit.list'){
+    const {data,error}=await admin.from('admin_action_logs').select('id,user_id,action,details,created_at').eq('campaign_id',CAMP).order('id',{ascending:false}).limit(100);
+    return error?fail(req,'READ_FAILURE',503):json(req,{ok:true,items:data||[]});
+  }
   if(op==='admin.results'){
     const [campaignRes,invRes]=await Promise.all([
       admin.from('campaigns').select('status,eligible_voters,catalog_version,results_frozen_at').eq('id',CAMP).single(),
@@ -141,119 +153,23 @@ Deno.serve(async(req:Request)=>{try{
       };
     })});
   }
-  if(op==='admin.eligible_voters'){
-    const count=Number(body.count);
-    if(!Number.isInteger(count)||count<1||count>200)return fail(req,'INVALID_ELIGIBLE_VOTERS');
-    const {error}=await admin.from('campaigns').update({eligible_voters:count,updated_at:new Date().toISOString()}).eq('id',CAMP);
-    if(error)return fail(req,'UPDATE_FAILED',503);
-    await logAdmin(user.id,'campaign.eligible_voters',{count});
-    return json(req,{ok:true,eligibleVoters:count});
-  }
-  if(op==='admin.ballot.save'){
-    const inviteId=String(body.inviteId||'');
-    if(!/^[0-9a-f-]{36}$/i.test(inviteId))return fail(req,'INVALID_INVITE_ID');
-    const choices=body.choices;
-    if(!choices||typeof choices!=='object'||Array.isArray(choices))return fail(req,'INVALID_CHOICES');
-    const keys=Object.keys(choices),expected=['A','B','C','D','E','F','G','H'];
-    if(keys.length!==8||!expected.every(k=>typeof choices[k]==='string'&&new RegExp('^'+k+'[1-7]$').test(choices[k])))return fail(req,'SELECT_EIGHT_CATEGORIES');
-    const [{data:campaign,error:ce},{data:invite,error:ie}]=await Promise.all([
-      admin.from('campaigns').select('results_frozen_at').eq('id',CAMP).single(),
-      admin.from('invite_codes').select('id').eq('campaign_id',CAMP).eq('id',inviteId).maybeSingle()
-    ]);
-    if(ce)return fail(req,'READ_FAILURE',503);
-    if(campaign.results_frozen_at)return fail(req,'RESULTS_FROZEN',409);
-    if(ie||!invite)return fail(req,'INVITE_NOT_FOUND',404);
-    const ids=Object.values(choices);
-    const {data:opts,error:oe}=await admin.from('menu_options').select('id').eq('campaign_id',CAMP).in('id',ids);
-    if(oe||!opts||opts.length!==8)return fail(req,'INVALID_MENU_OPTION');
-    const now=new Date().toISOString();
-    const {data,error}=await admin.from('ballots').upsert({invite_id:inviteId,campaign_id:CAMP,choices,updated_at:now},{onConflict:'invite_id'}).select('id').single();
-    if(error||!data)return fail(req,'BALLOT_SAVE_FAILED',503);
-    await logAdmin(user.id,'ballot.save',{inviteId,ballotId:data.id});
-    return json(req,{ok:true,id:data.id,updatedAt:now});
-  }
-  if(op==='admin.ballot.delete'){
-    const inviteId=String(body.inviteId||'');
-    if(!/^[0-9a-f-]{36}$/i.test(inviteId))return fail(req,'INVALID_INVITE_ID');
-    const {data:campaign,error:ce}=await admin.from('campaigns').select('results_frozen_at').eq('id',CAMP).single();
-    if(ce)return fail(req,'READ_FAILURE',503);
-    if(campaign.results_frozen_at)return fail(req,'RESULTS_FROZEN',409);
-    const {data,error}=await admin.from('ballots').delete().eq('campaign_id',CAMP).eq('invite_id',inviteId).select('id');
-    if(error)return fail(req,'BALLOT_DELETE_FAILED',503);
-    if(!data?.length)return fail(req,'BALLOT_NOT_FOUND',404);
-    await logAdmin(user.id,'ballot.delete',{inviteId});
-    return json(req,{ok:true});
-  }
-  if(op==='admin.preferences.save'){
-    const inviteId=String(body.inviteId||'');
-    if(!/^[0-9a-f-]{36}$/i.test(inviteId))return fail(req,'INVALID_INVITE_ID');
-    const attendance=String(body.attendance||''),giftChoice=String(body.giftChoice||''),themeChoice=String(body.themeChoice||'');
-    if(!['yes','maybe','no'].includes(attendance))return fail(req,'INVALID_ATTENDANCE');
-    if(!['gift_300','gift_500','gift_300_500','gift_none'].includes(giftChoice))return fail(req,'INVALID_GIFT_CHOICE');
-    if(!['midnight_gold','forest_champagne','retro_future','come_as_you_are'].includes(themeChoice))return fail(req,'INVALID_THEME_CHOICE');
-    const [{data:campaign,error:ce},{data:invite,error:ie}]=await Promise.all([
-      admin.from('campaigns').select('results_frozen_at').eq('id',CAMP).single(),
-      admin.from('invite_codes').select('id').eq('campaign_id',CAMP).eq('id',inviteId).maybeSingle()
-    ]);
-    if(ce)return fail(req,'READ_FAILURE',503);
-    if(campaign.results_frozen_at)return fail(req,'RESULTS_FROZEN',409);
-    if(ie||!invite)return fail(req,'INVITE_NOT_FOUND',404);
-    const now=new Date().toISOString();
-    const {error}=await admin.from('event_preferences').upsert({invite_id:inviteId,campaign_id:CAMP,attendance,gift_choice:giftChoice,theme_choice:themeChoice,updated_at:now},{onConflict:'invite_id'});
-    if(error)return fail(req,'PREFERENCES_SAVE_FAILED',503);
-    await logAdmin(user.id,'preferences.save',{inviteId});
-    return json(req,{ok:true,updatedAt:now});
-  }
-  if(op==='admin.preferences.delete'){
-    const inviteId=String(body.inviteId||'');
-    if(!/^[0-9a-f-]{36}$/i.test(inviteId))return fail(req,'INVALID_INVITE_ID');
-    const {data:campaign,error:ce}=await admin.from('campaigns').select('results_frozen_at').eq('id',CAMP).single();
-    if(ce)return fail(req,'READ_FAILURE',503);
-    if(campaign.results_frozen_at)return fail(req,'RESULTS_FROZEN',409);
-    const {data,error}=await admin.from('event_preferences').delete().eq('campaign_id',CAMP).eq('invite_id',inviteId).select('invite_id');
-    if(error)return fail(req,'PREFERENCES_DELETE_FAILED',503);
-    if(!data?.length)return fail(req,'PREFERENCES_NOT_FOUND',404);
-    await logAdmin(user.id,'preferences.delete',{inviteId});
-    return json(req,{ok:true});
-  }
-  if(op==='admin.submission.delete'){
-    const inviteId=String(body.inviteId||'');
-    if(!/^[0-9a-f-]{36}$/i.test(inviteId))return fail(req,'INVALID_INVITE_ID');
-    const {data:campaign,error:ce}=await admin.from('campaigns').select('results_frozen_at').eq('id',CAMP).single();
-    if(ce)return fail(req,'READ_FAILURE',503);
-    if(campaign.results_frozen_at)return fail(req,'RESULTS_FROZEN',409);
-    const [ballot,pref]=await Promise.all([
-      admin.from('ballots').delete().eq('campaign_id',CAMP).eq('invite_id',inviteId).select('id'),
-      admin.from('event_preferences').delete().eq('campaign_id',CAMP).eq('invite_id',inviteId).select('invite_id')
-    ]);
-    if(ballot.error||pref.error)return fail(req,'SUBMISSION_DELETE_FAILED',503);
-    await logAdmin(user.id,'submission.delete',{inviteId,ballotDeleted:!!ballot.data?.length,preferencesDeleted:!!pref.data?.length});
-    return json(req,{ok:true,ballotDeleted:!!ballot.data?.length,preferencesDeleted:!!pref.data?.length});
-  }
-  if(op==='admin.invites'){
-    const count=Number(body.count);if(!Number.isInteger(count)||count<1||count>200)return fail(req,'INVALID_COUNT');
-    const items=[] as {id:string,code:string,token_hash:string}[];for(let i=0;i<count;i++){const code=inviteCode();items.push({id:crypto.randomUUID(),code,token_hash:await sha(normalized(code))})}
-    const {error}=await admin.from('invite_codes').insert(items.map(x=>({id:x.id,campaign_id:CAMP,token_hash:x.token_hash})));if(error)return fail(req,'CREATE_INVITES_ERROR',503);
-    await logAdmin(user.id,'invite.generate',{count});return json(req,{ok:true,items:items.map(({id,code})=>({id,code}))});
-  }
-  if(op==='admin.invites.revoke'){
-    const inviteId=String(body.inviteId||'');if(!/^[0-9a-f-]{36}$/i.test(inviteId))return fail(req,'INVALID_INVITE_ID');
-    const {data,error}=await admin.from('invite_codes').update({active:false,revoked_at:new Date().toISOString()}).eq('campaign_id',CAMP).eq('id',inviteId).select('id').maybeSingle();if(error||!data)return fail(req,'INVITE_NOT_FOUND',404);
-    await logAdmin(user.id,'invite.revoke',{inviteId});return json(req,{ok:true});
-  }
-  if(op==='admin.status'){
-    if(body.status!=='open'&&body.status!=='closed')return fail(req,'INVALID_STATUS');
-    const {data:current,error:re}=await admin.from('campaigns').select('results_frozen_at').eq('id',CAMP).single();if(re)return fail(req,'READ_FAILURE',503);
-    if(body.status==='open'&&current.results_frozen_at)return fail(req,'RESULTS_FROZEN',409);
-    const {error}=await admin.from('campaigns').update({status:body.status,updated_at:new Date().toISOString()}).eq('id',CAMP);if(error)return fail(req,'UPDATE_FAILED',503);
-    await logAdmin(user.id,'campaign.status',{status:body.status});return json(req,{ok:true,status:body.status});
-  }
-  if(op==='admin.freeze'){
-    const {data:campaign,error:ce}=await admin.from('campaigns').select('status,results_frozen_at').eq('id',CAMP).single();if(ce)return fail(req,'READ_FAILURE',503);
-    if(campaign.status!=='closed')return fail(req,'CLOSE_CAMPAIGN_FIRST',409);
-    if(campaign.results_frozen_at)return json(req,{ok:true,resultsFrozenAt:campaign.results_frozen_at});
-    const now=new Date().toISOString();const {error}=await admin.from('campaigns').update({results_frozen_at:now,updated_at:now}).eq('id',CAMP);if(error)return fail(req,'FREEZE_FAILED',503);
-    await logAdmin(user.id,'results.freeze',{at:now});return json(req,{ok:true,resultsFrozenAt:now});
+  const mutations=new Set(['admin.eligible_voters','admin.status','admin.freeze','admin.ballot.save','admin.ballot.delete','admin.preferences.save','admin.preferences.delete','admin.submission.delete','admin.invites','admin.invites.revoke']);
+  if(mutations.has(op)){
+    let payload=body;
+    let issued:{id:string,code:string,token_hash:string}[]=[];
+    if(op==='admin.invites'){
+      const count=Number(body.count);if(!Number.isInteger(count)||count<1||count>200)return fail(req,'INVALID_COUNT');
+      for(let i=0;i<count;i++){const code=inviteCode();issued.push({id:crypto.randomUUID(),code,token_hash:await sha(normalized(code))})}
+      payload={items:issued.map(({id,token_hash})=>({id,token_hash}))};
+    }
+    const {data,error}=await admin.rpc('ccr_admin_mutate',{p_campaign_id:CAMP,p_user_id:user.id,p_op:op,p_payload:payload});
+    if(error){
+      const message=error.message;
+      const known=message.match(/RESULTS_FROZEN|CLOSE_CAMPAIGN_FIRST|INVITE_NOT_FOUND|BALLOT_NOT_FOUND|PREFERENCES_NOT_FOUND|INVALID_[A-Z_]+|SELECT_EIGHT_CATEGORIES|ADMIN_UNAUTHORIZED/);
+      return fail(req,known?.[0]||'ADMIN_UPDATE_FAILED',known?(message.includes('FROZEN')?409:400):503);
+    }
+    if(!data?.ok)return fail(req,'UPDATE_NOT_CONFIRMED',503);
+    return json(req,op==='admin.invites'?{...data,items:issued.map(({id,code})=>({id,code}))}:data);
   }
   return fail(req,'UNKNOWN_ADMIN_OPERATION',404);
 }catch(error){console.error('vote edge error',error);return fail(req,'SERVER_ERROR',500)}});

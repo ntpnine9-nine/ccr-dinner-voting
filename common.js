@@ -6,6 +6,24 @@ export const PARTY_STORAGE_KEY = 'ccr_party_preferences_2026_v1';
 export const VOTE_PICKS_KEY = 'ccr_dinner_2026_picks_v1';
 export const VOTE_SAVED_KEY = 'ccr_dinner_2026_saved_ballot_v1';
 export const TOKEN_STORAGE_KEY = 'ccr_invite_token_2026_v1';
+export const DEVICE_STORAGE_KEY = 'ccr_device_token_2026_v1';
+
+// A random capability, not a fingerprint. Retrying or using the other form updates
+// the same participant. Refuse to submit if it cannot be kept for the next page.
+export function getDeviceToken(){
+  try {
+    let token = localStorage.getItem(DEVICE_STORAGE_KEY);
+    if (!/^[a-f0-9]{64}$/.test(token || '')) {
+      const bytes = crypto.getRandomValues(new Uint8Array(32));
+      token = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+      localStorage.setItem(DEVICE_STORAGE_KEY, token);
+    }
+    if (localStorage.getItem(DEVICE_STORAGE_KEY) !== token) throw Error('storage unavailable');
+    return token;
+  } catch {
+    throw Error('กรุณาอนุญาตให้เว็บไซต์เก็บข้อมูลในเบราว์เซอร์ เพื่อป้องกันการส่งคะแนนซ้ำ');
+  }
+}
 
 const GIFT_MAP = {
   gift_300: 'จับของขวัญ ฿300',
@@ -59,7 +77,7 @@ export function getSharedToken(){
 }
 export function setSharedToken(raw){
   const formatted=formatInviteCode(raw);
-  try{if(formatted)localStorage.setItem(TOKEN_STORAGE_KEY,formatted);}catch{}
+  try{if(formatted)localStorage.setItem(TOKEN_STORAGE_KEY,formatted);else localStorage.removeItem(TOKEN_STORAGE_KEY);}catch{}
   return formatted;
 }
 

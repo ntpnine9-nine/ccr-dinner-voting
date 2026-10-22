@@ -8,9 +8,10 @@ import {
   VOTE_PICKS_KEY,
   VOTE_SAVED_KEY,
   getSharedToken,
+  getDeviceToken,
   setSharedToken,
   renderJourneyProgress
-} from './common.js';
+} from './common.js?v=20261022-cloud1';
 import { FIXED_ALLOWANCE, lineCost } from './decision-engine.js';
 
 const $ = id => document.getElementById(id);
@@ -18,6 +19,7 @@ let cats = [];
 let step = 0;
 let selected = {};
 let isOpen = false;
+let votingMode = 'invite';
 let submitting = false;
 let success = false;
 let savedBallot = null;
@@ -290,8 +292,9 @@ function render(restoreFocusId = '') {
   document.querySelectorAll('input[name=categoryPick]').forEach(el =>
     el.addEventListener('change', () => {
       selected[c.key] = el.value;
+      savedBallot = null;
       success = false;
-      saveDraft();
+      saveLocalDraft();
       render(el.value);
     })
   );
@@ -421,7 +424,7 @@ function handleClearAllPicks() {
   step = 0;
   renderJourneyProgress();
   render();
-  show('🗑️ ล้างคะแนนโหวตทั้งหมดของคุณแล้ว คุณสามารถเลือกเมนูใหม่ตั้งแต่หมวด A–H ได้เลยครับ');
+  show('ล้างฉบับร่างในเครื่องแล้ว คะแนนที่ส่งเข้าระบบกลางยังคงอยู่ — เลือกใหม่แล้วกดส่งเพื่ออัปเดตคะแนนเดิม');
 }
 
 $('clearPicks')?.addEventListener('click', handleClearAllPicks);
@@ -470,6 +473,15 @@ $('submit').addEventListener('click', async () => {
     setSharedToken(code);
   }
 
+  // Refresh admission at submission time: a page may have been open for hours.
+  try {
+    const admission = await api('status');
+    isOpen = !!admission.open;
+    votingMode = admission.votingMode || 'invite';
+  } catch (e) {
+    return show('ตรวจสถานะระบบกลางไม่สำเร็จ: ' + e.message + ' — ยังไม่ได้ส่งข้อมูล กรุณาลองใหม่', 'bad');
+  }
+
   // State B: Campaign Closed
   if (!isOpen) {
     success = false;
@@ -481,7 +493,7 @@ $('submit').addEventListener('click', async () => {
   }
 
   // State C: Missing or Invalid Code
-  if (!code || !/^CCR26(?:-[A-Z2-9]{5}){4}$/.test(code)) {
+  if ((code && !/^CCR26(?:-[A-Z2-9]{5}){4}$/.test(code)) || (!code && votingMode !== 'open')) {
     success = false;
     render();
     return show(
@@ -503,33 +515,16 @@ $('submit').addEventListener('click', async () => {
   render();
   show('กำลังส่งคะแนนเข้าสู่ฐานข้อมูลกลาง…', 'normal');
 
-  const nextStepButtons =
-    '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-dark" style="padding:8px 14px;font-size:.84rem;text-decoration:none" href="./guide.html">ไปขั้นที่ 4: ดูบัตรสรุปของฉัน & คู่มือวันงาน ↗</a><button type="button" class="btn btn-ghost" id="newVoteAfterSubmit" style="padding:8px 14px;font-size:.84rem;background:#fff">＋ บันทึกอีก 1 ใบโหวต (สำหรับเพื่อน/ทดสอบ)</button></div>';
-
-  setTimeout(() => {
-    document.getElementById('newVoteAfterSubmit')?.addEventListener('click', () => {
-      savedBallot = null;
-      success = false;
-      step = 0;
-      cats.forEach(c => delete selected[c.key]);
-      try {
-        localStorage.removeItem(VOTE_SAVED_KEY);
-        localStorage.removeItem(VOTE_PICKS_KEY);
-        sessionStorage.removeItem('ccr_vote_choices_v3');
-      } catch {}
-      renderJourneyProgress();
-      render();
-      document.querySelector('.category-heading')?.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
-      show('เลือกเมนู 8 หมวดสำหรับใบโหวตใหม่ได้เลยครับ (ใบโหวตก่อนหน้าถูกบันทึกในระบบเรียบร้อยแล้ว)');
-    });
-  }, 50);
+  const nextStepButtons = '<div style="margin-top:10px"><a class="btn btn-dark" href="./guide.html">ดูบัตรสรุปของฉัน & คู่มือวันงาน ↗</a><p>เปลี่ยนเมนูแล้วส่งอีกครั้งเพื่ออัปเดตใบโหวตเดิมในเบราว์เซอร์นี้</p></div>';
 
   try {
     const r = await api('submit', {
       code,
+      deviceToken: code ? undefined : getDeviceToken(),
       catalogVersion,
       choices: Object.fromEntries(keys.map(k => [k, selected[k]]))
     });
+    if (!r.receipt || !r.saved_at) throw Error('ระบบยังไม่ยืนยันใบโหวต กรุณาลองส่งใหม่');
     saveConfirmedBallot(r.receipt, r.saved_at);
     success = true;
     const timeStr = r.saved_at ? new Date(r.saved_at).toLocaleString('th-TH') : '';
@@ -586,6 +581,7 @@ async function init() {
     }
     const r = await api('status');
     isOpen = !!r.open;
+    votingMode = r.votingMode || 'invite';
     status(
       isOpen
         ? 'เปิดรับคะแนนโหวตแล้ว · เลือกครบ 8 หมวดแล้วกดบันทึกคะแนนได้ทันที'

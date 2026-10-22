@@ -1,0 +1,49 @@
+{
+  "date": "2026-10-22",
+  "project": "vjvptuecwewmqhkedybs",
+  "campaign": "ccr-2026",
+  "baseCommit": "46bcb2303b3ee2412b5b5ec777e5ecf7fa4eea66",
+  "edgeFunctionVersion": 7,
+  "migration": "20261022034914_open_voting_and_atomic_admin_operations",
+  "liveChecks": [
+    "owner password login",
+    "owner role authorized",
+    "open public submissions enabled",
+    "unauthenticated admin denied",
+    "invalid public submission rejected",
+    "invalid submission leaves no orphan identity",
+    "cloud ballot receipt and timestamp",
+    "cloud RSVP receipt and timestamp",
+    "independent admin read sees ballot and RSVP together",
+    "one submission counted",
+    "retry updates same ballot without duplicate",
+    "second participant visible centrally",
+    "admin edits persist to cloud",
+    "invalid admin edit rejected",
+    "admin deletes cloud ballot",
+    "admin deletes cloud RSVP",
+    "existing invite submission path works",
+    "revoked invitation cannot submit",
+    "disposable votes removed, original count preserved"
+  ],
+  "liveChecksPassed": 19,
+  "databaseGuardChecks": [
+    "closed campaign rejects submission (rolled-back subtransaction)",
+    "frozen campaign rejects reopening (rolled-back subtransaction)"
+  ],
+  "finalCloudState": {
+    "status": "open",
+    "votingMode": "open",
+    "eligibleVoters": 50,
+    "ballots": 0,
+    "preferences": 0,
+    "invites": 0,
+    "adminActionLogs": 12
+  },
+  "cleanup": "Only generated disposable test submissions and invitation rows removed; audit kept.",
+  "limits": [
+    "Browser capability does not establish one human per vote across devices",
+    "API persistence tested; physical user mobile acceptance not yet performed"
+  ],
+  "secretsIncluded": false
+}

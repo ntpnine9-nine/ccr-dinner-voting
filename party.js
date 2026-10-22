@@ -6,13 +6,15 @@ import {
   PARTY_STORAGE_KEY,
   PARTY_LABELS,
   getSharedToken,
+  getDeviceToken,
   setSharedToken,
   renderJourneyProgress
-} from './common.js';
+} from './common.js?v=20261022-cloud1';
 
 const $ = id => document.getElementById(id);
 const state = { attendance: '', giftChoice: '', themeChoice: '', savedAt: null };
 let isOpen = false;
+let votingMode = 'invite';
 let saving = false;
 
 try {
@@ -72,8 +74,8 @@ function render() {
   const savedBadge = (state.cloudConfirmed && state.savedAt)
     ? `<br><small style="color:#a7f3d0">✓ บันทึกลงระบบกลางแล้วเมื่อ ${escapeHTML(new Date(state.savedAt).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }))} น. · ข้อมูลซิงก์ไปหน้าสรุปแล้ว</small>`
     : (complete
-      ? '<br><small>ฉบับร่างในเครื่องนี้เท่านั้น ยังไม่ได้ส่งเข้าระบบกลาง — กรอกรหัสเชิญแล้วกดปุ่มบันทึกเพื่อส่งเข้าระบบกลาง</small>'
-      : '<br><small>เลือกครบ 3 ข้อแล้ว กรอกรหัสเชิญและกดปุ่ม “บันทึกตัวเลือกของฉัน” เพื่อส่งเข้าระบบกลาง</small>');
+      ? '<br><small>ฉบับร่างในเครื่องนี้เท่านั้น ยังไม่ได้ส่งเข้าระบบกลาง — กดปุ่มบันทึกเพื่อส่งเข้าระบบกลาง</small>'
+      : '<br><small>เลือกครบ 3 ข้อแล้วกดปุ่ม “บันทึกตัวเลือกของฉัน” เพื่อส่งเข้าระบบกลาง</small>');
 
   if ($('prefSummary')) {
     $('prefSummary').innerHTML = complete
@@ -157,6 +159,15 @@ $('savePreferences')?.addEventListener('click', async () => {
     setSharedToken(code);
   }
 
+  // Refresh admission at submission time: a page may have been open for hours.
+  try {
+    const admission = await api('status');
+    isOpen = !!admission.open;
+    votingMode = admission.votingMode || 'invite';
+  } catch (e) {
+    return msg('ตรวจสถานะระบบกลางไม่สำเร็จ: ' + e.message + ' — ยังไม่ได้ส่งข้อมูล กรุณาลองใหม่', 'bad');
+  }
+
   // State B: Campaign Closed
   if (!isOpen) {
     return msg(
@@ -166,7 +177,7 @@ $('savePreferences')?.addEventListener('click', async () => {
   }
 
   // State C: Missing or Invalid Code
-  if (!code || !/^CCR26(?:-[A-Z2-9]{5}){4}$/.test(code)) {
+  if ((code && !/^CCR26(?:-[A-Z2-9]{5}){4}$/.test(code)) || (!code && votingMode !== 'open')) {
     return msg(
       'กรุณากรอกรหัสเชิญส่วนตัว (รูปแบบ CCR26-XXXXX-XXXXX-XXXXX-XXXXX) เพื่อส่งคำตอบเข้าระบบกลาง — ตัวเลือกทั้ง 3 ข้อถูกเก็บเป็นฉบับร่างในเครื่องนี้เท่านั้น ยังไม่ได้ส่งเข้าระบบกลาง',
       'warn'
@@ -189,14 +200,17 @@ $('savePreferences')?.addEventListener('click', async () => {
   try {
     const r = await api('preferences.submit', {
       code,
+      deviceToken: code ? undefined : getDeviceToken(),
       attendance: state.attendance,
       giftChoice: state.giftChoice,
       themeChoice: state.themeChoice
     });
+    if (!r.saved_at) throw Error('ระบบยังไม่ยืนยันการบันทึก กรุณาลองส่งใหม่');
+    state.receipt = r.receipt || null;
     saveLocal(true, r.saved_at);
     const timeStr = r.saved_at ? new Date(r.saved_at).toLocaleString('th-TH') : '';
     msg(
-      `✓ บันทึกลงระบบกลางแล้ว · ยืนยันข้อมูลเรียบร้อย${timeStr ? ` (${timeStr})` : ''}`,
+      `✓ บันทึกลงระบบกลางแล้ว · ยืนยันข้อมูลเรียบร้อย${timeStr ? ` (${timeStr})` : ''}${r.receipt ? ` · ใบรับ: ${r.receipt}` : ''}`,
       'good',
       nextActionHtml
     );
@@ -231,7 +245,7 @@ $('resetPreferences')?.addEventListener('click', () => {
   } catch {}
   render();
   renderJourneyProgress();
-  msg('🗑️ ล้างตัวเลือกที่บันทึกไว้เรียบร้อยแล้ว คุณสามารถเลือกและตอบใหม่ได้เลยครับ');
+  msg('ล้างฉบับร่างในเครื่องแล้ว คำตอบในระบบกลางยังคงอยู่ — เลือกใหม่แล้วกดส่งเพื่ออัปเดตคำตอบเดิม');
 });
 
 async function init() {
@@ -247,6 +261,7 @@ async function init() {
   try {
     const r = await api('status');
     isOpen = !!r.open;
+    votingMode = r.votingMode || 'invite';
     box.className = 'system-status ' + (isOpen ? '' : 'closed');
     box.innerHTML = `<span class="status-dot"></span><span>${
       isOpen
