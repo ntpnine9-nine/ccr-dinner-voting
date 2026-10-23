@@ -217,3 +217,15 @@ body{font-variant-numeric:lining-nums;font-feature-settings:"lnum" 1}
  .food-showcase-grid{grid-template-columns:1fr}
  .event-brand small{font-size:7px}
 }
+
+/* Owner-polish recovery: no missing photographs or borrowed imagery for unillustrated categories. */
+.category-visual-banner--text{display:block;background:radial-gradient(circle at 90% 0%,#e1d7b755,transparent 44%),linear-gradient(120deg,#eaf0e4,#f8f4e9);border:1px solid #d6dfd2}
+.category-visual-banner--text #categoryPhoto{display:none}
+.category-visual-banner--text .category-visual-copy{padding:22px clamp(18px,3vw,32px)}
+.menu-placeholder.menu-artwork{background:radial-gradient(circle at 55% 40%,#f4efde,#dce6d7);color:#284437;gap:4px}
+.menu-placeholder.menu-artwork>span:first-child{font:italic clamp(44px,8vw,80px)/1 var(--fn-serif);color:#617b67}
+.menu-placeholder.menu-artwork small{font-size:10px;letter-spacing:.1em;color:#52645b}
+@media(max-width:768px){
+  /* Keep the invitation poster and RSVP first; all four destinations remain in the hamburger and body cards. */
+  .invitation-page .journey-bar{display:none}
+}
