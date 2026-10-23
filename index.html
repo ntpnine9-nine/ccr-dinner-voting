@@ -16,8 +16,9 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css?v=20261022-servings1">
   <link rel="stylesheet" href="./event.css">
+  <link rel="stylesheet" href="./forest-noir.css?v=20261023-live1">
 </head>
-<body class="event-page">
+<body class="event-page invitation-page">
 <a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
 
 <header class="event-nav">
@@ -33,7 +34,7 @@
     <a href="./guide.html">4 · คู่มือ &amp; สรุปของฉัน</a>
     <a href="./admin.html">ผู้จัดงาน</a>
   </nav>
-  <a class="event-nav-cta" href="./party.html">เริ่มขั้นตอนที่ 1–4 <span>↗</span></a>
+  <a class="event-nav-cta" href="./party.html">ตอบรับคำเชิญ <span>↗</span></a>
 </header>
 
 <nav class="journey-bar" aria-label="ลำดับขั้นตอนการร่วมงาน 4 ขั้นตอน">
@@ -70,13 +71,13 @@
         <h1>OFF SHIFT.<br><em>ON THE TABLE.</em></h1>
         <p class="event-lead">ขอเชิญพี่น้องทีม CCR ร่วมค่ำคืนส่งท้ายปี 2026 ณ <strong>ร้านครัวซอย 11 (เฉลิมพระเกียรติ ร.9 ซอย 11)</strong> บรรยากาศโปร่งสบายใต้แสงไฟวอร์มไวท์ พร้อมร่วมลงทะเบียน เลือกงบจับของขวัญ โหวตธีมแต่งกาย และเลือกเมนูอาหาร 8 หมวดที่จะขึ้นโต๊ะจริงด้วยกัน</p>
         <div class="event-hero-actions">
-          <a class="event-btn event-btn-light" href="./party.html">เริ่มลงทะเบียน &amp; เลือกของขวัญ (ขั้นที่ 2) ↗</a>
+          <a class="event-btn event-btn-light" href="./party.html">ตอบรับคำเชิญ ↗</a>
           <a class="event-btn event-btn-ghost" href="./vote.html">โหวตเมนูอาหาร 8 หมวด (ขั้นที่ 3) ↗</a>
         </div>
         <div class="event-hero-facts">
           <div><span>DATE</span><strong>ศุกร์ 18 ธันวาคม 2026</strong></div>
           <div><span>VENUE</span><strong>ครัวซอย 11 · เฉลิมพระเกียรติ ร.9</strong></div>
-          <div><span>EVENING</span><strong>บรรยากาศค่ำคืน · รอแจ้งเวลานัดหมาย</strong></div>
+          <div><span>EVENING</span><strong>17:00 น. · เวลาประเทศไทย</strong></div>
         </div>
         <div class="event-utility-row" aria-label="เครื่องมือคำเชิญ">
           <button type="button" id="shareEvent" class="event-utility-btn">แชร์ลิงก์งาน <span>↗</span></button>
@@ -153,12 +154,13 @@
         <span class="event-section-label light">02 / SAVE THE DATE</span>
         <h2>FRIDAY<br>18.12.26</h2>
       </div>
-      <div class="countdown" aria-label="นับถอยหลังถึงวันงาน">
-        <div><strong id="days">—</strong><span>DAYS</span></div>
-        <div><strong id="hours">—</strong><span>HOURS</span></div>
-        <div><strong id="minutes">—</strong><span>MIN</span></div>
+      <div class="countdown" role="timer" aria-live="off" aria-label="นับถอยหลังถึง 18 ธันวาคม 2026 เวลา 17 นาฬิกา เวลาประเทศไทย">
+        <div><strong id="days">—</strong><span>วัน / DAYS</span></div>
+        <div><strong id="hours">—</strong><span>ชั่วโมง / HRS</span></div>
+        <div><strong id="minutes">—</strong><span>นาที / MIN</span></div>
+        <div class="countdown-seconds"><strong id="seconds">—</strong><span>วินาที / SEC</span></div>
       </div>
-      <p>ศุกร์ที่ 18 ธันวาคม 2026 ณ ครัวซอย 11 · เวลานัดหมายเริ่มงานที่แน่นอนจะประกาศแจ้งให้ทราบล่วงหน้า</p>
+      <div class="countdown-details"><p><time datetime="2026-12-18T17:00:00+07:00">ศุกร์ 18 ธันวาคม 2026 · 17:00 น.</time><br>ครัวซอย 11 · เวลาประเทศไทย (UTC+7)</p><p id="countdownStatus" role="status" aria-live="polite">เริ่มนับถอยหลัง…</p><noscript>เปิด JavaScript เพื่อแสดงเวลานับถอยหลังแบบวินาที</noscript></div>
     </div>
   </section>
 
@@ -234,7 +236,7 @@
       <p>ภาพรวมลำดับกิจกรรมเพื่อให้ทุกคนเตรียมตัวได้ล่วงหน้า ส่วนเวลาแต่ละช่วงจะแจ้งให้ทราบเมื่อผู้จัดงานสรุปกำหนดการขั้นสุดท้าย</p>
     </div>
     <div class="event-flow-line">
-      <div><span>01</span><b>ARRIVE</b><p>เดินทางถึงร้านครัวซอย 11 · จอดรถ · เช็กอินและถ่ายภาพร่วมกัน</p></div>
+      <div><span>01</span><b>ARRIVE</b><p>เริ่ม 17:00 น. · เดินทางถึงร้านครัวซอย 11 · จอดรถ · เช็กอินและถ่ายภาพร่วมกัน</p></div>
       <div><span>02</span><b>SETTLE IN</b><p>เลือกที่นั่งตามโต๊ะ · สั่งเครื่องดื่มและพูดคุยกันสบายๆ</p></div>
       <div><span>03</span><b>DINNER</b><p>เสิร์ฟชุดอาหาร 8 หมวดที่ชนะผลโหวตของทีม</p></div>
       <div><span>04</span><b>GIFT</b><p>กิจกรรมแลกเปลี่ยนและจับของขวัญตามงบที่ทีมโหวตเลือก</p></div>
@@ -260,5 +262,6 @@
   <div><b>CCR AFTER HOURS 2026</b><span>ครัวซอย 11 · เฉลิมพระเกียรติ ร.9 ซอย 11 · ONE TEAM · ONE TABLE · ONE NIGHT</span></div>
   <div class="event-footer-links"><a href="./index.html">หน้าแรก</a><a href="./venue.html">สถานที่จัดงาน</a><a href="./party.html">ลงทะเบียน &amp; ของขวัญ</a><a href="./vote.html">โหวตอาหาร</a><a href="./guide.html">คู่มือวันงาน</a><a href="./admin.html">ผู้จัดงาน</a></div>
 </footer>
-<script type="module" src="./event.js?v=20261022-servings1"></script>
+<script type="module" src="./event.js?v=20261023-live1"></script>
+<script type="module" src="./forest-noir.js?v=20261023-v2"></script>
 </body></html>

@@ -39,6 +39,7 @@ function saveLocal(markConfirmed = false, savedAt = null) {
 }
 
 function render() {
+  document.querySelectorAll('[data-group] [data-value], #prefToken, #resetPreferences').forEach(el => { el.disabled = saving; });
   document.querySelectorAll('[data-group="attendance"] [data-value]').forEach(b => {
     const on = b.dataset.value === state.attendance;
     b.classList.toggle('selected', on);
@@ -85,6 +86,7 @@ function render() {
 }
 
 function pick(group, value) {
+  if (saving) return;
   if (group === 'attendance') state.attendance = value;
   if (group === 'gift') state.giftChoice = value;
   if (group === 'theme') state.themeChoice = value;
@@ -145,6 +147,9 @@ $('savePreferences')?.addEventListener('click', async () => {
   saveLocal(false);
   render();
 
+  saving = true;
+  render();
+  try {
   // Refresh admission at submission time: a page may have been open for hours.
   try {
     const admission = await api('status');
@@ -213,9 +218,11 @@ $('savePreferences')?.addEventListener('click', async () => {
     saving = false;
     render();
   }
+  } finally { saving = false; render(); }
 });
 
 $('resetPreferences')?.addEventListener('click', () => {
+  if (saving) return;
   state.attendance = '';
   state.giftChoice = '';
   state.themeChoice = '';

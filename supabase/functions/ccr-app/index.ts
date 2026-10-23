@@ -3,6 +3,7 @@ const REPO='ccr-dinner-voting';
 const BRANCH='main';
 const allowed=new Set([
   'index.html','vote.html','party.html','venue.html','guide.html','admin.html',
+  'admin-summary.html','admin-summary.js','reporting.js','forest-noir.css','forest-noir.js','event-time.js',
   'styles.css','event.css','config.js','common.js','decision-engine.js','ballot-model.js','vote.js','admin.js','event.js','party.js','menus.json',
   'assets/menu-cover.jpg','assets/menu-spread.jpg',
   'assets/venue-night-hero.jpg','assets/venue-dining-wide.jpg','assets/venue-counter-sign.jpg','assets/venue-seating-zone.jpg','assets/venue-table-detail.jpg',

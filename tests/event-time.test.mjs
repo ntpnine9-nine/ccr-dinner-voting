@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {EVENT_START_ISO,EVENT_START_MS,countdownAt,eventCalendar} from '../event-time.js';
+assert.equal(EVENT_START_ISO,'2026-12-18T17:00:00+07:00');
+assert.equal(new Date(EVENT_START_MS).toISOString(),'2026-12-18T10:00:00.000Z');
+assert.deepEqual(countdownAt(EVENT_START_MS-((2*86400+3*3600+4*60+5)*1000)),{days:2,hours:3,minutes:4,seconds:5,started:false});
+assert.equal(countdownAt(EVENT_START_MS-1).seconds,1);
+assert.deepEqual(countdownAt(EVENT_START_MS),{days:0,hours:0,minutes:0,seconds:0,started:true});
+assert.deepEqual(countdownAt(EVENT_START_MS+9999999),{days:0,hours:0,minutes:0,seconds:0,started:true});
+assert.equal(countdownAt(EVENT_START_MS-3600000).hours,1);
+const calendar=eventCalendar('https://example.com/',new Date('2026-10-23T05:00:00Z'));
+const unfolded=calendar.replaceAll('\r\n ','');
+assert.match(unfolded,/DTSTART:20261218T100000Z/);assert.doesNotMatch(calendar,/DTEND|VALUE=DATE/);
+assert.match(unfolded,/17:00/);assert.match(unfolded,/ครัวซอย 11/);
+for(const line of calendar.split('\r\n'))assert.ok(new TextEncoder().encode(line).length<=75);
+console.log('PASS · 17:00 ICT / UTC alignment · countdown seconds / boundary / resume-safe clock · timed UTF-8 folded calendar');

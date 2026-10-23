@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css?v=20261022-servings1">
   <link rel="stylesheet" href="./event.css">
+  <link rel="stylesheet" href="./forest-noir.css?v=20261023-live1">
 </head>
 <body class="admin-page">
 <a class="skip-link" href="#adminMain">ข้ามไป Dashboard</a>
@@ -17,6 +18,7 @@
   <aside class="admin-sidebar">
     <a href="./index.html" class="brand"><span class="brand-symbol">✦</span><span><strong>CCR<span class="brand-amp">&</span>TABLE</strong><small>ADMIN CONSOLE</small></span></a>
     <nav aria-label="เมนูผู้ดูแล">
+      <a href="./admin-summary.html">↗ สรุปผลเพื่อการตัดสินใจ</a>
       <a href="#overview" class="current" aria-current="page">▣ ภาพรวม</a>
       <a href="#votes">▥ ผลโหวตอาหาร 8 หมวด</a>
       <a href="#preferences">✦ RSVP / ของขวัญ / ธีม</a>
@@ -68,6 +70,8 @@
     </section>
 
     <div id="dashboard" class="hidden">
+      <section class="admin-card report-center" aria-labelledby="reportTitle"><div><span class="section-kicker">REPORTS &amp; DECISIONS</span><h2 id="reportTitle">เห็นภาพรวม แล้วตัดสินใจร่วมกัน</h2><p class="muted small">ผลอาหารครบ 8 หมวด · RSVP · ของขวัญ · ธีมแต่งตัว · จำนวนผู้ตอบ</p></div><div class="admin-btnrow"><a class="btn btn-outline" href="./admin-summary.html">เปิดหน้าสรุปผลทั้งหมด ↗</a>
+          <button id="exportAllResults" class="btn btn-dark" type="button">ดาวน์โหลดผลทุกส่วน ZIP · CSV ↓</button></div></section>
       <section id="overview">
         <div class="row-between" style="margin-bottom:13px">
           <div>
@@ -177,6 +181,11 @@
           </div>
         </div>
 
+        <div class="record-filters" role="search" aria-label="ค้นหาคำตอบผู้ร่วมงาน">
+          <label>ค้นหาชื่อหรือรหัสอ้างอิง<input id="recordSearch" class="text-field" type="search" placeholder="ชื่อ นามแฝง หรือ Invite ID" autocomplete="off"></label>
+          <label>การร่วมงาน<select id="recordAttendance" class="text-field"><option value="">RSVP ทั้งหมด</option value="yes">ไปแน่นอน</option><option value="maybe">ยังไม่แน่ใจ</option><option value="no">ไม่สะดวก</option><option value="unanswered">ยังไม่มี RSVP</option></select></label>
+          <label>สถานะสิทธิ์<select id="recordActive" class="text-field"><option value="">ทุกสถานะ</option><option value="active">ใช้งาน</option><option value="revoked">ยกเลิกแล้ว</option></select></label>
+        </div><p id="recordFilterCount" class="muted small" role="status"></p>
         <div class="data-scroll">
           <table>
             <thead>
@@ -257,7 +266,8 @@
         <div id="costInfo"></div>
         <div id="tradeoffs" class="summary-alert"></div>
         <div class="admin-btnrow" style="margin-top:17px">
-          <button id="exportCSV" class="btn btn-dark">ส่งออกใบสรุปรายการอาหาร CSV ↓</button>
+
+          <button id="exportCSV" class="btn btn-dark">แผนอาหารสั่งร้าน · DRAFT CSV ↓</button>
           <button id="exportJSON" class="btn btn-outline">ส่งออกผลโหวต JSON ↓</button>
         </div>
         <p class="muted small" style="margin-top:12px">รายงานทั้งหมดเป็น DRAFT — สำหรับใช้ตรวจสอบกับร้านครัวซอย 11 ก่อนสั่งจริง</p>
@@ -267,6 +277,6 @@
     </div>
   </main>
 </div>
-<script type="module" src="./admin.js?v=20261022-servings1"></script>
+<script type="module" src="./admin.js?v=20261023-v2"></script>
 </body>
 </html>

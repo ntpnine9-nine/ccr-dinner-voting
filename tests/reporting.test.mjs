@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {shortlist,buildReport,csv,zipStore} from '../reporting.js';
+import {tallyChoices} from '../ballot-model.js';
+const categories=JSON.parse(fs.readFileSync(new URL('../menus.json',import.meta.url))).categories;
+for(const [votes,length,overflow] of [[[10,8,7],2,0],[[10,8,8],3,0],[[10,10,9],2,0],[[10,10,10,10],3,1],[[10,0,0],1,0],[[0,0,0],0,0]]){
+ const r=shortlist(votes.map((support,i)=>({id:'A'+i,support})));assert.equal(r.items.length,length);assert.equal(r.overflow,overflow);
+}
+const choices=Object.fromEntries(categories.map(c=>[c.key,c.key==='A'?{A1:1,A2:1}:{[c.key+'1']:['D','G','H'].includes(c.key)?1:2}]));
+const pref={attendance:'yes',giftChoice:'gift_300',themeChoice:'midnight_gold'};
+const rows=[{inviteId:'one',active:true,participantLabel:'=HYPERLINK("bad")',ballot:{id:'b1',choices},preferences:pref},{inviteId:'two',active:true,preferences:pref},{inviteId:'inactive',active:false,ballot:{id:'b2',choices}}];
+const results={count:1,tallies:tallyChoices(choices),eligibleVoters:50};
+const prefs={count:2,attendance:{yes:2,maybe:0,no:0},gift:{gift_300:2,gift_500:0,gift_300_500:0,gift_none:0},theme:{midnight_gold:2,forest_champagne:0,retro_future:0,come_as_you_are:0}};
+const r=buildReport(categories,results,prefs,rows,'2026-10-23T00:00:00Z');
+assert.equal(r.observed,2);assert.equal(r.complete,true);assert.equal(r.food.length,8);assert.equal(r.food.flatMap(c=>c.entries).length,56);assert.equal(r.food[0].entries[0].support,1);assert.equal(r.food.at(-1).entries[0].support,1);
+assert.equal(Object.keys(r.files).length,7);assert.match(r.files['participant-responses.csv'],/'=HYPERLINK/);assert.match(r.files['summary.csv'],/NOT_MEASURED/);
+assert.equal(buildReport(categories,{...results,count:2},prefs,rows).complete,false);
+assert.equal(buildReport(categories,{...results,tallies:{...results.tallies,A1:99}},prefs,rows).complete,false);
+assert.equal(buildReport(categories,results,prefs,Array(500).fill(rows[0])).complete,false);
+const legacy={...rows[0],ballot:{choices:Object.fromEntries(categories.map(c=>[c.key,c.key+'1']))}};
+const legacyReport=buildReport(categories,{...results,tallies:tallyChoices(legacy.ballot.choices)}, {...prefs,count:1,attendance:{yes:1},gift:{gift_300:1},theme:{midnight_gold:1}},[legacy]);
+assert.match(legacyReport.files['participant-responses.csv'],/raw_choices_json/);assert.equal(legacy.ballot.choices.A,'A1');
+assert.ok(csv([['ไทย',' a,b','"quoted"','\n=cmd']]).startsWith('\uFEFF'));assert.match(csv([['\n=cmd']]),/'/);
+const bytes=zipStore(r.files);assert.equal(new DataView(bytes.buffer).getUint32(0,true),0x04034b50);fs.writeFileSync('/tmp/ccr-report-test.zip',bytes);
+console.log('PASS · top-two/ties/empty · respondent union · all56 menus · serving votes · complete-read guards · legacy raw preservation · safe UTF-8 CSV · ZIP');
+const {filterResponses}=await import('../reporting.js');
+assert.equal(filterResponses(rows,{query:'one'}).length,1);
+assert.equal(filterResponses(rows,{attendance:'yes',active:'active'}).length,2);
+assert.equal(filterResponses(rows,{active:'revoked'}).length,1);
+assert.equal(filterResponses(rows,{query:'missing'}).length,0);
+console.log('PASS · participant search · RSVP / active filters · revoked records retained');

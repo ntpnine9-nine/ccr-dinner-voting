@@ -1,16 +1,31 @@
 import { renderJourneyProgress, getSavedJourneyState, escapeHTML, money, PARTY_STORAGE_KEY, VOTE_SAVED_KEY, VOTE_PICKS_KEY, TOKEN_STORAGE_KEY } from './common.js?v=20261022-servings1';
-const target=new Date('2026-12-18T18:00:00+07:00');
+import {countdownAt, eventCalendar} from './event-time.js?v=20261023-live1';
 const $=id=>document.getElementById(id);
+let countdownTimer;
 function tick(){
-  const diff=Math.max(0,target-Date.now());
-  const days=Math.floor(diff/86400000);
-  const hours=Math.floor(diff%86400000/3600000);
-  const minutes=Math.floor(diff%3600000/60000);
-  if($('days'))$('days').textContent=String(days).padStart(2,'0');
-  if($('hours'))$('hours').textContent=String(hours).padStart(2,'0');
-  if($('minutes'))$('minutes').textContent=String(minutes).padStart(2,'0');
+  const parts=countdownAt();
+  for(const key of ['days','hours','minutes','seconds']){
+    const el=$(key);if(!el)continue;
+    const next=String(parts[key]).padStart(2,'0');
+    if(el.textContent!==next){
+      el.textContent=next;
+      if(el.animate&&!matchMedia('(prefers-reduced-motion: reduce)').matches)
+        el.animate([{transform:'translateY(5px)',opacity:.45},{transform:'translateY(0)',opacity:1}],{duration:240,easing:'ease-out'});
+    }
+  }
+  const status=$('countdownStatus');
+  const message=parts.started?'ถึงเวลาเริ่มงานแล้ว · ยินดีต้อนรับสู่ CCR After Hours 2026':'นับถอยหลังสู่ค่ำคืนของพวกเรา · เริ่ม 17:00 น. เวลาประเทศไทย';
+  if(status&&status.textContent!==message)status.textContent=message;
+  if(parts.started){clearTimeout(countdownTimer);return;}
+  // Recalculate from the clock, never decrement a counter that can drift in a background tab.
+  clearTimeout(countdownTimer);
+  if(!document.hidden)countdownTimer=setTimeout(tick,1000-(Date.now()%1000)+15);
 }
-tick();setInterval(tick,30000);
+if($('seconds')){
+  tick();
+  document.addEventListener('visibilitychange',()=>{clearTimeout(countdownTimer);if(!document.hidden)tick();});
+  window.addEventListener('pageshow',tick);
+}
 
 function renderGuideSavedDetails(){
   renderJourneyProgress();
@@ -59,24 +74,13 @@ if(!reduce&&'IntersectionObserver' in window){
 function eventUrl(){return new URL('./',location.href).href}
 function setShareStatus(message){const el=$('shareStatus');if(el)el.textContent=message}
 $('shareEvent')?.addEventListener('click',async()=>{
-  const data={title:'CCR After Hours 2026',text:'ศุกร์ 18 ธันวาคม 2026 · ครัวซอย 11 · CCR Year-End Celebration',url:eventUrl()};
+  const data={title:'CCR After Hours 2026',text:'ศุกร์ 18 ธันวาคม 2026 เวลา 17:00 น. · ครัวซอย 11 · CCR Year-End Celebration',url:eventUrl()};
   try{
     if(navigator.share){await navigator.share(data);setShareStatus('เปิดหน้าต่างแชร์แล้ว');return}
     await navigator.clipboard.writeText(data.url);setShareStatus('คัดลอกลิงก์คำเชิญแล้ว ✓');
   }catch(e){if(e?.name!=='AbortError')setShareStatus('แชร์อัตโนมัติไม่ได้ — สามารถคัดลอก URL จากเบราว์เซอร์ได้')}
 });
 $('addCalendar')?.addEventListener('click',()=>{
-  const esc=s=>String(s).replaceAll('\\','\\\\').replaceAll(';','\\;').replaceAll(',','\\,').replaceAll('\n','\\n');
-  const ics=[
-    'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//CCR After Hours//TH',
-    'CALSCALE:GREGORIAN','METHOD:PUBLISH','BEGIN:VEVENT',
-    'UID:ccr-after-hours-2026@ccr-dinner-voting',
-    'DTSTAMP:'+new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,''),
-    'DTSTART;VALUE=DATE:20261218','DTEND;VALUE=DATE:20261219',
-    'SUMMARY:'+esc('CCR After Hours 2026'),
-    'LOCATION:'+esc('ครัวซอย 11, เฉลิมพระเกียรติ ร.9 ซอย 11, หนองบอน, ประเวศ, กรุงเทพฯ 10250'),
-    'DESCRIPTION:'+esc('CCR Year-End Celebration · เวลาเริ่มงานรอยืนยัน Final Schedule · '+eventUrl()),
-    'URL:'+eventUrl(),'END:VEVENT','END:VCALENDAR'
-  ].join('\r\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ics],{type:'text/calendar;charset=utf-8'}));a.download='CCR-After-Hours-2026.ics';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500);setShareStatus('สร้างไฟล์ปฏิทินแบบ All-day แล้ว ✓ · เวลาเริ่มงานยังรอยืนยัน');
+  const ics=eventCalendar(eventUrl());
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ics],{type:'text/calendar;charset=utf-8'}));a.download='CCR-After-Hours-2026.ics';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500);setShareStatus('สร้างไฟล์ปฏิทินแล้ว ✓ · 18 ธันวาคม 2026 เวลา 17:00 น. (ประเทศไทย)');
 });

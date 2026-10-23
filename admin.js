@@ -1,3 +1,4 @@
+import {buildReport,zipStore,filterResponses} from './reporting.js?v=20261023-v2';
 import {quotaFor,billingMultiplier,normalizeChoices,choiceSummary,isLegacyBallot,tallyChoices} from './ballot-model.js?v=20261022-servings1';
 import { CONFIG } from './config.js';
 import {
@@ -39,6 +40,7 @@ let submissions = [];
 let auditItems = [];
 let lastPreferences = null;
 let selectedInviteId = null;
+let reportReadAt = null;
 
 function notice(message, type = false) {
   const cls = type === true || type === 'error' ? 'error' : type === 'info' ? 'info' : 'good';
@@ -536,6 +538,7 @@ async function refresh() {
     return;
   }
   refreshingDashboard = true;
+  reportReadAt = null;
   try {
     const [r, inv, pref, sub, audit] = await Promise.all([
       call('admin.results'),
@@ -544,6 +547,7 @@ async function refresh() {
       call('admin.submissions.list'),
       call('admin.audit.list')
     ]);
+    reportReadAt = new Date().toISOString();
     lastResults = r;
     numBallots = r.count;
     tallies = r.tallies || {};
@@ -578,6 +582,7 @@ async function refresh() {
         : 'เชื่อมฐานข้อมูลกลางและโหลดผลคะแนนจริงแล้ว'
     );
   } catch (e) {
+    reportReadAt = null;
     let msg = e.message || 'Unknown error';
     if (msg.includes('ADMIN_UNAUTHORIZED')) {
       msg = 'เข้าสู่ระบบสำเร็จแต่บัญชีนี้ไม่มีสิทธิ์ผู้ดูแล (UUID ยังไม่ถูกเพิ่มในตาราง public.admin_users)';
@@ -798,7 +803,8 @@ function preferenceSummary(p) {
 function renderSubmissions(items) {
   submissions = Array.isArray(items) ? items : [];
   if (!$('submissionRows')) return;
-  const answered = submissions.filter(item => item.ballot || item.preferences);
+  const answered = filterResponses(submissions,{query:$('recordSearch')?.value||'',attendance:$('recordAttendance')?.value||'',active:$('recordActive')?.value||''});
+  if($('recordFilterCount'))$('recordFilterCount').textContent=`แสดง ${answered.length} จาก ${submissions.filter(r=>r.ballot||r.preferences).length} รายการที่โหลด · การดาวน์โหลดครอบคลุมทุกสถานะ ไม่จำกัดตามตัวกรอง`;
   $('submissionRows').innerHTML = answered.length
     ? answered
         .map(item => {
@@ -826,7 +832,7 @@ function renderSubmissions(items) {
           </tr>`;
         })
         .join('')
-    : '<tr><td colspan="6" class="muted">ยังไม่มีข้อมูลรายคนในระบบ</td></tr>';
+    : '<tr><td colspan="6" class="muted">ไม่มีคำตอบที่ตรงกับตัวกรอง หรือยังไม่มีข้อมูลรายคนในระบบ</td></tr>';
 
   document.querySelectorAll('[data-edit-record]').forEach(btn =>
     btn.addEventListener('click', () => openSubmissionEditor(btn.dataset.editRecord))
@@ -1157,6 +1163,17 @@ function renderPlan(plan) {
     : '<p class="muted small">✓ ชุดเมนูนี้ตรงกับเมนูอันดับ 1 (Popularity Winner) ครบทั้ง 8 หมวด</p>';
 }
 
+$('exportAllResults').addEventListener('click', async () => {
+  if (previewMode || !session?.access_token) return notice('เข้าสู่ระบบผู้ดูแลก่อนดาวน์โหลดผลจริง', true);
+  try {
+    await refresh();
+    if (!reportReadAt || !lastResults || !lastPreferences) throw Error('โหลดข้อมูลครบทุกส่วนไม่สำเร็จ กรุณาลองใหม่');
+    const report=buildReport(cats,lastResults,lastPreferences,submissions,reportReadAt);
+    if (!report.complete) throw Error('ข้อมูลรายคนยังไม่ครบหรือผลอ่านไม่ตรงกัน กรุณารีเฟรชใหม่ · ระบบจะไม่ส่งออกเป็นชุดข้อมูลครบถ้วน');
+    download('ccr-all-results.zip',zipStore({...report.files,'audit-loaded.json':JSON.stringify({scope:'latest loaded audit records, maximum 100',items:auditItems},null,2)}),'application/zip');
+    notice('ดาวน์โหลดผลอาหาร RSVP ของขวัญ ธีม และคำตอบรายคนแล้ว · จำนวนผู้เข้าชมยังไม่มีการวัด');
+  } catch(e) { notice(e.message,true); }
+});
 $('exportCSV').addEventListener('click', () => {
   if (!currentPlan) return notice('ยังไม่มีชุดอาหารที่จะส่งออก', true);
   download(
@@ -1206,4 +1223,5 @@ $('exportSubmissionsJSON').addEventListener('click', () => {
   download('ccr-responses-and-audit.json', JSON.stringify({exported_at:new Date().toISOString(),campaign:CONFIG.campaignId,results:lastResults,preferences:lastPreferences,submissions,audit:auditItems},null,2), 'application/json');
 });
 
+for(const id of ['recordSearch','recordAttendance','recordActive']) $(id)?.addEventListener(id==='recordSearch'?'input':'change',()=>renderSubmissions(submissions));
 init();
