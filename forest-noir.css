@@ -14,21 +14,21 @@ button,input,select{font:inherit}button:not(:disabled),a{touch-action:manipulati
 .event-btn,.btn{min-height:46px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;gap:8px;line-height:1.45;transition:background-color .18s,transform .18s,border-color .18s}
 .event-btn:hover,.btn:hover{transform:translateY(-2px)}.event-btn-light{background:#e3c58b;color:#18241f;border-color:#e3c58b}.event-btn-ghost{border-color:#ffffff55}
 .journey-bar{background:#102f29;padding-block:10px}.journey-step{border-radius:8px;padding-block:10px}.journey-step-title,.journey-step-text{min-width:0}
-.event-section-head h2,.guide-card h2,.event-finale h2{font-family:var(--fn-serif);font-weight:500;letter-spacing:-.035em}
+.event-section-head h2,.guide-card h2,.event-finale h2{font-family:var(--font-sans);font-weight:600;letter-spacing:-.025em}
 .event-section-label,.section-kicker,.event-overline{letter-spacing:.16em}
 .invitation-page .event-hero{position:relative;isolation:isolate;min-height:760px;background:#0d2f29;overflow:hidden;padding-block:84px 70px}
 .invitation-page .event-hero:before{content:'';position:absolute;inset:0;z-index:-2;background:url('./assets/venue-night-hero.jpg') center 55%/cover no-repeat}
 .invitation-page .event-hero:after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(5,24,20,.97) 0%,rgba(5,24,20,.86) 37%,rgba(5,24,20,.24) 100%),linear-gradient(0deg,#0d2f29,transparent 40%)}
 .invitation-page .event-hero-grid{grid-template-columns:minmax(0,1.1fr) minmax(0,.7fr);gap:64px;align-items:center;max-width:1240px}
 .invitation-page .event-hero h1{font-family:var(--fn-serif);font-size:clamp(58px,7.5vw,112px);line-height:.97;font-weight:400;letter-spacing:-.055em;margin-block:28px}.invitation-page .event-hero h1 em{color:#e4c78d}
-.invitation-page .event-date-lockup{border-block:1px solid #e4c78d55;padding:14px 0;display:inline-flex}.invitation-page .event-date-day{font-family:var(--fn-serif)}
+.invitation-page .event-date-lockup{border-block:1px solid #e4c78d55;padding:14px 0;display:inline-flex}.invitation-page .event-date-day{font-family:var(--font-sans)}
 .invitation-page .event-lead{max-width:560px;font-size:15px;line-height:1.9;color:#e3e8df}
 .invitation-page .event-visual{height:490px;min-height:0;transform:rotate(2deg);border:1px solid #e4c78d70;border-radius:160px 160px 22px 22px;background:#102f29;box-shadow:0 28px 60px #0003;overflow:hidden}
 .invitation-page .event-photo-main{inset:12px;position:absolute;width:auto;height:auto;border-radius:150px 150px 14px 14px}.invitation-page .event-photo-main img{height:100%;object-fit:cover}.invitation-page .event-photo-side{display:none}.invitation-page .event-stamp{bottom:28px;right:26px;background:#f5f0e6;color:#0d2f29;border:1px solid #c7a66b}
 .invitation-page .event-hero-actions .event-btn-ghost{background:transparent;border:0;text-decoration:underline;text-underline-offset:5px;padding-inline:0}
 .event-action-card{border-radius:18px;background:#fcfaf5;border-color:#d9dfd7;box-shadow:none}.event-action-card:hover{border-color:#98733b;box-shadow:0 12px 24px #18241f0a}
 .event-photo img,.gallery-bento img{transition:transform .35s}.gallery-bento button{display:block;padding:0;width:100%;height:100%;border:0;background:transparent;cursor:zoom-in}.gallery-bento button:hover img{transform:scale(1.025)}
-.subhero{background:#0d2f29;padding-block:64px}.subhero h1{font-family:var(--fn-serif);font-weight:400;letter-spacing:-.04em;font-size:clamp(38px,5vw,68px)}
+.subhero{background:#0d2f29;padding-block:64px}.subhero h1{font-family:var(--font-sans);font-weight:600;letter-spacing:-.04em;font-size:clamp(38px,5vw,68px)}
 .choice-form-wrap{max-width:1120px}.choice-block{padding-block:40px}.choice-block-head h2{letter-spacing:-.025em}.preference-card{border-radius:16px;background:#fffcf7;border:1px solid var(--fn-line);min-height:180px;box-shadow:none}.preference-card:hover{border-color:#7d957f}.preference-card.selected{background:#e9eee4;border:2px solid #17483c;box-shadow:inset 0 0 0 2px #fff}.preference-card.selected:after,.theme-card.selected:after{background:#17483c;color:#fff}
 .theme-card{border-radius:18px;min-height:230px}.theme-card.selected{outline:3px solid #17483c;outline-offset:4px}.preference-submit-box{border-radius:22px;background:#102f29;padding:32px}.text-field{min-height:48px;border-radius:10px;font-size:16px!important}.text-field:focus{border-color:#977027;outline:3px solid #c7a66b66}
 .vote-panel,.receipt,.access-box{border-radius:20px;border:1px solid var(--fn-line);box-shadow:none}.category-tabs{gap:8px}.category-tab{min-height:48px;border-radius:10px}.category-tab.active{background:#0d2f29;color:#fff}.category-visual-banner{border-radius:14px;overflow:hidden}.category-heading{align-items:flex-start}.category-heading h2{line-height:1.4}
@@ -58,3 +58,261 @@ button,input,select{font:inherit}button:not(:disabled),a{touch-action:manipulati
 @media(max-width:430px){.countdown>div{padding:22px 5px}.countdown strong{font-size:34px}.countdown span{font-size:9px;letter-spacing:0}.event-countdown-grid{padding-block:36px}}
 
 .invitation-page .event-stamp b,.invitation-page .event-stamp span{color:#0d2f29}.invitation-page .event-stamp b{font-size:14px}.home-pass-status{font-size:12px;line-height:1.8;margin:12px 0 0;color:#d8e2d5}.home-pass-status span{display:inline-block;margin-right:16px}.my-pass-card .event-section-label{color:#e3c58b}
+
+/* Owner audit 23 Oct: clear numerals, intrinsic image tracks, compact mobile flow. */
+:root{--fn-numerals:"DM Sans","Noto Sans Thai",system-ui,sans-serif}
+body{font-variant-numeric:lining-nums;font-feature-settings:"lnum" 1}
+.numeric-date,.event-date-day,.event-date-meta,.countdown strong,.choice-price,.stat-box strong,.stat-card strong,.summary-kpis strong,.guide-no,.journey-step-no,.journey-step-num{font-family:var(--fn-numerals);font-variant-numeric:lining-nums tabular-nums;font-feature-settings:"lnum" 1,"tnum" 1}
+.event-section-head h2,.event-venue-copy h2,.guide-card h2,.event-finale h2,.event-countdown h2{font-family:var(--font-sans);font-weight:600;letter-spacing:-.025em;line-height:1.35}
+.event-section-head{gap:24px 48px;align-items:start;margin-bottom:30px}
+.event-section-head h2{font-size:clamp(28px,3.4vw,46px);margin-top:12px}
+.event-section-head p{margin-top:12px}
+.event-countdown h2{font-size:clamp(26px,3.2vw,42px);margin:14px 0 0}
+.numeric-date{display:inline-block;font-size:.92em;letter-spacing:0}
+.invitation-page .event-visual{position:relative;transform:none;height:auto;min-height:0;padding:0;border-radius:24px;box-shadow:0 24px 60px #0002;overflow:hidden}
+.invitation-page .event-photo-main{position:static;inset:auto;transform:none;margin:0;width:100%;height:auto;border:0;border-radius:0}
+.invitation-page .event-photo-main img{display:block;width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;object-position:53% center;transform:none}
+.hero-photo-caption{position:static;margin:0;padding:14px 18px;background:#102f29;font-size:12px;letter-spacing:.02em;color:#ecddbd}
+.invitation-page .event-date-lockup{gap:14px;padding:10px 0;align-items:center}
+.invitation-page .event-date-day{font-size:64px;line-height:1;letter-spacing:-.04em;font-weight:500}
+.invitation-page .event-date-meta{font-size:13px;line-height:1.5;letter-spacing:.12em}
+.invitation-page .event-hero h1{margin-block:24px}
+.invitation-page .event-lead{font-size:16px;line-height:1.8}
+.event-visual,.gallery-bento figure,.food-card,.arrival-card{min-width:0}
+.gallery-bento button{height:auto;line-height:0}
+.gallery-bento button:hover img{transform:none;filter:brightness(1.05)}
+.gallery-bento button:focus-visible{outline-offset:-4px;outline-color:#e3c58b}
+.event-photo-strip{grid-template-columns:1.2fr .8fr;grid-template-rows:repeat(2,minmax(0,1fr));height:440px}
+.event-photo-strip figure{min-height:0}
+.event-photo-strip img{display:block;transform:none}
+.food-showcase-grid{gap:20px}
+.food-card figcaption{padding:16px 18px;line-height:1.7}
+.food-card figcaption strong{line-height:1.5}
+.arrival-card img{display:block;height:240px;object-position:center}
+.venue-links{display:flex;flex-wrap:wrap;gap:8px 24px;margin-top:22px;padding-top:18px;border-top:1px solid #d9dfd7}
+.venue-links a{display:inline-flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;font-size:14px;font-weight:600;line-height:1.5;text-underline-offset:5px}
+.venue-links a:hover{color:#876427}
+.food-options{gap:18px;align-items:start}
+.food-options .choice{display:flex;flex-direction:column;padding:0;border:1px solid #cfd8ce;border-radius:16px;background:#fffdfa;overflow:hidden;min-width:0}
+.food-options .choice.selected{border:1px solid #17483c;box-shadow:inset 0 0 0 2px #17483c;background:#edf3e9}
+.food-options .serving-option{display:flex;flex-direction:column;gap:0;padding:0;cursor:pointer;min-width:0}
+.menu-media{display:block;position:relative;width:100%;aspect-ratio:4/3;overflow:hidden;background:#e8e8dc;border-bottom:1px solid #d9dfd7}
+.menu-media img{display:block;width:100%;height:100%;object-fit:cover}
+.menu-image-kind{position:absolute;right:8px;bottom:8px;padding:3px 7px;border-radius:4px;background:#102f29eb;color:#fff;font-size:10px;line-height:1.5}
+.menu-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;height:100%;padding:14px;text-align:center;color:#506653;font-size:13px;line-height:1.5}
+.menu-placeholder>span:first-child{font-size:32px;color:#8a7850}
+.menu-placeholder small{font-size:11px}
+.menu-choice-head{display:flex;align-items:flex-start;gap:10px;padding:16px 16px 0;min-width:0;width:100%}
+.food-options .serving-option input{width:22px;height:22px;flex:0 0 22px;margin:2px 0 0;accent-color:#17483c}
+.food-options .choice-title{display:block;margin:0;font-size:16px;line-height:1.6;font-weight:600;min-width:0;overflow-wrap:anywhere}
+.choice-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px}
+.menu-id{font-size:11px;letter-spacing:.1em;color:#52645b}
+.food-options .choice-price{padding:0;margin:0;text-align:right;font-size:21px;line-height:1.2;grid-column:auto;color:#15372d;white-space:normal}
+.food-options .choice-price small{font-size:11px;font-weight:400;line-height:1.6;color:#52645b}
+.food-options .choice-desc{padding:0 16px 10px;font-size:12px;line-height:1.6;color:#52645b}
+.choice-state{display:block;padding:9px 16px;font-size:12px;border-top:1px solid #d9dfd7;color:#52645b}
+.choice.selected .choice-state{background:#17483c;color:#fff}
+.choice.quota-disabled:not(.selected){background:#f5f4ed}
+.choice.quota-disabled .choice-state{color:#647064}
+.food-options .serving-control{padding:12px 16px 16px;display:grid;gap:8px}
+.food-options .serving-control>label{font-size:12px;margin:0;color:#264837}
+.quantity-stepper{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:6px}
+.quantity-stepper button{min-height:44px;padding:0;border:1px solid #aabbab;border-radius:8px;background:#fff;color:#143b2d;font:500 22px var(--fn-numerals);cursor:pointer}
+.quantity-stepper button:disabled{background:#e5eade;color:#7d8a78;border-color:#d0d8ca;cursor:not-allowed}
+.quantity-stepper select{min-height:44px;padding:6px 5px;font-size:14px!important;text-align:center}
+.food-options .serving-control>small{font-size:11px;line-height:1.6}
+.category-visual-banner{background:#edf0e5;min-height:0;grid-template-columns:130px minmax(0,1fr)}
+.category-visual-banner img{width:100%;height:100%;min-height:135px;object-fit:cover;aspect-ratio:1}
+.category-visual-copy{padding:18px}
+.category-visual-copy b{font-size:20px;line-height:1.5}
+.category-visual-copy p{font-size:12px;line-height:1.7}
+.fn-lightbox button{float:none;display:block;margin:0 0 12px auto}
+.fn-lightbox img{max-height:70dvh}
+@media(max-width:980px){
+ .event-section-head{gap:12px;margin-bottom:24px}
+ .event-photo-strip{height:380px}
+ .food-showcase-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .arrival-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .event-venue-teaser{gap:32px}
+}
+@media(max-width:768px){
+ .event-nav{min-height:66px;padding:10px 18px;gap:10px}
+ .event-brand-mark{width:32px;height:32px}
+ .event-brand{min-width:0;gap:9px}
+ .event-brand b{font-size:14px}
+ .event-brand small{font-size:8px;letter-spacing:.1em}
+ .fn-menu-toggle{padding:8px 12px;font-size:13px;min-height:44px}
+ .journey-bar{padding:8px 12px}
+ .journey-inner,.journey-bar-inner{gap:6px}
+ .journey-step{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:5px;padding:8px 4px;min-height:44px}
+ .journey-step:after{content:attr(data-short-label);font-size:11px;line-height:1.3}
+ .journey-step-title{flex:0 0 auto;display:block}
+ .journey-step-title>span:not(.journey-step-no),.journey-step-text{display:none}
+ .journey-step-no,.journey-step-num{width:19px;height:19px;font-size:10px}
+ .invitation-page .event-hero{padding-block:30px 38px}
+ .invitation-page .event-date-day{font-size:44px}
+ .invitation-page .event-date-meta{font-size:11px}
+ .invitation-page .event-hero h1{font-size:clamp(44px,11vw,68px);line-height:1.03;margin-block:20px}
+ .invitation-page .event-overline{font-size:9px;letter-spacing:.1em}
+ .invitation-page .event-lead{font-size:14px;line-height:1.75;margin-bottom:16px}
+ .invitation-page .event-hero-actions{gap:12px;margin-top:18px}
+ .invitation-page .event-hero-actions .event-btn{font-size:13px;min-height:48px}
+ .invitation-page .event-hero-facts{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:26px}
+ .invitation-page .event-hero-facts div{padding:0;border:0}
+ .invitation-page .event-hero-facts strong{font-size:11px;line-height:1.6}
+ .invitation-page .event-hero-facts span{font-size:9px}
+ .event-utility-btn{min-height:44px;display:inline-flex;align-items:center;padding:8px 12px}
+ .event-section-head h2{font-size:clamp(27px,6vw,36px);line-height:1.4}
+ .event-section-label{font-size:10px;letter-spacing:.12em}
+ .event-finale h2{font-size:clamp(32px,8vw,48px)}
+ .event-photo-strip{height:330px;gap:10px}
+ .event-photo-strip figure{border-radius:14px}
+ .event-countdown-grid{padding-block:36px}
+ .event-countdown h2{font-size:30px}
+ .food-options{gap:12px}
+ .food-options .choice-title{font-size:14px;line-height:1.6}
+ .menu-choice-head{padding:12px 12px 0;gap:7px}
+ .food-options .serving-option input{width:19px;height:19px;flex-basis:19px;margin-top:2px}
+ .choice-meta{padding:10px 12px;gap:6px}
+ .food-options .choice-price{font-size:19px}
+ .choice-state{padding:8px 12px;font-size:11px}
+ .food-options .choice-desc{padding-inline:12px;font-size:11px}
+ .food-options .serving-control{padding:10px 12px 12px}
+ .quantity-stepper{grid-template-columns:36px minmax(0,1fr) 36px;gap:4px}
+ .quantity-stepper select{font-size:13px!important;padding-inline:2px}
+ .category-visual-banner{grid-template-columns:90px minmax(0,1fr)}
+ .category-visual-banner img{min-height:145px}
+ .category-visual-copy{padding:12px}
+ .category-visual-copy b{font-size:17px}
+ .category-visual-copy p{font-size:11px}
+ .venue-links{gap:6px 18px}
+ .venue-links a{font-size:13px}
+}
+@media(max-width:430px){
+ .food-options{grid-template-columns:1fr}
+ .food-options .choice-title{font-size:16px}
+ .menu-choice-head{padding:14px 16px 0}
+ .choice-meta{padding:12px 16px}
+ .food-options .choice-price{font-size:22px}
+ .food-options .serving-control{padding:12px 16px 16px}
+ .quantity-stepper{grid-template-columns:44px minmax(0,1fr) 44px;gap:8px}
+ .quantity-stepper select{font-size:16px!important}
+ .menu-media{aspect-ratio:3/2}
+ .arrival-grid{grid-template-columns:1fr}
+ .arrival-card img{height:auto;max-height:none;aspect-ratio:4/3;object-fit:contain;background:#e9e8de}
+ .food-showcase-grid{gap:12px}
+ .food-card figcaption{padding:12px;font-size:12px}
+ .food-card figcaption strong{font-size:13px}
+ .food-card figcaption span{font-size:11px}
+ .event-photo-strip{grid-template-columns:1fr 1fr;grid-template-rows:200px 145px;height:auto}
+ .event-photo-strip figure:first-child{grid-row:1;grid-column:1/-1}
+ .event-photo-strip figure{margin:0}
+}
+@media(max-width:360px){
+ .journey-step:after{font-size:10px}
+ .journey-step{gap:3px;padding-inline:2px}
+ .journey-step-no,.journey-step-num{width:17px;height:17px;font-size:9px}
+ .gallery-bento{grid-template-columns:1fr}
+ .gallery-bento .g-tall{grid-column:auto}
+ .food-showcase-grid{grid-template-columns:1fr}
+ .event-brand small{font-size:7px}
+}
+
+.quantity-stepper select{max-width:none;width:100%}
+
+.vote-instructions{margin:24px 0;border:1px solid #d9dfd7;border-radius:14px;background:#fffdf8;padding:0 20px}
+.vote-instructions>summary{min-height:52px;display:list-item;padding:14px 0;font-size:14px;font-weight:600;cursor:pointer}
+.vote-instructions .intro-section{padding:18px 0 26px;border-top:1px solid #d9dfd7}
+.menu-image-note{font-size:12px;line-height:1.75;background:#f1f0e7;color:#52645b;padding:12px 16px;border-radius:10px;margin:0 0 24px}
+@media(max-width:980px){.subhero-venue .subhero-badge{display:none}}
+@media(max-width:768px){.vote-instructions{margin:18px 0;padding-inline:16px}.vote-instructions .intro-section h2{font-size:24px}.subhero-venue{padding-block:32px}.subhero-venue p{font-size:14px}.menu-image-note{font-size:11px;padding:10px 12px}}
+
+/* Keep first-screen invitation ahead of secondary navigation. */
+@media(max-width:768px){.invitation-page .journey-bar{display:none}}
+
+/* Audit corrections: WCAG contrast, visible errors and Unicode label feedback. */
+.participant-limit{display:block;margin-top:8px;line-height:1.7;color:#52645b;font-size:12px}
+.participant-limit.invalid{color:#a52121;font-weight:600}
+.preference-submit-box .participant-limit{color:#d8e2d5}
+.preference-submit-box .participant-limit.invalid{color:#ffd8cf}
+[aria-invalid=true]{border:2px solid #a52121!important}
+#resetPreferences{background:#eff2e8;color:#173b30;border:1px solid #a6b4a5}
+.category-number,.guide-no{color:#61745d!important}
+.data-scroll:focus-visible{outline:3px solid #977027;outline-offset:4px}
+
+/* CCR identity layer: a celebration metaphor, drawn from public facts only. */
+:root{--motion-fast:140ms;--motion-standard:220ms;--motion-story:400ms}
+.ccr-story{--story-progress:.5;background:#ebe6d8;border-bottom:1px solid #d4d9cc;padding:64px 0;overflow:clip}
+.ccr-story-inner{position:relative}
+.ccr-story-head{display:grid;grid-template-columns:1fr 1fr;gap:16px 48px;align-items:end}
+.ccr-story-head>.event-section-label{grid-column:1/-1;margin:0;color:#725622}
+.ccr-story h2{font-size:clamp(28px,3.7vw,46px);font-weight:600;line-height:1.4;letter-spacing:-.035em;margin:0}
+.ccr-story h2 em{font-style:normal;color:#53684e}
+.ccr-story-head>p:last-child{font-size:14px;line-height:1.9;color:#44594b;margin:0}
+.ccr-route-art{margin:22px auto 10px;max-width:1000px}
+.ccr-route-art svg{display:block;width:100%;overflow:visible}
+.ccr-route-track,.ccr-route-fill{fill:none;stroke:#b8bca9;stroke-width:3;stroke-linecap:round}
+.ccr-route-fill{stroke:#8e6829;stroke-dasharray:1;stroke-dashoffset:calc(1 - var(--story-progress))}
+.ccr-route-dots{fill:#f9f6ed;stroke:#667650;stroke-width:2}
+.ccr-route-art text{fill:#445c4e;font:600 11px 'DM Sans',sans-serif;letter-spacing:1px}
+.ccr-train{fill:#f9f6ed;stroke:#173d32;stroke-width:2;translate:calc(var(--story-progress) * 600px) 0}
+.ccr-train-window{fill:#234a40;stroke:none}.ccr-train-stripe{stroke:#9b742e;stroke-width:4}
+.ccr-story-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start;padding:12px 0 18px}
+.ccr-story-card{background:#fbf8ee;border:1px solid #c9cdbd;border-radius:16px;box-shadow:0 8px 24px #233f2d08;overflow:hidden}
+.ccr-story-card summary{list-style:none;display:flex;gap:12px;align-items:center;padding:19px 18px;cursor:pointer;min-height:64px;font-size:14px}
+.ccr-story-card summary::-webkit-details-marker{display:none}
+.ccr-story-card summary>span:first-child{font-size:12px;color:#765722}
+.ccr-story-card summary>span:last-child{margin-left:auto;font-size:20px;color:#52634a}
+.ccr-story-card[open]{background:#173d32;color:#fff;border-color:#173d32}
+.ccr-story-card[open] summary>span{color:#edcd8b}
+.ccr-story-card[open] summary>span:last-child{rotate:45deg}
+.ccr-story-card p{font-size:13px;line-height:1.9;margin:0;padding:0 18px 20px;color:#e0e7da}
+.ccr-story-source{font-size:11px;color:#52614d;line-height:1.8;max-width:850px}
+.ccr-story-source a{text-underline-offset:3px}
+.ccr-story>.event-wrap>.event-text-link{display:inline-flex;align-items:center;min-height:44px;font-size:14px}
+.ccr-story.is-tracking .ccr-story-card:nth-child(1){transform:translateY(calc(var(--story-progress) * -12px)) rotate(-1deg)}
+.ccr-story.is-tracking .ccr-story-card:nth-child(3){transform:translateY(calc(var(--story-progress) * 12px)) rotate(1deg)}
+.my-pass-card{position:relative;overflow:hidden}.my-pass-head{position:relative}
+.my-pass-head:before{content:'';display:block;width:54px;height:4px;border-radius:4px;background:#e4c78d;position:absolute;left:0;top:-12px}
+@supports(view-transition-name:none){@view-transition{navigation:auto}::view-transition-old(root){animation:ccr-out 120ms ease-in both}::view-transition-new(root){animation:ccr-in 180ms ease-out both}}
+@keyframes ccr-in{from{opacity:.6;transform:translateY(5px)}to{opacity:1;transform:none}}
+@keyframes ccr-out{to{opacity:.6}}
+@media(hover:hover) and (pointer:fine){.preference-card,.theme-card{transition:transform var(--motion-standard),border-color var(--motion-fast),background var(--motion-fast)}.preference-card:hover,.theme-card:hover{transform:translateY(-3px)}}
+@media(max-width:768px){.ccr-story{padding:38px 0}.ccr-story-head{display:block}.ccr-story h2{font-size:28px;margin:12px 0}.ccr-story-head>p:last-child{font-size:13px}.ccr-story-cards{grid-template-columns:1fr;gap:10px;padding-top:0}.ccr-story-card summary{padding:13px 16px;min-height:52px}.ccr-story-card p{padding:0 16px 15px}.ccr-story.is-tracking .ccr-story-card{transform:none!important}.ccr-route-art{margin-top:0}.ccr-route-art svg{min-height:95px}.ccr-story-source{font-size:10px}.event-action-grid{gap:12px}.event-action-card{padding:20px}.event-action-card h3{font-size:17px}.event-card-icon{display:none}.event-action-card p{font-size:12px;line-height:1.7}}
+@media(prefers-reduced-motion:reduce){.ccr-story-card,.ccr-train{transform:none!important;translate:0 0!important}.ccr-route-fill{stroke-dashoffset:0}::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}}
+.fn-lightbox-tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px}
+.fn-lightbox .fn-lightbox-tools button{float:none;margin:0;font-size:12px}
+.fn-lightbox .fn-lightbox-tools span{font-size:12px;margin-right:auto;font-variant-numeric:tabular-nums}
+.fn-lightbox .fn-lightbox-tools button:last-child{margin-left:auto}
+.invitation-page>.journey-bar{display:none}
+@media(max-width:680px){.invitation-page .event-action-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.invitation-page .event-action-card{padding:16px}.invitation-page .event-action-card h3{font-size:14px;line-height:1.65;margin:10px 0}.invitation-page .event-action-card p{display:none}.invitation-page .event-card-no{font-size:8px;letter-spacing:.04em}.invitation-page .event-card-link{font-size:10px}.fn-lightbox-tools{gap:6px}.fn-lightbox .fn-lightbox-tools button{padding:8px;font-size:11px}}
+/* Intrinsic wrapping also supports text enlargement and CSS zoom. */
+.event-nav{flex-wrap:wrap}.event-nav-links{min-width:0;max-width:100%;flex-wrap:wrap}.event-nav-cta{max-width:100%;white-space:normal}
+.journey-inner,.journey-bar-inner{grid-template-columns:repeat(4,minmax(0,1fr))}
+.journey-step{min-width:0;flex-wrap:wrap}.journey-step-title,.journey-step-text{max-width:100%;min-width:0}.journey-step-title>span:not(.journey-step-no),.journey-step-text b{white-space:normal;overflow-wrap:anywhere}.journey-badge{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+
+/* Native mobile menu: first paint and interactive paint use the same geometry. */
+.fn-mobile-navigation{display:none}
+.fn-mobile-navigation summary{list-style:none;cursor:pointer;margin:0}
+.fn-mobile-navigation summary::-webkit-details-marker{display:none}
+.fn-mobile-links{position:absolute;top:100%;left:18px;right:18px;display:grid;grid-template-columns:1fr 1fr;background:#102f29;border:1px solid #80917a;border-radius:0 0 14px 14px;padding:12px;gap:6px;box-shadow:0 16px 32px #0003;z-index:100}
+.fn-mobile-links a{display:flex;align-items:center;min-height:46px;font-size:13px;text-decoration:none;padding:9px 12px;color:#f5f0e6;border-radius:8px}
+.fn-mobile-links a[aria-current=page]{background:#ffffff15;color:#efd5a0}
+.fn-mobile-links a:hover{background:#ffffff15}
+@media(max-width:1100px){.event-nav>.event-nav-links{display:none}.fn-mobile-navigation{display:block;margin-left:auto}.fn-mobile-navigation .fn-menu-toggle{display:inline-flex}.event-nav{position:relative}}
+@media(max-width:360px){.fn-mobile-links{grid-template-columns:1fr}}
+
+/* Arabic digits use one readable face even within decorative headings. */
+@font-face{font-family:"CCR Arabic Numerals";src:url("./assets/fonts/dm-sans-latin-wght-normal.woff2") format("woff2");font-style:normal;font-weight:100 1000;font-display:swap;unicode-range:U+0030-0039}
+:root{--fn-serif:"CCR Arabic Numerals","Cormorant Garamond",Georgia,"Noto Sans Thai",serif;--fn-numerals:"CCR Arabic Numerals","DM Sans","Noto Sans Thai",system-ui,sans-serif}
+body,.event-page{--font-sans:"CCR Arabic Numerals","DM Sans","Noto Sans Thai",system-ui,sans-serif;font-variant-numeric:lining-nums tabular-nums}
+.summary-page{font-family:var(--font-sans)}
+.my-pass-card .saved-menu-summary{margin-top:16px;padding:16px 18px;border-radius:16px;background:#fff;border:1px solid #d9dfd7;color:#18241f;overflow-wrap:anywhere}
+.saved-menu-summary-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.saved-menu-summary-head strong{color:#0f2b26}
+.saved-menu-total{font-weight:700;color:#0d5c46}
+.saved-menu-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:8px}
+.saved-menu-row{padding:10px 12px;border-radius:10px;background:#f8f5ef;color:#18241f;font-size:.9rem;line-height:1.8;min-width:0}
+.saved-menu-row b{color:#0d5c46}
+.saved-menu-price{color:#52645b;white-space:nowrap}
+@media(max-width:430px){.my-pass-card .saved-menu-summary{padding:14px 12px}.saved-menu-grid{grid-template-columns:1fr}}

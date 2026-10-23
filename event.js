@@ -10,7 +10,7 @@ function tick(){
     if(el.textContent!==next){
       el.textContent=next;
       if(el.animate&&!matchMedia('(prefers-reduced-motion: reduce)').matches)
-        el.animate([{transform:'translateY(5px)',opacity:.45},{transform:'translateY(0)',opacity:1}],{duration:240,easing:'ease-out'});
+        el.animate([{transform:'translateY(5px)',opacity:.88},{transform:'translateY(0)',opacity:1}],{duration:240,easing:'ease-out'});
     }
   }
   const status=$('countdownStatus');
@@ -40,15 +40,15 @@ function renderGuideSavedDetails(){
   const items=st.voteSaved?.items;
   if(Array.isArray(items)&&items.length){
     box.innerHTML=`
-      <div style="margin-top:16px;padding:16px 18px;border-radius:16px;background:#ffffff;border:1px solid rgba(15,43,38,.12)">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-          <strong style="color:#0f2b26">${st.hasSavedVote?'บันทึกลงระบบกลางแล้ว':'ฉบับร่าง / ใบโหวตกติกาเดิม — กรุณาตรวจและส่งใหม่'} · รายการอาหารทั้ง ${new Set(items.map(it=>it.key)).size} หมวดที่คุณบันทึกไว้ (${escapeHTML(st.voteSaved.receipt||'LOCAL')})</strong>
-          <span style="font-weight:700;color:#0d5c46">รวมต่อโต๊ะประมาณ ${money(st.voteSaved.grandTotal||0)}</span>
+      <section class="saved-menu-summary" aria-label="รายการอาหารที่บันทึกไว้">
+        <div class="saved-menu-summary-head">
+          <strong>${st.hasSavedVote?'บันทึกลงระบบกลางแล้ว':'ฉบับร่าง / ใบโหวตกติกาเดิม — กรุณาตรวจและส่งใหม่'} · รายการอาหารทั้ง ${new Set(items.map(it=>it.key)).size} หมวดที่คุณบันทึกไว้ (${escapeHTML(st.voteSaved.receipt||'LOCAL')})</strong>
+          <span class="saved-menu-total">รวมต่อโต๊ะประมาณ ${money(st.voteSaved.grandTotal||0)}</span>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px">
-          ${items.map(it=>`<div style="padding:8px 10px;border-radius:10px;background:#f8f5ef;font-size:.86rem"><b style="color:#0d5c46">หมวด ${escapeHTML(it.key)}:</b> ${escapeHTML(it.name)} × ${Number(it.qty)} เสิร์ฟ <span style="color:#666">(${money(it.lineTotal)})</span></div>`).join('')}
+        <div class="saved-menu-grid">
+          ${items.map(it=>`<div class="saved-menu-row"><b>หมวด ${escapeHTML(it.key)}:</b> ${escapeHTML(it.name)} × ${Number(it.qty)} เสิร์ฟ <span class="saved-menu-price">(${money(it.lineTotal)})</span></div>`).join('')}
         </div>
-      </div>`;
+      </section>`;
   }else{
     box.innerHTML='';
   }

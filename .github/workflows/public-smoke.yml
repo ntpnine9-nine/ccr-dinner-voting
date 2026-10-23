@@ -20,7 +20,7 @@ jobs:
           grep -Eiq '^content-type: text/html(;|$)' /tmp/index.headers
           grep -Fq "CCR After Hours" /tmp/index.html
           grep -Fq "18" /tmp/index.html
-          for page in vote.html party.html venue.html guide.html admin.html; do
+          for page in vote.html party.html venue.html guide.html admin.html admin-summary.html; do
             curl --fail --location --silent --show-error "$BASE/$page" -o "/tmp/$page"
           done
           grep -Fq "FOOD VOTE" /tmp/vote.html

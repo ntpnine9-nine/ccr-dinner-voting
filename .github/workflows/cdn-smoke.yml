@@ -16,7 +16,7 @@ jobs:
         run: |
           set -euo pipefail
           BASE="https://raw.githack.com/ntpnine9-nine/ccr-dinner-voting/main"
-          for page in index.html vote.html party.html venue.html guide.html admin.html; do
+          for page in index.html vote.html party.html venue.html guide.html admin.html admin-summary.html; do
             curl --fail --location --silent --show-error -D "/tmp/$page.headers" "$BASE/$page" -o "/tmp/$page"
             grep -Eiq '^content-type: text/html(;|$)' "/tmp/$page.headers"
           done

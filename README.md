@@ -26,12 +26,15 @@ Admin access uses Supabase Auth plus application authorization through `public.a
 - `vote.html` — 8-category food vote
 - `guide.html` — complete event guide / FAQ
 - `admin.html` — authorized organizer dashboard
+- `admin-summary.html` — authorized complete-results decision brief
 
 ## Voting model
 - 8 fixed categories
 - 7 menu options per category
 - 56 menu candidates
-- 1 choice per category per ballot
+- Serving V2: A/B/C/E/F allow one dish ×2 or two dishes ×1; D/G allow one ×1; H allows one rice choice billed twice
+- Complete ballot: 13 selection units / 14 billed servings
+- Labels are optional and limited to 80 NFC Unicode code points; they are never authentication
 - Standard table budget ≤ THB 2,000
 - Premium consideration ≤ THB 2,200
 - Gift poll: THB 300 / THB 500 / THB 300–500 / no exchange
@@ -53,3 +56,28 @@ The project maintains automated verification for:
 - current campaign admission state
 
 See `SECURITY.md`, `docs/OPERATIONS_TH.md`, and `docs/PRODUCTION_ACCEPTANCE.md`.
+
+## Isolated verification
+
+`npm test` checks business rules, reports, cloud clients and Unicode labels.
+`npm run check` also validates all static dependency paths and menu media.
+
+For repeatable browser QA (no live submissions):
+
+```sh
+npm ci
+npx playwright install --with-deps chromium
+git worktree add --detach ../ccr-baseline d3c049e976f53a03937f476b3f2df0e860543e71
+npm run test:browser
+```
+
+All Supabase requests in browser QA are intercepted using synthetic fixtures.
+`QA_BROWSER_EXECUTABLE` can select an installed Chromium executable.
+`QA_OUTPUT` selects the evidence directory. Before screenshots reproduce the
+historical baseline with a test-only Thai font injection; after screenshots
+use the candidate source's own self-hosted fonts. Local lab results are not
+field Core Web Vitals, physical-device proof or owner acceptance.
+
+Owner source assets and `assets/menu/` illustrations are distinct. Menu images
+are explicitly labelled AI illustrations; 8 of 56 menu items currently have
+individual illustrations. Missing images preserve a usable textual selection.
