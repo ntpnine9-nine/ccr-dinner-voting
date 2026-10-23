@@ -492,10 +492,10 @@ async function enterPreviewMode() {
 
 async function init() {
   try {
-    if (await startAccountRecovery()) return;
     const catalog = await getCatalog();
     cats = catalog.categories;
     catalogVersion = catalog.catalogVersion;
+    if (await startAccountRecovery()) return;
     session = loadSession();
     await onSession();
   } catch (e) {
