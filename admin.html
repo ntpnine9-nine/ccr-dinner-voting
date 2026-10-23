@@ -64,12 +64,25 @@
       <label class="input-block" for="email"><span>อีเมลบัญชีผู้ดูแล</span><input id="email" type="email" class="text-field" placeholder="you@example.com" autocomplete="username"></label>
       <label class="input-block" for="password"><span>รหัสผ่านผู้ดูแล</span><input id="password" type="password" class="text-field" placeholder="••••••••••••" autocomplete="current-password"></label>
       <button id="login" class="btn btn-dark full">เข้าสู่ระบบผู้ดูแลจริง ↗</button>
+      <button id="recoverAccount" type="button" class="btn btn-outline full" style="margin-top:12px">ลืมรหัสผ่าน · ส่งอีเมลกู้บัญชี</button>
 
       <div class="admin-preview-box">
         <h4>📊 ทดลองใช้งานแดชบอร์ดและระบบคำนวณงบโต๊ะทันที (Interactive Preview)</h4>
         <p>เปิดดูหน้าตาแดชบอร์ดผู้จัดงาน กราฟคะแนนโหวตทั้ง 8 หมวด สถิติ RSVP/ของขวัญ และทดลองกดคำนวณชุดอาหารคุมงบ <b>฿2,000</b> และ <b>฿2,200</b> ต่อโต๊ะ (รวมข้อมูลที่คุณเพิ่งเลือกไว้ในเครื่องนี้) โดยไม่ต้องล็อกอิน</p>
         <button id="previewDashboard" type="button" class="btn btn-outline full">เปิดดูแดชบอร์ดจำลองและข้อมูลในเครื่องนี้ ↗</button>
       </div>
+    </section>
+
+    <section id="passwordRecoveryPanel" class="admin-card login-wrapper hidden" aria-labelledby="recoveryTitle">
+      <span class="section-kicker">ACCOUNT RECOVERY</span>
+      <h2 id="recoveryTitle">ตั้งรหัสผ่านผู้ดูแลใหม่</h2>
+      <p>เปิดจากอีเมลกู้คืนบัญชีเท่านั้น รหัสใหม่จะใช้กับบัญชีเดิม โดยคำตอบและสิทธิ์ผู้ดูแลยังอยู่ครบ</p>
+      <form id="passwordRecoveryForm">
+        <label class="input-block" for="newAdminPassword"><span>รหัสผ่านใหม่ (อย่างน้อย 12 ตัวอักษร)</span><input id="newAdminPassword" type="password" class="text-field" autocomplete="new-password" minlength="12" required></label>
+        <label class="input-block" for="confirmAdminPassword"><span>ยืนยันรหัสผ่านใหม่</span><input id="confirmAdminPassword" type="password" class="text-field" autocomplete="new-password" minlength="12" required></label>
+        <button id="saveRecoveredPassword" type="submit" class="btn btn-dark full">บันทึกรหัสผ่านใหม่</button>
+      </form>
+      <p class="muted small">เมื่อตั้งรหัสสำเร็จ ให้เข้าสู่ระบบอีกครั้งด้วยอีเมลและรหัสใหม่ที่ตั้งเอง</p>
     </section>
 
     <div id="dashboard" class="hidden">
@@ -280,6 +293,6 @@
     </div>
   </main>
 </div>
-<script type="module" src="./admin.js?v=20261023-unified1"></script>
+<script type="module" src="./admin.js?v=20261023-recovery1"></script>
 </body>
 </html>

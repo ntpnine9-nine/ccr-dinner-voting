@@ -64,14 +64,14 @@ function loadSession() {
   }
 }
 
-async function authFetch(path, body, token = '') {
+async function authFetch(path, body, token = '', method = 'POST') {
   const headers = {
     'Content-Type': 'application/json',
     apikey: CONFIG.publishableKey
   };
   if (token) headers.Authorization = 'Bearer ' + token;
   const r = await fetch(CONFIG.supabaseUrl + path, {
-    method: 'POST',
+    method,
     headers,
     body: body ? JSON.stringify(body) : undefined
   });
@@ -88,6 +88,84 @@ async function authFetch(path, body, token = '') {
 async function signIn(email, password) {
   return authFetch('/auth/v1/token?grant_type=password', { email, password });
 }
+
+// Recovery credentials stay in memory and are removed from browser history
+// before any asynchronous work. Never treat URL contents as proof of identity.
+const recoveryParams = new URLSearchParams(location.hash.slice(1));
+const isRecoveryReturn = recoveryParams.get('type') === 'recovery';
+let recoveryAccessToken = isRecoveryReturn ? recoveryParams.get('access_token') : null;
+const recoveryError = recoveryParams.get('error_description') || recoveryParams.get('error');
+if (recoveryParams.has('access_token') || recoveryParams.has('refresh_token') || recoveryError) {
+  history.replaceState(null, '', location.pathname + location.search);
+}
+recoveryParams.delete('access_token');
+recoveryParams.delete('refresh_token');
+
+async function startAccountRecovery() {
+  if (!isRecoveryReturn && !recoveryError) return false;
+  saveSession(null);
+  $('dashboard').classList.add('hidden');
+  $('previewToggleBtn').disabled = true;
+  $('refresh').disabled = true;
+  if (!recoveryAccessToken || recoveryError) {
+    recoveryAccessToken = null;
+    notice('ลิงก์กู้คืนไม่ถูกต้องหรือหมดอายุ กรุณากรอกอีเมลและขอลิงก์ใหม่', true);
+    return true;
+  }
+  try {
+    await authFetch('/auth/v1/user', null, recoveryAccessToken, 'GET');
+    $('authPanel').classList.add('hidden');
+    $('passwordRecoveryPanel').classList.remove('hidden');
+    $('newAdminPassword').focus();
+    notice('ยืนยันลิงก์กู้คืนแล้ว กรุณาตั้งรหัสผ่านใหม่', 'info');
+  } catch {
+    recoveryAccessToken = null;
+    notice('ลิงก์กู้คืนไม่ถูกต้อง หมดอายุ หรือเชื่อมต่อไม่ได้ กรุณาขอลิงก์ใหม่', true);
+  }
+  return true;
+}
+
+$('recoverAccount').addEventListener('click', async () => {
+  const email = $('email').value.trim();
+  if (!/^\S+@\S+\.\S+$/.test(email)) return notice('กรอกอีเมลบัญชีผู้ดูแลก่อนขอลิงก์กู้คืน', true);
+  $('recoverAccount').disabled = true;
+  notice('กำลังขออีเมลกู้คืนบัญชี…', 'info');
+  try {
+    const redirect = new URL('./admin.html', location.href).href;
+    await authFetch('/auth/v1/recover?redirect_to=' + encodeURIComponent(redirect), {email});
+    notice('ส่งคำขอกู้คืนแล้ว หากบัญชีนี้รับอีเมลได้ จะได้รับลิงก์ตั้งรหัสใหม่ โปรดตรวจกล่องจดหมายและสแปม', 'good');
+  } catch {
+    notice('ส่งอีเมลกู้คืนไม่สำเร็จ อาจติดขีดจำกัดการส่งหรือการเชื่อมต่อ กรุณารอสักครู่แล้วลองใหม่', true);
+  } finally {
+    $('recoverAccount').disabled = false;
+  }
+});
+
+$('passwordRecoveryForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (!recoveryAccessToken || $('saveRecoveredPassword').disabled) return;
+  const password = $('newAdminPassword').value;
+  if (password.length < 12) return notice('รหัสผ่านใหม่ต้องมีอย่างน้อย 12 ตัวอักษร', true);
+  if (password !== $('confirmAdminPassword').value) return notice('รหัสผ่านใหม่และช่องยืนยันไม่ตรงกัน', true);
+  $('saveRecoveredPassword').disabled = true;
+  try {
+    await authFetch('/auth/v1/user', {password}, recoveryAccessToken, 'PUT');
+    // Password changes must not leave the recovery session active in this tab.
+    try { await authFetch('/auth/v1/logout', null, recoveryAccessToken); } catch {}
+    recoveryAccessToken = null;
+    $('passwordRecoveryForm').reset();
+    $('passwordRecoveryPanel').classList.add('hidden');
+    $('authPanel').classList.remove('hidden');
+    $('previewToggleBtn').disabled = false;
+    $('password').value = '';
+    notice('ตั้งรหัสผ่านใหม่สำเร็จ กรุณาเข้าสู่ระบบด้วยรหัสใหม่', 'good');
+    $('email').focus();
+  } catch {
+    notice('ตั้งรหัสผ่านไม่สำเร็จ รหัสอาจไม่ผ่านเงื่อนไขหรือลิงก์หมดอายุ โปรดลองใหม่หรือขอลิงก์กู้คืนใหม่', true);
+  } finally {
+    $('saveRecoveredPassword').disabled = false;
+  }
+});
 
 async function refreshSession() {
   if (!session?.refresh_token) throw Error('กรุณาเข้าสู่ระบบใหม่');
@@ -417,6 +495,7 @@ async function init() {
     const catalog = await getCatalog();
     cats = catalog.categories;
     catalogVersion = catalog.catalogVersion;
+    if (await startAccountRecovery()) return;
     session = loadSession();
     await onSession();
   } catch (e) {
