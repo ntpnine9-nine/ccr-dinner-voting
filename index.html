@@ -16,7 +16,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css?v=20261022-servings1">
   <link rel="stylesheet" href="./event.css">
-  <link rel="stylesheet" href="./forest-noir.css?v=20261023-live1">
+  <link rel="stylesheet" href="./forest-noir.css?v=20261023-polish2">
 </head>
 <body class="event-page invitation-page">
 <a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
@@ -39,19 +39,19 @@
 
 <nav class="journey-bar" aria-label="ลำดับขั้นตอนการร่วมงาน 4 ขั้นตอน">
   <div class="journey-inner">
-    <a class="journey-step is-active" href="./venue.html">
+    <a class="journey-step is-active" href="./venue.html" data-short-label="สถานที่">
       <span class="journey-step-title"><span class="journey-step-no">1</span><span>ดูสถานที่ &amp; เส้นทาง</span></span>
       <span class="journey-badge is-complete">ครัวซอย 11</span>
     </a>
-    <a class="journey-step" href="./party.html">
+    <a class="journey-step" href="./party.html" data-short-label="ตอบรับ">
       <span class="journey-step-title"><span class="journey-step-no">2</span><span>แจ้ง RSVP &amp; ของขวัญ</span></span>
       <span class="journey-badge" data-journey-badge="party">0/3 ข้อ</span>
     </a>
-    <a class="journey-step" href="./vote.html">
+    <a class="journey-step" href="./vote.html" data-short-label="โหวตอาหาร">
       <span class="journey-step-title"><span class="journey-step-no">3</span><span>โหวตอาหาร 8 หมวด</span></span>
       <span class="journey-badge" data-journey-badge="vote">0/8 หมวด</span>
     </a>
-    <a class="journey-step" href="./guide.html">
+    <a class="journey-step" href="./guide.html" data-short-label="บัตรของฉัน">
       <span class="journey-step-title"><span class="journey-step-no">4</span><span>คู่มือ &amp; บัตรสรุป</span></span>
       <span class="journey-badge">ดูสรุป</span>
     </a>
@@ -69,7 +69,7 @@
           <span class="event-date-meta">DEC<br>2026</span>
         </div>
         <h1>OFF SHIFT.<br><em>ON THE TABLE.</em></h1>
-        <p class="event-lead">ขอเชิญพี่น้องทีม CCR ร่วมค่ำคืนส่งท้ายปี 2026 ณ <strong>ร้านครัวซอย 11 (เฉลิมพระเกียรติ ร.9 ซอย 11)</strong> บรรยากาศโปร่งสบายใต้แสงไฟวอร์มไวท์ พร้อมร่วมลงทะเบียน เลือกงบจับของขวัญ โหวตธีมแต่งกาย และเลือกเมนูอาหาร 8 หมวดที่จะขึ้นโต๊ะจริงด้วยกัน</p>
+        <p class="event-lead">พักเรื่องงาน แล้วมาร่วมโต๊ะเดียวกัน<br>ค่ำคืนส่งท้ายปีของทีม CCR ที่ <strong>ครัวซอย 11</strong><br>18 ธันวาคม 2026 · เริ่ม 17:00 น.</p>
         <div class="event-hero-actions">
           <a class="event-btn event-btn-light" href="./party.html">ตอบรับคำเชิญ ↗</a>
           <a class="event-btn event-btn-ghost" href="./vote.html">โหวตเมนูอาหาร 8 หมวด (ขั้นที่ 3) ↗</a>
@@ -87,11 +87,9 @@
         <p id="shareStatus" class="event-share-status" aria-live="polite"></p>
       </div>
 
-      <div class="event-visual" aria-label="ภาพบรรยากาศจริงของร้านครัวซอย 11 และอาหารจากร้าน">
+      <div class="event-visual" aria-label="ภาพบรรยากาศจริงของร้านครัวซอย 11">
         <figure class="event-photo event-photo-main"><img src="./assets/venue-night-hero.jpg" width="1280" height="960" fetchpriority="high" alt="บรรยากาศยามค่ำคืนของร้านครัวซอย 11 ใต้หลังคาโปร่งและไฟประดับสีวอร์มไวท์"></figure>
-        <figure class="event-photo event-photo-side one"><img src="./assets/venue-counter-sign.jpg" width="1120" height="840" alt="ผนังเคาน์เตอร์สีเหลืองพร้อมป้ายชื่อร้านครัวซอย 11 และมุมต้นไม้"></figure>
-        <figure class="event-photo event-photo-side two"><img src="./assets/food-tomyum-pot.jpg" width="960" height="720" alt="ต้มยำน้ำข้นทะเลเสิร์ฟในหม้อไฟจากร้านครัวซอย 11"></figure>
-        <div class="event-stamp"><span>ONE TEAM</span><b>ONE TABLE</b><span>ONE NIGHT</span></div>
+        <p class="hero-photo-caption">ครัวซอย 11 · ภาพสถานที่จริง</p>
       </div>
     </div>
     <div class="event-scroll-cue">SCROLL TO EXPLORE <span>↓</span></div>
@@ -152,7 +150,7 @@
     <div class="event-wrap event-countdown-grid">
       <div>
         <span class="event-section-label light">02 / SAVE THE DATE</span>
-        <h2>FRIDAY<br>18.12.26</h2>
+        <h2>วันศุกร์<br><span class="numeric-date">18.12.2026</span></h2>
       </div>
       <div class="countdown" role="timer" aria-live="off" aria-label="นับถอยหลังถึง 18 ธันวาคม 2026 เวลา 17 นาฬิกา เวลาประเทศไทย">
         <div><strong id="days">—</strong><span>วัน / DAYS</span></div>
@@ -181,8 +179,12 @@
       </div>
       <div class="event-inline-actions">
         <a class="event-btn event-btn-dark" href="./venue.html">ชมภาพบรรยากาศร้านและจุดสังเกตทางเข้า ↗</a>
-        <a class="event-text-link" href="https://www.google.com/maps/dir/?api=1&destination=13.6776392%2C100.6522394&travelmode=driving" target="_blank" rel="noopener">เปิดนำทางด้วย Google Maps ↗</a>
       </div>
+      <nav class="venue-links" aria-label="ช่องทางร้านครัวซอย 11">
+        <a class="event-text-link" href="https://www.google.com/maps/dir/?api=1&destination=13.6776392%2C100.6522394&travelmode=driving" target="_blank" rel="noopener noreferrer">Google Maps <span aria-hidden="true">↗</span></a>
+        <a class="event-text-link" href="https://www.wongnai.com/restaurants/2935349OI-%E0%B8%84%E0%B8%A3%E0%B8%B1%E0%B8%A7%E0%B8%8B%E0%B8%AD%E0%B8%A2-11-%E0%B9%80%E0%B8%89%E0%B8%A5%E0%B8%B4%E0%B8%A1%E0%B8%9E%E0%B8%A3%E0%B8%B0%E0%B9%80%E0%B8%81%E0%B8%B5%E0%B8%A2%E0%B8%A3%E0%B8%95%E0%B8%B4-%E0%B8%A3-9" target="_blank" rel="noopener noreferrer">Wongnai <span aria-hidden="true">↗</span></a>
+        <a class="event-text-link" href="https://www.facebook.com/p/%E0%B8%84%E0%B8%A3%E0%B8%B1%E0%B8%A7%E0%B8%8B%E0%B8%AD%E0%B8%A2-11-61565036567353/" target="_blank" rel="noopener noreferrer">Facebook <span aria-hidden="true">↗</span></a>
+      </nav>
     </div>
   </section>
 
@@ -262,6 +264,6 @@
   <div><b>CCR AFTER HOURS 2026</b><span>ครัวซอย 11 · เฉลิมพระเกียรติ ร.9 ซอย 11 · ONE TEAM · ONE TABLE · ONE NIGHT</span></div>
   <div class="event-footer-links"><a href="./index.html">หน้าแรก</a><a href="./venue.html">สถานที่จัดงาน</a><a href="./party.html">ลงทะเบียน &amp; ของขวัญ</a><a href="./vote.html">โหวตอาหาร</a><a href="./guide.html">คู่มือวันงาน</a><a href="./admin.html">ผู้จัดงาน</a></div>
 </footer>
-<script type="module" src="./event.js?v=20261023-live1"></script>
-<script type="module" src="./forest-noir.js?v=20261023-v2"></script>
+<script type="module" src="./event.js?v=20261023-polish2"></script>
+<script type="module" src="./forest-noir.js?v=20261023-polish2"></script>
 </body></html>

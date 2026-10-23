@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css?v=20261022-servings1">
   <link rel="stylesheet" href="./event.css">
-  <link rel="stylesheet" href="./forest-noir.css?v=20261023-live1">
+  <link rel="stylesheet" href="./forest-noir.css?v=20261023-polish2">
 </head>
 <body class="voter-page event-page">
 <a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
@@ -29,19 +29,19 @@
 
 <nav class="journey-bar" aria-label="ลำดับขั้นตอนการร่วมงาน">
   <div class="journey-bar-inner">
-    <a class="journey-step" data-journey-step="1" href="./venue.html">
+    <a class="journey-step" data-journey-step="1" href="./venue.html" data-short-label="สถานที่">
       <span class="journey-step-num">1</span>
       <span class="journey-step-text"><b>ดูสถานที่ & อาหารจริง</b><small>ครัวซอย 11 · แผนที่ & ที่จอดรถ</small></span>
     </a>
-    <a class="journey-step" data-journey-step="2" href="./party.html">
+    <a class="journey-step" data-journey-step="2" href="./party.html" data-short-label="ตอบรับ">
       <span class="journey-step-num">2</span>
       <span class="journey-step-text"><b>ลงทะเบียน & ของขวัญ</b><small data-step-status="party">เลือก 3 หัวข้อ</small></span>
     </a>
-    <a class="journey-step active" data-journey-step="3" href="./vote.html" aria-current="step">
+    <a class="journey-step active" data-journey-step="3" href="./vote.html" aria-current="step" data-short-label="โหวตอาหาร">
       <span class="journey-step-num">3</span>
       <span class="journey-step-text"><b>โหวตเมนูอาหาร 8 หมวด</b><small data-step-status="vote">กำลังเลือกเมนู…</small></span>
     </a>
-    <a class="journey-step" data-journey-step="4" href="./guide.html">
+    <a class="journey-step" data-journey-step="4" href="./guide.html" data-short-label="บัตรของฉัน">
       <span class="journey-step-num">4</span>
       <span class="journey-step-text"><b>คู่มือวันงาน & สรุปของฉัน</b><small data-step-status="guide">เช็กข้อมูลที่บันทึกไว้</small></span>
     </a>
@@ -67,7 +67,7 @@
   <section class="intro-section">
     <div>
       <span class="section-kicker">01 / HOW TO VOTE</span>
-      <h2>เลือกครบ <em>8 หมวด</em><br>กดบันทึกได้ทันที</h2>
+      <h2>มาจัดโต๊ะของเรา<br><em>เลือกอาหารให้ครบ 8 หมวด</em></h2>
     </div>
     <div class="intro-right">
       <p>แต่ละหมวด (A ถึง H) มีเมนูให้เลือก 7 รายการ คุณสามารถคลิกแท็บหมวด A–H หรือกดปุ่ม “หมวดถัดไป” เพื่อเลือกจนครบ 8 หมวด แล้วกดส่งคะแนนเข้าระบบกลางได้เลย ไม่ต้องมีบัญชีผู้ใช้</p>
@@ -104,11 +104,11 @@
         <div class="category-tabs" id="categoryTabs" role="tablist" aria-label="หมวดอาหาร"></div>
 
         <div class="category-visual-banner" id="categoryVisualBanner">
-          <img id="categoryPhoto" src="./assets/food-tomyum-pot.jpg" alt="ภาพบรรยากาศอาหารจริงจากร้านครัวซอย 11" loading="lazy">
+          <img id="categoryPhoto" src="./assets/menu/A1.webp" width="640" height="480" alt="ภาพประกอบอาหารที่สร้างด้วย AI" loading="lazy">
           <div class="category-visual-copy">
-            <span id="categoryPhotoTag">AUTHENTIC DISH PREVIEW · ครัวซอย 11</span>
-            <b id="categoryPhotoTitle">ต้มยำหม้อไฟและเมนูแกงเสิร์ฟร้อน</b>
-            <p id="categoryPhotoCaption">ภาพอาหารจริงจากร้านครัวซอย 11 เฉลิมพระเกียรติ ร.9 สำหรับประกอบการตัดสินใจเลือกเมนูประจำโต๊ะ</p>
+            <span id="categoryPhotoTag">ภาพประกอบเมนู · ราคาอ้างอิง</span>
+            <b id="categoryPhotoTitle">ต้ม / แกง / อาหารน้ำ</b>
+            <p id="categoryPhotoCaption">ภาพประกอบสร้างด้วย AI ไม่ใช่ภาพอาหารจริงจากร้าน · เลือกตามชื่อเมนูและจำนวนเสิร์ฟ</p>
           </div>
         </div>
 
@@ -191,7 +191,7 @@
     <a href="./admin.html">สำหรับผู้จัดงาน</a>
   </div>
 </footer>
-<script type="module" src="./vote.js?v=20261023-v2"></script>
-<script type="module" src="./forest-noir.js?v=20261023-v2"></script>
+<script type="module" src="./vote.js?v=20261023-polish2"></script>
+<script type="module" src="./forest-noir.js?v=20261023-polish2"></script>
 </body>
 </html>

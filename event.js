@@ -10,7 +10,7 @@ function tick(){
     if(el.textContent!==next){
       el.textContent=next;
       if(el.animate&&!matchMedia('(prefers-reduced-motion: reduce)').matches)
-        el.animate([{transform:'translateY(5px)',opacity:.45},{transform:'translateY(0)',opacity:1}],{duration:240,easing:'ease-out'});
+        el.animate([{transform:'translateY(5px)',opacity:.88},{transform:'translateY(0)',opacity:1}],{duration:240,easing:'ease-out'});
     }
   }
   const status=$('countdownStatus');
