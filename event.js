@@ -1,4 +1,4 @@
-import { renderJourneyProgress, getSavedJourneyState, escapeHTML, money, PARTY_STORAGE_KEY, VOTE_SAVED_KEY, VOTE_PICKS_KEY, TOKEN_STORAGE_KEY } from './common.js?v=20261022-servings1';
+import { renderJourneyProgress, getSavedJourneyState, PARTY_LABELS, escapeHTML, money, PARTY_STORAGE_KEY, VOTE_SAVED_KEY, VOTE_PICKS_KEY, TOKEN_STORAGE_KEY } from './common.js?v=20261022-servings1';
 import {countdownAt, eventCalendar} from './event-time.js?v=20261023-live1';
 const $=id=>document.getElementById(id);
 let countdownTimer;
@@ -28,10 +28,15 @@ if($('seconds')){
 }
 
 function renderGuideSavedDetails(){
+  const st=getSavedJourneyState();
+  const home=$('myEventPass');
+  if(home&&!home.classList.contains('my-pass-card')){
+    const rows=[['RSVP',PARTY_LABELS.attendance[st.party.attendance]||'ยังไม่ได้ตอบ'],['ของขวัญ',PARTY_LABELS.giftChoice[st.party.giftChoice]||'ยังไม่ได้เลือก'],['ธีมแต่งตัว',PARTY_LABELS.themeChoice[st.party.themeChoice]||'ยังไม่ได้เลือก'],['อาหาร',`เลือกครบ ${st.voteCount}/8 หมวด`]];
+    home.innerHTML='<div class="pass-grid">'+rows.map(([title,value])=>`<div class="pass-item"><small>${title}</small><b>${escapeHTML(value)}</b></div>`).join('')+'</div>'+`<p class="home-pass-status"><span>RSVP: ${st.partySaved?'✓ ระบบยืนยันแล้ว':st.partyCount?'ฉบับร่าง · ยังไม่ได้ส่ง':'ยังไม่ได้ตอบ'}</span><span>อาหาร: ${st.hasSavedVote?'✓ ระบบยืนยันแล้ว':st.voteCount?'ฉบับร่าง / ใบเดิม · ตรวจแล้วส่งอีกครั้ง':'ยังไม่ได้เลือก'}</span></p>`;
+  }
   renderJourneyProgress();
   const box=$('guideSavedMenu');
   if(!box)return;
-  const st=getSavedJourneyState();
   const items=st.voteSaved?.items;
   if(Array.isArray(items)&&items.length){
     box.innerHTML=`
