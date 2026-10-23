@@ -6,17 +6,20 @@
   <meta name="theme-color" content="#16392f">
   <meta name="description" content="CCR Dinner Voting · Administrator & Organizer Dashboard">
   <title>แดชบอร์ดผู้จัดงาน · CCR After Hours 2026</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css?v=20261022-servings1">
-  <link rel="stylesheet" href="./event.css">
-  <link rel="stylesheet" href="./forest-noir.css?v=20261023-live1">
+
+
+  <link rel="stylesheet" href="./styles.css?v=20261023-unified1">
+  <link rel="stylesheet" href="./event.css?v=20261023-unified1">
+  <link rel="stylesheet" href="./forest-noir.css?v=20261023-owner5">
+<link rel="preload" href="./assets/fonts/dm-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="./assets/fonts/noto-sans-thai-thai-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="./assets/fonts/cormorant-garamond-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 </head>
 <body class="admin-page">
 <a class="skip-link" href="#adminMain">ข้ามไป Dashboard</a>
 <div class="admin-shell">
   <aside class="admin-sidebar">
-    <a href="./index.html" class="brand"><span class="brand-symbol">✦</span><span><strong>CCR<span class="brand-amp">&</span>TABLE</strong><small>ADMIN CONSOLE</small></span></a>
+    <a href="./index.html" class="brand"><span class="brand-symbol">✦</span><span><strong>CCR After Hours</strong><small>ADMIN CONSOLE</small></span></a>
     <nav aria-label="เมนูผู้ดูแล">
       <a href="./admin-summary.html">↗ สรุปผลเพื่อการตัดสินใจ</a>
       <a href="#overview" class="current" aria-current="page">▣ ภาพรวม</a>
@@ -121,7 +124,7 @@
             <h2>สถานะรหัสเชิญและการมีส่วนร่วม</h2>
           </div>
         </div>
-        <div class="data-scroll">
+        <div class="data-scroll" tabindex="0" role="region" aria-label="ตารางข้อมูล เลื่อนซ้ายขวาด้วยคีย์บอร์ด">
           <table>
             <thead><tr><th>ชื่อ / นามแฝง · รหัสอ้างอิง</th><th>สถานะ</th><th>การมีส่วนร่วม</th><th>สร้างเมื่อ</th><th>จัดการ</th></tr></thead>
             <tbody id="inviteList"><tr><td colspan="5" class="muted">ยังไม่มีรหัสเชิญ</td></tr></tbody>
@@ -186,7 +189,7 @@
           <label>การร่วมงาน<select id="recordAttendance" class="text-field"><option value="">RSVP ทั้งหมด</option value="yes">ไปแน่นอน</option><option value="maybe">ยังไม่แน่ใจ</option><option value="no">ไม่สะดวก</option><option value="unanswered">ยังไม่มี RSVP</option></select></label>
           <label>สถานะสิทธิ์<select id="recordActive" class="text-field"><option value="">ทุกสถานะ</option><option value="active">ใช้งาน</option><option value="revoked">ยกเลิกแล้ว</option></select></label>
         </div><p id="recordFilterCount" class="muted small" role="status"></p>
-        <div class="data-scroll">
+        <div class="data-scroll" tabindex="0" role="region" aria-label="ตารางข้อมูล เลื่อนซ้ายขวาด้วยคีย์บอร์ด">
           <table>
             <thead>
               <tr><th>ชื่อ / นามแฝง · รหัสอ้างอิง</th><th>สถานะ</th><th>Food Vote</th><th>RSVP / Mood</th><th>อัปเดตล่าสุด</th><th>จัดการ</th></tr>
@@ -196,7 +199,7 @@
         </div>
         <details style="margin-top:16px">
           <summary>ประวัติการจัดการข้อมูลจริงล่าสุด (Audit Log)</summary>
-          <div class="data-scroll"><table>
+          <div class="data-scroll" tabindex="0" role="region" aria-label="ตารางข้อมูล เลื่อนซ้ายขวาด้วยคีย์บอร์ด"><table>
             <thead><tr><th>เวลา</th><th>คำสั่ง</th><th>รายละเอียด</th></tr></thead>
             <tbody id="auditRows"><tr><td colspan="3">เข้าสู่ระบบเพื่อดูประวัติ</td></tr></tbody>
           </table></div>
@@ -257,7 +260,7 @@
           <button id="budget22" class="btn btn-outline">คุมงบ ฿2,200 / โต๊ะ</button>
         </div>
         <p class="muted small" id="engineStatus">กรุณาโหลดผลคะแนนก่อน</p>
-        <div class="data-scroll">
+        <div class="data-scroll" tabindex="0" role="region" aria-label="ตารางข้อมูล เลื่อนซ้ายขวาด้วยคีย์บอร์ด">
           <table>
             <thead><tr><th>หมวด</th><th>เมนูที่แนะนำ</th><th class="right">จำนวนเสิร์ฟ/โต๊ะ</th><th class="right">ราคารวม</th></tr></thead>
             <tbody id="draft"><tr><td colspan="4" class="muted">ยังไม่มีการสร้างชุดอาหาร</td></tr></tbody>
@@ -277,6 +280,6 @@
     </div>
   </main>
 </div>
-<script type="module" src="./admin.js?v=20261023-v2"></script>
+<script type="module" src="./admin.js?v=20261023-unified1"></script>
 </body>
 </html>

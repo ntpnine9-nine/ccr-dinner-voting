@@ -1,0 +1,38 @@
+name: Isolated full-site browser QA
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      - run: git worktree add --detach ../ccr-baseline d3c049e976f53a03937f476b3f2df0e860543e71
+      - run: npm test && npm run check
+      - name: Check all seven routes using intercepted synthetic APIs
+        run: npm run test:browser
+        env:
+          QA_BROWSER: ${{ matrix.browser }}
+          QA_OUTPUT: ${{ github.workspace }}/browser-evidence
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ccr-browser-evidence-${{ matrix.browser }}
+          path: browser-evidence

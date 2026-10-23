@@ -11,6 +11,7 @@ import {
   renderJourneyProgress
 } from './common.js?v=20261022-servings1';
 
+import {bindParticipantInput} from './participant-input.js?v=20261023-unified1';
 const $ = id => document.getElementById(id);
 const state = { attendance: '', giftChoice: '', themeChoice: '', savedAt: null };
 let isOpen = false;
@@ -112,6 +113,7 @@ document.querySelectorAll('[data-group]').forEach(group => {
 if ($('prefToken')) {
   getSharedToken(); // Preserve existing invitation links without showing a code to type.
   $('prefToken').value = getParticipantLabel();
+  bindParticipantInput($('prefToken'));
   $('prefToken').addEventListener('input', () => {
     setParticipantLabel($('prefToken').value);
   });
@@ -130,6 +132,7 @@ function msg(t, type = 'normal', actionHtml = '') {
 
 $('savePreferences')?.addEventListener('click', async () => {
   if (saving) return;
+  if ($('prefToken') && !$('prefToken').reportValidity()) return;
   if (!state.attendance) {
     document.getElementById('blockAttendance')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return msg('กรุณาเลือกข้อ 01: สถานะการมาร่วมงาน (RSVP) ก่อนบันทึก', 'bad');

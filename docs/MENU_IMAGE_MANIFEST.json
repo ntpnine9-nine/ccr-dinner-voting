@@ -1,0 +1,506 @@
+[
+  {
+    "id": "A1",
+    "name": "ต้มจืดเต้าหู้หมูสับสาหร่าย",
+    "asset": "assets/menu/A1.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "A2",
+    "name": "ต้มยำทะเล (น้ำข้น/น้ำใส)",
+    "asset": "assets/menu/A2.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "A3",
+    "name": "ต้มยำโป๊ะแตก",
+    "asset": "assets/menu/A3.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "A4",
+    "name": "ต้มแซ่บหมูตุ๋น",
+    "asset": "assets/menu/A4.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "A5",
+    "name": "แกงส้มผักรวมกุ้ง",
+    "asset": "assets/menu/A5.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "A6",
+    "name": "ต้มยำไข่ปลาหมึก",
+    "asset": "assets/menu/A6.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "A7",
+    "name": "เย็นตาโฟทะเลเดือดหม้อไฟ",
+    "asset": "assets/menu/A7.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "B1",
+    "name": "ปลากะพงทอดน้ำปลา",
+    "asset": "assets/menu/B1.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "B2",
+    "name": "ปลากะพงทอดกระเทียม",
+    "asset": "assets/menu/B2.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "B3",
+    "name": "ปลากะพงนึ่งซีอิ๊ว",
+    "asset": "assets/menu/B3.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "B4",
+    "name": "ปลากะพงราดซอสมะขาม",
+    "asset": "assets/menu/B4.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "B5",
+    "name": "ปลากะพงผัดฉ่า",
+    "asset": "assets/menu/B5.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "B6",
+    "name": "ปลากะพงผัดขึ้นฉ่าย",
+    "asset": "assets/menu/B6.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "B7",
+    "name": "ปลากะพงนึ่งมะนาว (เนื้อล้วน)",
+    "asset": "assets/menu/B7.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "C1",
+    "name": "หมูกระเทียม",
+    "asset": "assets/menu/C1.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "C2",
+    "name": "ไก่ผัดเม็ดมะม่วง",
+    "asset": "assets/menu/C2.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "C3",
+    "name": "ผัดฉ่าทะเล",
+    "asset": "assets/menu/C3.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "C4",
+    "name": "กะเพราหมูกรอบ",
+    "asset": "assets/menu/C4.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "C5",
+    "name": "ปลาหมึกผัดไข่เค็ม",
+    "asset": "assets/menu/C5.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "C6",
+    "name": "ผัดผงกะหรี่ทะเล",
+    "asset": "assets/menu/C6.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "C7",
+    "name": "สามชั้นผัดพริกเกลือ",
+    "asset": "assets/menu/C7.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "D1",
+    "name": "ผัดผักรวม",
+    "asset": "assets/menu/D1.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "D2",
+    "name": "คะน้าน้ำมันหอย",
+    "asset": "assets/menu/D2.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "D3",
+    "name": "ผักบุ้งไฟแดง",
+    "asset": "assets/menu/D3.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "D4",
+    "name": "กะหล่ำปลีผัดน้ำปลา",
+    "asset": "assets/menu/D4.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "D5",
+    "name": "กระเฉดไฟแดง",
+    "asset": "assets/menu/D5.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "D6",
+    "name": "ยำผักบุ้งกรอบ",
+    "asset": "assets/menu/D6.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "D7",
+    "name": "ยำผักกระเฉดทรงเครื่อง",
+    "asset": "assets/menu/D7.webp",
+    "kind": "restaurant-menu",
+    "source": "https://img.wongnai.com/p/256x256/2025/07/27/3a0fbd6bc28e413ebd35f7566ae207d9.jpg",
+    "sourcePage": "https://www.wongnai.com/delivery/businesses/2935349OI/order",
+    "note": "Owner requested use of restaurant menu photos; photograph remains attributed to its source, no open licence claimed"
+  },
+  {
+    "id": "E1",
+    "name": "ปีกไก่ทอดเกลือ",
+    "asset": "assets/menu/E1.webp",
+    "kind": "restaurant-menu",
+    "source": "https://img.wongnai.com/p/256x256/2024/09/07/4b66a555eb2c48e9992cafc7164e9210.jpg",
+    "sourcePage": "https://www.wongnai.com/delivery/businesses/2935349OI/order",
+    "note": "Owner requested use of restaurant menu photos; photograph remains attributed to its source, no open licence claimed"
+  },
+  {
+    "id": "E2",
+    "name": "หมูย่างจิ้มแจ่ว",
+    "asset": "assets/menu/E2.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "E3",
+    "name": "หมูแดดเดียว",
+    "asset": "assets/menu/E3.webp",
+    "kind": "restaurant-menu",
+    "source": "https://img.wongnai.com/p/256x256/2024/09/07/9902c8690a954904baaf7d3b641de64e.jpg",
+    "sourcePage": "https://www.wongnai.com/delivery/businesses/2935349OI/order",
+    "note": "Owner requested use of restaurant menu photos; photograph remains attributed to its source, no open licence claimed"
+  },
+  {
+    "id": "E4",
+    "name": "ปีกไก่คลุกซอสเห็ดทรัฟเฟิล",
+    "asset": "assets/menu/E4.webp",
+    "kind": "restaurant-menu",
+    "source": "https://img.wongnai.com/p/256x256/2026/01/23/43a76e6fd42845e58a13d780d2af317f.jpg",
+    "sourcePage": "https://www.wongnai.com/delivery/businesses/2935349OI/order",
+    "note": "Owner requested use of restaurant menu photos; photograph remains attributed to its source, no open licence claimed"
+  },
+  {
+    "id": "E5",
+    "name": "หมูกรอบทอดสมุนไพร",
+    "asset": "assets/menu/E5.webp",
+    "kind": "restaurant-menu",
+    "source": "https://img.wongnai.com/p/256x256/2024/09/07/decb535451a44fa7bce2320366bd3398.jpg",
+    "sourcePage": "https://www.wongnai.com/delivery/businesses/2935349OI/order",
+    "note": "Owner requested use of restaurant menu photos; photograph remains attributed to its source, no open licence claimed"
+  },
+  {
+    "id": "E6",
+    "name": "เนื้อย่างซอย 11",
+    "asset": "assets/menu/E6.webp",
+    "kind": "restaurant-menu",
+    "source": "https://img.wongnai.com/p/256x256/2025/04/21/e9bae3de72734030bcea827a6bd3535d.jpg",
+    "sourcePage": "https://www.wongnai.com/delivery/businesses/2935349OI/order",
+    "note": "Owner requested use of restaurant menu photos; photograph remains attributed to its source, no open licence claimed"
+  },
+  {
+    "id": "E7",
+    "name": "ทะเลชุบแป้งทอด",
+    "asset": "assets/menu/E7.webp",
+    "kind": "restaurant-menu",
+    "source": "https://img.wongnai.com/p/256x256/2024/09/07/eea908847cc44429828170e004104082.jpg",
+    "sourcePage": "https://www.wongnai.com/delivery/businesses/2935349OI/order",
+    "note": "Owner requested use of restaurant menu photos; photograph remains attributed to its source, no open licence claimed"
+  },
+  {
+    "id": "F1",
+    "name": "ตำไทย",
+    "asset": "assets/menu/F1.webp",
+    "kind": "restaurant-menu",
+    "source": "https://img.wongnai.com/p/256x256/2024/09/07/e5eda0255a744fbe8e211709cd36f512.jpg",
+    "sourcePage": "https://www.wongnai.com/delivery/businesses/2935349OI/order",
+    "note": "Owner requested use of restaurant menu photos; photograph remains attributed to its source, no open licence claimed"
+  },
+  {
+    "id": "F2",
+    "name": "ลาบหมู",
+    "asset": "assets/menu/F2.webp",
+    "kind": "restaurant-menu",
+    "source": "https://img.wongnai.com/p/256x256/2024/09/08/425e2aeda0be48c1952f7dbe73076bf0.jpg",
+    "sourcePage": "https://www.wongnai.com/delivery/businesses/2935349OI/order",
+    "note": "Owner requested use of restaurant menu photos; photograph remains attributed to its source, no open licence claimed"
+  },
+  {
+    "id": "F3",
+    "name": "ยำไข่ดาว",
+    "asset": "assets/menu/F3.webp",
+    "kind": "restaurant-menu",
+    "source": "https://img.wongnai.com/p/256x256/2024/09/08/56bb8a749c02469f806836eca6ce9a2b.jpg",
+    "sourcePage": "https://www.wongnai.com/delivery/businesses/2935349OI/order",
+    "note": "Owner requested use of restaurant menu photos; photograph remains attributed to its source, no open licence claimed"
+  },
+  {
+    "id": "F4",
+    "name": "ยำหมูยอ",
+    "asset": "assets/menu/F4.webp",
+    "kind": "restaurant-menu",
+    "source": "https://img.wongnai.com/p/256x256/2024/09/08/8b81c2e106ec4d378d108051c91c85a2.jpg",
+    "sourcePage": "https://www.wongnai.com/delivery/businesses/2935349OI/order",
+    "note": "Owner requested use of restaurant menu photos; photograph remains attributed to its source, no open licence claimed"
+  },
+  {
+    "id": "F5",
+    "name": "ยำวุ้นเส้นรวมมิตร",
+    "asset": "assets/menu/F5.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "F6",
+    "name": "ยำทะเล",
+    "asset": "assets/menu/F6.webp",
+    "kind": "restaurant-menu",
+    "source": "https://img.wongnai.com/p/256x256/2025/06/14/d983abc5fe484cbd8158d2957556a45a.jpg",
+    "sourcePage": "https://www.wongnai.com/delivery/businesses/2935349OI/order",
+    "note": "Owner requested use of restaurant menu photos; photograph remains attributed to its source, no open licence claimed"
+  },
+  {
+    "id": "F7",
+    "name": "ยำซอย 11",
+    "asset": "assets/menu/F7.webp",
+    "kind": "restaurant-menu",
+    "source": "https://img.wongnai.com/p/256x256/2025/06/27/23bbccfe4a7249c580e0c72813de8002.jpg",
+    "sourcePage": "https://www.wongnai.com/delivery/businesses/2935349OI/order",
+    "note": "Owner requested use of restaurant menu photos; photograph remains attributed to its source, no open licence claimed"
+  },
+  {
+    "id": "G1",
+    "name": "ไข่เจียวหมูสับ",
+    "asset": "assets/menu/G1.webp",
+    "kind": "restaurant-menu",
+    "source": "https://img.wongnai.com/p/256x256/2024/09/07/443a157cae0241df876d7780ddcd489d.jpg",
+    "sourcePage": "https://www.wongnai.com/delivery/businesses/2935349OI/order",
+    "note": "Owner requested use of restaurant menu photos; photograph remains attributed to its source, no open licence claimed"
+  },
+  {
+    "id": "G2",
+    "name": "ไข่เจียวกุ้งสับ",
+    "asset": "assets/menu/G2.webp",
+    "kind": "restaurant-menu",
+    "source": "https://img.wongnai.com/p/256x256/2024/09/07/080071f79b994fbf831327f5ddc9a9f5.jpg",
+    "sourcePage": "https://www.wongnai.com/delivery/businesses/2935349OI/order",
+    "note": "Owner requested use of restaurant menu photos; photograph remains attributed to its source, no open licence claimed"
+  },
+  {
+    "id": "G3",
+    "name": "ไข่เยี่ยวม้ากะเพรากรอบ",
+    "asset": "assets/menu/G3.webp",
+    "kind": "restaurant-menu",
+    "source": "https://img.wongnai.com/p/256x256/2024/09/07/d803c29a65334a8381b7c2c2b30c865a.jpg",
+    "sourcePage": "https://www.wongnai.com/delivery/businesses/2935349OI/order",
+    "note": "Owner requested use of restaurant menu photos; photograph remains attributed to its source, no open licence claimed"
+  },
+  {
+    "id": "G4",
+    "name": "ปลาหมึกพี่ก้อง",
+    "asset": "assets/menu/G4.webp",
+    "kind": "restaurant-menu",
+    "source": "https://img.wongnai.com/p/256x256/2025/01/17/5876d5326bd9408b9fdf9724a48cd545.jpg",
+    "sourcePage": "https://www.wongnai.com/delivery/businesses/2935349OI/order",
+    "note": "Owner requested use of restaurant menu photos; photograph remains attributed to its source, no open licence claimed"
+  },
+  {
+    "id": "G5",
+    "name": "เต้าหู้ทรงเครื่องน้ำแดง",
+    "asset": "assets/menu/G5.webp",
+    "kind": "restaurant-menu",
+    "source": "https://img.wongnai.com/p/256x256/2024/09/07/5e5c98110c074359a67362419f6175db.jpg",
+    "sourcePage": "https://www.wongnai.com/delivery/businesses/2935349OI/order",
+    "note": "Owner requested use of restaurant menu photos; photograph remains attributed to its source, no open licence claimed"
+  },
+  {
+    "id": "G6",
+    "name": "กุ้งพี่เก๋",
+    "asset": null,
+    "kind": "awaiting-verified-photo",
+    "source": null,
+    "sourcePage": null,
+    "note": "กุ้งพี่เก๋ not found in supplied restaurant menu; no recipe guessed"
+  },
+  {
+    "id": "G7",
+    "name": "ห่อหมกทะเล",
+    "asset": "assets/menu/G7.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Wongnai source returned a generic placeholder on visual inspection; replaced with clearly labelled original AI illustration"
+  },
+  {
+    "id": "H1",
+    "name": "ข้าวผัดหมู",
+    "asset": "assets/menu/H1.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "H2",
+    "name": "ข้าวผัดไก่",
+    "asset": "assets/menu/H2.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "H3",
+    "name": "ข้าวผัดโบราณหมู",
+    "asset": "assets/menu/H3.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "H4",
+    "name": "ข้าวผัดแหนม",
+    "asset": "assets/menu/H4.webp",
+    "kind": "restaurant-menu",
+    "source": "https://img.wongnai.com/p/256x256/2025/01/07/710c24975abe461b93fefac4b158f217.jpg",
+    "sourcePage": "https://www.wongnai.com/delivery/businesses/2935349OI/order",
+    "note": "Owner requested use of restaurant menu photos; photograph remains attributed to its source, no open licence claimed"
+  },
+  {
+    "id": "H5",
+    "name": "ข้าวผัดปู",
+    "asset": "assets/menu/H5.webp",
+    "kind": "ai-illustration",
+    "source": "Original image generated for CCR",
+    "sourcePage": null,
+    "note": "Illustration, not a restaurant photograph"
+  },
+  {
+    "id": "H6",
+    "name": "ข้าวผัดกุ้ง",
+    "asset": "assets/menu/H6.webp",
+    "kind": "restaurant-menu",
+    "source": "https://img.wongnai.com/p/256x256/2024/11/18/1085236e189e4c49822040507320cc4d.jpg",
+    "sourcePage": "https://www.wongnai.com/delivery/businesses/2935349OI/order",
+    "note": "Owner requested use of restaurant menu photos; photograph remains attributed to its source, no open licence claimed"
+  },
+  {
+    "id": "H7",
+    "name": "ข้าวผัดทะเล",
+    "asset": "assets/menu/H7.webp",
+    "kind": "restaurant-menu",
+    "source": "https://img.wongnai.com/p/256x256/2025/01/29/552577ac876845ccac4e49fa64628edf.jpg",
+    "sourcePage": "https://www.wongnai.com/delivery/businesses/2935349OI/order",
+    "note": "Owner requested use of restaurant menu photos; photograph remains attributed to its source, no open licence claimed"
+  }
+]

@@ -1,60 +1,10 @@
 import {configured,getCatalog,api,money,escapeHTML,VOTE_PICKS_KEY,VOTE_SAVED_KEY,getSharedToken,getParticipantLabel,setParticipantLabel,submissionParticipant,renderJourneyProgress} from './common.js?v=20261022-servings1';
 import {FIXED_ALLOWANCE} from './decision-engine.js?v=20261022-servings1';
 import {CATEGORY_KEYS as keys,quotaFor,billingMultiplier,normalizeChoices,usedServings,completedCategories,setServing,ballotLines,isLegacyBallot} from './ballot-model.js?v=20261022-servings1';
+import {menuMediaFor} from './menu-media.js?v=20261023-owner5';
+import {bindParticipantInput} from './participant-input.js?v=20261023-unified1';
 const $=id=>document.getElementById(id);
 let cats=[],step=0,selected={},savedBallot=null,isOpen=false,votingMode='invite',catalogVersion=null,submitting=false;
-const CATEGORY_VISUALS = {
-  A: {
-    img: './assets/food-tomyum-pot.jpg',
-    tag: 'CATEGORY A · ซุป / ต้มยำ / แกงหม้อไฟ',
-    title: 'ต้มยำหม้อไฟและเมนูแกงเสิร์ฟร้อนจากครัวซอย 11',
-    caption: 'หมวดซุปและต้มยำเสิร์ฟหม้อไฟร้อน ๆ สำหรับซดคล่องคอกลางโต๊ะ (คำนวณเสิร์ฟ 2 ที่ต่อโต๊ะ)'
-  },
-  B: {
-    img: './assets/food-seafood-dip.jpg',
-    tag: 'CATEGORY B · ปลา / ซีฟู้ดจานหลัก',
-    title: 'เมนูปลากะพงและซีฟู้ดจานหลักประจำโต๊ะ',
-    caption: 'จานหลักกลางโต๊ะที่ทุกคนแชร์ร่วมกัน เสิร์ฟพร้อมน้ำจิ้มซีฟู้ดรสจัดจ้านของทางร้าน'
-  },
-  C: {
-    img: './assets/food-garlic-pork.jpg',
-    tag: 'CATEGORY C · หมู / ไก่ / เป็ด / เนื้อ',
-    title: 'หมูทอดกระเทียมและเมนูเนื้อสัตว์จานร้อน',
-    caption: 'เมนูเนื้อสัตว์จานหลักทานคู่ข้าวสวยร้อน ๆ รสชาติกลมกล่อมถูกปากทุกคนในทีม'
-  },
-  D: {
-    img: './assets/food-crispy-squid.jpg',
-    tag: 'CATEGORY D · กุ้ง / หมึก / หอย',
-    title: 'หมึกกรอบคั่วพริกเกลือและเมนูอาหารทะเล',
-    caption: 'เมนูอาหารทะเลผัด/ทอดทรงเครื่อง หอมกระเทียมพริกไทย เคี้ยวเพลินตลอดมื้อ'
-  },
-  E: {
-    img: './assets/food-stirfry-duo.jpg',
-    tag: 'CATEGORY E · ผัดผัก / จานผัดกลมกล่อม',
-    title: 'จานผัดร้อน ๆ จากเตา เสิร์ฟคู่ตัดรสในโต๊ะ',
-    caption: 'ช่วยเพิ่มความสมดุลให้มื้ออาหาร มีทั้งผัดผักกรอบ ๆ และจานผัดรสเข้มข้น'
-  },
-  F: {
-    img: './assets/food-seafood-salad.jpg',
-    tag: 'CATEGORY F · ยำ / ลาบ / รสจัดจ้าน',
-    title: 'ยำทะเลรวมมิตรและเมนูรสแซ่บเรียกน้ำย่อย',
-    caption: 'จานรสจัดจ้านช่วยชูรสชาติให้โต๊ะอาหารคึกคักและตัดเลี่ยนได้อย่างลงตัว'
-  },
-  G: {
-    img: './assets/food-grilled-pork.jpg',
-    tag: 'CATEGORY G · ของทอด / ย่าง / กับแกล้ม',
-    title: 'หมูย่างจิ้มแจ่วและเมนูทานเล่นระหว่างพูดคุย',
-    caption: 'จานย่างและของทอดหอมกรุ่น ทานง่ายระหว่างพูดคุยและร่วมกิจกรรมจับของขวัญ'
-  },
-  H: {
-    img: './assets/food-fried-strips.jpg',
-    tag: 'CATEGORY H · จานปิดท้าย / อิ่มท้อง',
-    title: 'เมนูทานเล่นและจานเสริมความอิ่มประจำโต๊ะ',
-    caption: 'เติมเต็มมื้อค่ำให้ครบทั้ง 8 หมวด พร้อมสำรองข้าวสวยและเครื่องดื่มพื้นฐานในงบโต๊ะ'
-  }
-};
-
-
 const scrollBehavior=()=>matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth';
 try {
   savedBallot=JSON.parse(localStorage.getItem(VOTE_SAVED_KEY)||'null');
@@ -79,11 +29,7 @@ function render(focusId='',focusQty=false){
   $('categoryNumber').textContent=String(step+1).padStart(2,'0');
   $('categoryTitle').textContent=`${c.icon||''} หมวด ${c.key} · ${c.label}`;
   $('categoryDescription').textContent=`เลือกรวม ${quota} เสิร์ฟ · เลือกแล้ว ${used}/${quota} · ${quota===2?'เมนูเดียว 2 เสิร์ฟ หรือ 2 เมนูอย่างละ 1 เสิร์ฟ':c.key==='H'?'เลือกข้าว 1 เมนู คิดราคา 2 เสิร์ฟ':'เลือก 1 เมนู จำนวน 1 เสิร์ฟ'}`;
-  const vis=CATEGORY_VISUALS[c.key];
-  if($('categoryPhoto')){$('categoryPhoto').src=vis.img;$('categoryPhoto').alt='ภาพอาหารประกอบจากร้านครัวซอย 11';}
-  if($('categoryPhotoTag'))$('categoryPhotoTag').textContent=`CATEGORY ${c.key} · ${c.label}`;
-  if($('categoryPhotoTitle'))$('categoryPhotoTitle').textContent=c.label;
-  if($('categoryPhotoCaption'))$('categoryPhotoCaption').textContent='ภาพอาหารประกอบจากร้าน · เลือกตามชื่อเมนูและจำนวนเสิร์ฟด้านล่าง';
+  $('token').disabled=submitting;
   if($('helperProgressText'))$('helperProgressText').textContent=tally===8?'✓ เลือกจำนวนเสิร์ฟครบทั้ง 8 หมวดแล้ว กดบันทึกคะแนนเพื่อส่งเข้าระบบกลาง':`ครบโควตาแล้ว ${tally}/8 หมวด · ยังขาดหมวด ${keys.filter(k=>!done.includes(k)).join(', ')}`;
   $('categoryTabs').innerHTML=cats.map((cat,i)=>`<button type="button" role="tab" tabindex="${i===step?0:-1}" aria-selected="${i===step}" aria-label="หมวด ${cat.key} ${escapeHTML(cat.label)} เลือกแล้ว ${usedServings(selected,cat.key)} จาก ${quotaFor(cat.key)} เสิร์ฟ" class="category-tab ${i===step?'active':''} ${done.includes(cat.key)?'done':''}" data-tab="${i}">${cat.key}${done.includes(cat.key)?' ✓':''}</button>`).join('');
   document.querySelectorAll('[data-tab]').forEach(el=>{
@@ -92,17 +38,21 @@ function render(focusId='',focusQty=false){
   });
   $('voteForm').innerHTML=c.options.map(o=>{
     const qty=selected[c.key]?.[o.id]||0,unavailable=o.availabilityStatus==='unavailable',disabled=unavailable||(!qty&&used>=quota),max=quota-used+qty;
-    return `<div class="choice ${qty?'selected':''} ${unavailable?'unavailable':''}"><label class="serving-option"><input type="checkbox" name="categoryPick" value="${o.id}" ${qty?'checked':''} ${disabled||submitting?'disabled':''}><span class="choice-details"><span class="menu-art" aria-hidden="true"><b>${c.key}</b><span>${escapeHTML(o.id)} · KITCHEN SELECTION</span></span><span class="choice-title">${escapeHTML(o.name)}</span><span class="choice-desc">${escapeHTML(o.note||'อาหารจานกลาง')}</span><span class="data-badges"><small>ราคาอ้างอิงครัวซอย 11</small>${unavailable?'<small class="danger-badge">งดชั่วคราว</small>':''}</span></span><span class="choice-price">${money(o.price*(qty||1)*billingMultiplier(c.key))}<small>${money(o.price)}/เสิร์ฟ${c.key==='H'?' × 2':''}</small></span></label>${qty?`<div class="serving-control"><label for="qty-${o.id}">จำนวนเสิร์ฟ</label><select id="qty-${o.id}" class="text-field" ${submitting?'disabled':''} data-quantity="${o.id}" aria-label="จำนวนเสิร์ฟ ${escapeHTML(o.name)}">${Array.from({length:max},(_,i)=>`<option value="${i+1}" ${qty===i+1?'selected':''}>${i+1} เสิร์ฟ</option>`).join('')}</select>${c.key==='H'?'<small>เลือก 1 เมนู · คิดราคา 2 เสิร์ฟ</small>':''}</div>`:''}</div>`;
+    const media=menuMediaFor(o.id);
+    const picture=media?`<img src="${media.src}" width="640" height="480" loading="lazy" decoding="async" alt="${media.kind==='restaurant-menu'?'ภาพจากเมนูร้าน':'ภาพประกอบ AI'}: ${escapeHTML(o.name)}"><small class="menu-image-kind">${media.kind==='restaurant-menu'?'ภาพจากเมนูร้าน · Wongnai':'ภาพประกอบ AI'}</small>`:`<span class="menu-placeholder"><span aria-hidden="true">◇</span><span>รอภาพเมนูจากร้าน</span><small>เมนูเฉพาะ · ${escapeHTML(o.id)}</small></span>`;
+    return `<div class="choice ${qty?'selected':''} ${disabled?'quota-disabled':''} ${unavailable?'unavailable':''}"><label class="serving-option"><span class="menu-media">${picture}</span><span class="menu-choice-head"><input type="checkbox" name="categoryPick" value="${o.id}" ${qty?'checked':''} ${disabled||submitting?'disabled':''}><span class="choice-title">${escapeHTML(o.name)}</span></span><span class="choice-meta"><span class="menu-id">${escapeHTML(o.id)}</span><span class="choice-price">${money(o.price*(qty||1)*billingMultiplier(c.key))}<small>${money(o.price)}/เสิร์ฟ${c.key==='H'?' × 2':''}</small></span></span>${o.note?`<span class="choice-desc">${escapeHTML(o.note)}</span>`:''}<span class="choice-state">${unavailable?'งดชั่วคราว':qty?`✓ เลือกแล้ว ${qty} เสิร์ฟ`:disabled?'ครบโควตาหมวดนี้แล้ว':'แตะเพื่อเลือก'}</span></label>${qty?`<div class="serving-control"><label for="qty-${o.id}">จำนวนเสิร์ฟ</label><div class="quantity-stepper"><button type="button" data-adjust="${o.id}" data-delta="-1" ${submitting?'disabled':''} aria-label="ลดจำนวนเสิร์ฟ ${escapeHTML(o.name)}">−</button><select id="qty-${o.id}" class="text-field" ${submitting?'disabled':''} data-quantity="${o.id}" aria-label="จำนวนเสิร์ฟ ${escapeHTML(o.name)}">${Array.from({length:max},(_,i)=>`<option value="${i+1}" ${qty===i+1?'selected':''}>${i+1} เสิร์ฟ</option>`).join('')}</select><button type="button" data-adjust="${o.id}" data-delta="1" ${submitting||qty>=max?'disabled':''} aria-label="เพิ่มจำนวนเสิร์ฟ ${escapeHTML(o.name)}">＋</button></div>${c.key==='H'?'<small>เลือก 1 เมนู · คิดราคา 2 เสิร์ฟ</small>':''}</div>`:''}</div>`;
   }).join('');
   const update=(id,qty,focusQty=false)=>{if(submitting)return;try{selected=setServing(selected,c.key,id,qty);saveDraft();render(id,focusQty);}catch(e){show(e.message,'bad');}};
   document.querySelectorAll('[name=categoryPick]').forEach(el=>el.addEventListener('change',()=>update(el.value,el.checked?1:0)));
   document.querySelectorAll('[data-quantity]').forEach(el=>el.addEventListener('change',()=>update(el.dataset.quantity,Number(el.value),true)));
-  if(focusId)(focusQty?document.querySelector(`[data-quantity="${focusId}"]`):document.querySelector(`[name=categoryPick][value="${focusId}"]`))?.focus({preventScroll:true});
+  document.querySelectorAll('[data-adjust]').forEach(el=>el.addEventListener('click',()=>update(el.dataset.adjust,(selected[c.key]?.[el.dataset.adjust]||0)+Number(el.dataset.delta),true)));
+  document.querySelectorAll('.menu-media img').forEach(img=>img.addEventListener('error',()=>{const note=document.createElement('span');note.className='menu-placeholder';note.textContent='โหลดภาพไม่ได้ · เลือกจากชื่อเมนูได้ตามปกติ';img.parentElement.replaceChildren(note);},{once:true}));
+  if(focusId)((focusQty?document.querySelector(`[data-quantity="${focusId}"]`):null)||document.querySelector(`[name=categoryPick][value="${focusId}"]`))?.focus({preventScroll:true});
   $('prev').disabled=step===0;$('next').textContent=step===7?'ไปกล่องบันทึกคะแนน ↓':'หมวดถัดไป →';
   const items=ballotLines(cats,selected),food=items.reduce((n,o)=>n+o.lineTotal,0),total=food+FIXED_ALLOWANCE;
   $('summary').innerHTML=items.length?items.map(o=>`<div class="receipt-row"><span class="receipt-key">${o.key}</span><span class="receipt-name">${escapeHTML(o.name)}<br><span class="muted small">${o.qty} เสิร์ฟ${o.key==='H'?' (เลือกข้าว 1 เมนู)':''} × ${money(o.price)}</span></span><span class="receipt-sum">${money(o.lineTotal)}</span></div>`).join(''):'<p class="muted small">เลือกเมนูและจำนวนเสิร์ฟจากหมวด A–H</p>';
   $('foodTotal').textContent=money(food);$('grandTotal').textContent=money(total);
-  $('budgetTag').textContent=total>2200?'เกินเพดาน ฿2,200 · ยังส่งความชอบได้ ผู้จัดงานจะจัดชุดตามงบ':total>2000?'อยู่ในเพดานพิจารณา ฿2,200':'✓ อยู่ในงบเป้าหมาย ฿2,000 ต่อโต๊ะ';
+  $('budgetTag').textContent=total>2200?'เกินงบพิจารณา ฿2,200 · ยังส่งความชอบได้ ผู้จัดงานจะจัดชุดตามงบ':total>2000?'อยู่ในงบพิจารณา ฿2,200':'✓ อยู่ในงบเป้าหมาย ฿2,000 ต่อโต๊ะ';
   const legacy=isLegacyBallot(savedBallot?.picks),confirmed=savedBallot?.cloudConfirmed&&!legacy;
   $('reviewStatus').textContent=legacy?'ใบโหวตเดิมยังอยู่ในระบบ กรุณาตรวจจำนวนเสิร์ฟตามกติกาใหม่แล้วกดบันทึกอีกครั้ง':confirmed?`✓ บันทึกลงระบบกลางแล้ว · รหัสใบโหวต: ${savedBallot.receipt} · ${new Date(savedBallot.savedAt).toLocaleString('th-TH')}`:tally===8?'เลือกครบแล้ว · ฉบับร่างในเครื่องนี้เท่านั้น ยังไม่ได้ส่งเข้าระบบกลาง':`ครบโควตาแล้ว ${tally}/8 หมวด · เลือกให้ครบก่อนบันทึก`;
   $('submit').disabled=submitting;
@@ -117,9 +67,11 @@ $('quickSample')?.addEventListener('click',()=>{
 function clearPicks(){if(submitting)return;selected={};savedBallot=null;step=0;try{localStorage.removeItem(VOTE_PICKS_KEY);localStorage.removeItem(VOTE_SAVED_KEY);sessionStorage.removeItem('ccr_vote_choices_v3');}catch{}renderJourneyProgress();render();show('ล้างฉบับร่างในเครื่องแล้ว คะแนนที่ส่งเข้าระบบกลางยังคงอยู่ — เลือกใหม่แล้วกดส่งเพื่ออัปเดตคะแนนเดิม');}
 $('clearPicks')?.addEventListener('click',clearPicks);$('resetVoteBtn')?.addEventListener('click',clearPicks);
 getSharedToken();$('token').value=getParticipantLabel();$('token').addEventListener('input',()=>setParticipantLabel($('token').value));
+bindParticipantInput($('token'));
 window.addEventListener('storage',()=>{$('token').value=getParticipantLabel();});window.addEventListener('hashchange',()=>getSharedToken());
 $('submit').addEventListener('click',async()=>{
   if(submitting||cats.length!==8)return;
+  if(!$('token').reportValidity())return;
   const done=completedCategories(selected);
   if(done.length!==8){step=cats.findIndex(c=>!done.includes(c.key));render();$('categoryTitle').scrollIntoView({behavior:scrollBehavior(),block:'center'});show('กรุณาเลือกจำนวนเสิร์ฟให้ครบโควตาทั้ง 8 หมวด','warn');return;}
   submitting=true;render();

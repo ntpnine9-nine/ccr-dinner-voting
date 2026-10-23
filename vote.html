@@ -6,11 +6,14 @@
   <meta name="theme-color" content="#0d2f29">
   <meta name="description" content="CCR Dinner Voting — ระบบเลือกเมนูงานเลี้ยงแผนก 8 หมวด 56 ตัวเลือก ร้านครัวซอย 11">
   <title>Food Vote · โหวตเมนูอาหาร 8 หมวด · CCR After Hours 2026</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css?v=20261022-servings1">
-  <link rel="stylesheet" href="./event.css">
-  <link rel="stylesheet" href="./forest-noir.css?v=20261023-live1">
+
+
+  <link rel="stylesheet" href="./styles.css?v=20261023-unified1">
+  <link rel="stylesheet" href="./event.css?v=20261023-unified1">
+  <link rel="stylesheet" href="./forest-noir.css?v=20261023-owner5">
+<link rel="preload" href="./assets/fonts/dm-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="./assets/fonts/noto-sans-thai-thai-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="./assets/fonts/cormorant-garamond-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 </head>
 <body class="voter-page event-page">
 <a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
@@ -18,30 +21,36 @@
 <header class="event-nav">
   <a class="event-brand" href="./index.html"><span class="event-brand-mark">C</span><span><b>CCR After Hours</b><small>STEP 3 · FOOD VOTE</small></span></a>
   <nav class="event-nav-links" aria-label="เมนูหลัก">
-    <a href="./index.html">Home</a>
-    <a href="./venue.html">1 · สถานที่</a>
-    <a href="./party.html">2 · ลงทะเบียน/ของขวัญ</a>
-    <a href="./vote.html" aria-current="page">3 · โหวตเมนู</a>
-    <a href="./guide.html">4 · คู่มือ & สรุป</a>
-  </nav>
+    <a href="./index.html">หน้าแรก</a>
+    <a href="./venue.html">สถานที่</a>
+    <a href="./party.html">ตอบรับ · RSVP</a>
+    <a href="./vote.html" aria-current="page">โหวตอาหาร</a>
+    <a href="./guide.html">บัตรของฉัน · คู่มือ</a>
+  </nav><details class="fn-mobile-navigation"><summary class="fn-menu-toggle">เมนู ☰</summary><nav id="mobileNavigation" class="fn-mobile-links" aria-label="เมนูหลักสำหรับมือถือ">
+    <a href="./index.html">หน้าแรก</a>
+    <a href="./venue.html">สถานที่</a>
+    <a href="./party.html">ตอบรับ · RSVP</a>
+    <a href="./vote.html" aria-current="page">โหวตอาหาร</a>
+    <a href="./guide.html">บัตรของฉัน · คู่มือ</a>
+  </nav></details>
   <a class="event-nav-cta" href="./guide.html">ไปขั้นที่ 4: สรุปของฉัน ↗</a>
 </header>
 
 <nav class="journey-bar" aria-label="ลำดับขั้นตอนการร่วมงาน">
   <div class="journey-bar-inner">
-    <a class="journey-step" data-journey-step="1" href="./venue.html">
+    <a class="journey-step" data-journey-step="1" href="./venue.html" data-short-label="สถานที่">
       <span class="journey-step-num">1</span>
       <span class="journey-step-text"><b>ดูสถานที่ & อาหารจริง</b><small>ครัวซอย 11 · แผนที่ & ที่จอดรถ</small></span>
     </a>
-    <a class="journey-step" data-journey-step="2" href="./party.html">
+    <a class="journey-step" data-journey-step="2" href="./party.html" data-short-label="ตอบรับ">
       <span class="journey-step-num">2</span>
       <span class="journey-step-text"><b>ลงทะเบียน & ของขวัญ</b><small data-step-status="party">เลือก 3 หัวข้อ</small></span>
     </a>
-    <a class="journey-step active" data-journey-step="3" href="./vote.html" aria-current="step">
+    <a class="journey-step active" data-journey-step="3" href="./vote.html" aria-current="step" data-short-label="อาหาร">
       <span class="journey-step-num">3</span>
       <span class="journey-step-text"><b>โหวตเมนูอาหาร 8 หมวด</b><small data-step-status="vote">กำลังเลือกเมนู…</small></span>
     </a>
-    <a class="journey-step" data-journey-step="4" href="./guide.html">
+    <a class="journey-step" data-journey-step="4" href="./guide.html" data-short-label="บัตรสรุป">
       <span class="journey-step-num">4</span>
       <span class="journey-step-text"><b>คู่มือวันงาน & สรุปของฉัน</b><small data-step-status="guide">เช็กข้อมูลที่บันทึกไว้</small></span>
     </a>
@@ -56,18 +65,20 @@
       <p>A B C E F หมวดละ 2 เสิร์ฟ · D G หมวดละ 1 เสิร์ฟ · H เลือก 1 เมนู คิดราคา 2 เสิร์ฟ ระบบจะคำนวณงบต่อโต๊ะให้ดูแบบเรียลไทม์ และกดปุ่ม <b>“บันทึกคะแนนของฉัน”</b> เพื่อเก็บรายการไว้ได้ทันที</p>
     </div>
     <div class="subhero-badge">
-      <span>8/8</span>
-      <strong>FOOD VOTE</strong>
+      <span>8</span>
+      <strong>หมวดอาหาร · 56 เมนู</strong>
       <small>ครัวซอย 11 · โต๊ะละ 8–9 คน</small>
     </div>
   </div>
 </header>
 
 <main id="main" class="site-content">
-  <section class="intro-section">
+  <details class="vote-instructions">
+    <summary>วิธีโหวตและกติกาจำนวนเสิร์ฟ</summary>
+    <div class="intro-section">
     <div>
       <span class="section-kicker">01 / HOW TO VOTE</span>
-      <h2>เลือกครบ <em>8 หมวด</em><br>กดบันทึกได้ทันที</h2>
+      <h2>มาจัดโต๊ะของเรา<br><em>เลือกอาหารให้ครบ 8 หมวด</em></h2>
     </div>
     <div class="intro-right">
       <p>แต่ละหมวด (A ถึง H) มีเมนูให้เลือก 7 รายการ คุณสามารถคลิกแท็บหมวด A–H หรือกดปุ่ม “หมวดถัดไป” เพื่อเลือกจนครบ 8 หมวด แล้วกดส่งคะแนนเข้าระบบกลางได้เลย ไม่ต้องมีบัญชีผู้ใช้</p>
@@ -77,7 +88,8 @@
         <span>✓ บันทึกและกลับมาแก้ไขได้ตลอด</span>
       </div>
     </div>
-  </section>
+    </div>
+  </details>
 
   <section class="app-grid" aria-labelledby="voting-title">
     <div class="voting-area">
@@ -103,14 +115,7 @@
 
         <div class="category-tabs" id="categoryTabs" role="tablist" aria-label="หมวดอาหาร"></div>
 
-        <div class="category-visual-banner" id="categoryVisualBanner">
-          <img id="categoryPhoto" src="./assets/food-tomyum-pot.jpg" alt="ภาพบรรยากาศอาหารจริงจากร้านครัวซอย 11" loading="lazy">
-          <div class="category-visual-copy">
-            <span id="categoryPhotoTag">AUTHENTIC DISH PREVIEW · ครัวซอย 11</span>
-            <b id="categoryPhotoTitle">ต้มยำหม้อไฟและเมนูแกงเสิร์ฟร้อน</b>
-            <p id="categoryPhotoCaption">ภาพอาหารจริงจากร้านครัวซอย 11 เฉลิมพระเกียรติ ร.9 สำหรับประกอบการตัดสินใจเลือกเมนูประจำโต๊ะ</p>
-          </div>
-        </div>
+        <p class="menu-image-note">ภาพมีทั้งภาพจาก <a href="https://www.wongnai.com/delivery/businesses/2935349OI/order" target="_blank" rel="noopener noreferrer">เมนูร้านบน Wongnai ↗</a> และภาพประกอบ AI โดยมีป้ายกำกับแต่ละภาพ · ราคาอ้างอิง รอยืนยันกับร้าน · กุ้งพี่เก๋รอภาพที่ยืนยันได้</p>
 
         <div class="category-heading">
           <span class="category-number" id="categoryNumber">01</span>
@@ -150,7 +155,7 @@
           <h3>บันทึกชุดเมนูของคุณ</h3>
           <p class="muted small">เมื่อเลือกครบ 8 หมวดแล้ว กดปุ่ม <b>“บันทึกคะแนนของฉัน”</b> ด้านล่างเพื่อส่งเข้าฐานข้อมูลกลางและให้ผู้จัดงานเห็นคะแนนจริง</p>
           <label for="token" class="field-label">ชื่อ / นามแฝง / รหัสที่คุณตั้งเอง (ไม่บังคับ)</label>
-          <input id="token" type="text" class="text-field" placeholder="เช่น นาย, ABC, 123, 🌙 หรือเว้นว่าง" autocomplete="off" spellcheck="false" maxlength="160">
+          <input id="token" type="text" class="text-field" placeholder="เช่น นาย, ABC, 123, 🌙 หรือเว้นว่าง" autocomplete="off" spellcheck="false" data-max-code-points="80">
           <p class="input-hint">ตั้งข้อความได้อิสระ ไม่ต้องใช้ชื่อจริง สูงสุด 80 ตัวอักษร · เว้นว่างได้ ชื่อซ้ำกันได้ ผู้จัดงานเห็นข้อความนี้ ระบบจำเบราว์เซอร์เพื่ออัปเดตใบเดิม</p>
           <div class="completed-banner" id="reviewStatus">เลือกให้ครบ 8 หมวดเพื่อบันทึกชุดเมนูของคุณ</div>
           <button type="button" id="submit" class="btn btn-dark full">บันทึกคะแนนของฉัน ✓</button>
@@ -191,7 +196,7 @@
     <a href="./admin.html">สำหรับผู้จัดงาน</a>
   </div>
 </footer>
-<script type="module" src="./vote.js?v=20261023-v2"></script>
-<script type="module" src="./forest-noir.js?v=20261023-v2"></script>
+<script type="module" src="./vote.js?v=20261023-owner5"></script>
+<script type="module" src="./forest-noir.js?v=20261023-unified1"></script>
 </body>
 </html>

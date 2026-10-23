@@ -5,6 +5,11 @@
   "type": "module",
   "scripts": {
     "test": "node tests/event-time.test.mjs && node tests/admin-summary.test.mjs && node tests/reporting.test.mjs && node tests/servings.test.mjs && node tests/release1.test.mjs && node tests/cloud-client.test.mjs && node --experimental-strip-types tests/participant-label.test.mjs",
-    "check": "node scripts/check.mjs"
+    "check": "node scripts/check.mjs && node scripts/check-assets.mjs",
+    "test:browser": "node scripts/browser-qa.cjs"
+  },
+  "devDependencies": {
+    "axe-core": "4.14.0",
+    "playwright": "1.62.1"
   }
 }
