@@ -1,7 +1,7 @@
 import {configured,getCatalog,api,money,escapeHTML,VOTE_PICKS_KEY,VOTE_SAVED_KEY,getSharedToken,getParticipantLabel,setParticipantLabel,submissionParticipant,renderJourneyProgress} from './common.js?v=20261022-servings1';
 import {FIXED_ALLOWANCE} from './decision-engine.js?v=20261022-servings1';
 import {CATEGORY_KEYS as keys,quotaFor,billingMultiplier,normalizeChoices,usedServings,completedCategories,setServing,ballotLines,isLegacyBallot} from './ballot-model.js?v=20261022-servings1';
-import {menuMediaFor} from './menu-media.js?v=20261023-polish2';
+import {menuMediaFor} from './menu-media.js?v=20261023-polish3';
 const $=id=>document.getElementById(id);
 let cats=[],step=0,selected={},savedBallot=null,isOpen=false,votingMode='invite',catalogVersion=null,submitting=false;
 const scrollBehavior=()=>matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth';
@@ -28,11 +28,14 @@ function render(focusId='',focusQty=false){
   $('categoryNumber').textContent=String(step+1).padStart(2,'0');
   $('categoryTitle').textContent=`${c.icon||''} หมวด ${c.key} · ${c.label}`;
   $('categoryDescription').textContent=`เลือกรวม ${quota} เสิร์ฟ · เลือกแล้ว ${used}/${quota} · ${quota===2?'เมนูเดียว 2 เสิร์ฟ หรือ 2 เมนูอย่างละ 1 เสิร์ฟ':c.key==='H'?'เลือกข้าว 1 เมนู คิดราคา 2 เสิร์ฟ':'เลือก 1 เมนู จำนวน 1 เสิร์ฟ'}`;
-  const categoryMedia=menuMediaFor(c.options[0].id);
-  if($('categoryPhoto')&&categoryMedia){$('categoryPhoto').src=categoryMedia.src;$('categoryPhoto').alt='ภาพประกอบ AI: '+c.options[0].name;}
+  const illustratedOption=c.options.find(o=>menuMediaFor(o.id));
+  const categoryMedia=illustratedOption?menuMediaFor(illustratedOption.id):null;
+  const visualBanner=$('categoryVisualBanner');
+  if(visualBanner)visualBanner.classList.toggle('category-visual-banner--text',!categoryMedia);
+  if($('categoryPhoto')&&categoryMedia){$('categoryPhoto').src=categoryMedia.src;$('categoryPhoto').alt='ภาพประกอบ AI: '+illustratedOption.name;}
   if($('categoryPhotoTag'))$('categoryPhotoTag').textContent=`หมวด ${c.key} · ${quota} เสิร์ฟ`;
   if($('categoryPhotoTitle'))$('categoryPhotoTitle').textContent=c.label;
-  if($('categoryPhotoCaption'))$('categoryPhotoCaption').textContent='ภาพประกอบสร้างด้วย AI ไม่ใช่ภาพอาหารจริงจากร้าน · ราคาอ้างอิง รอยืนยันกับร้าน';
+  if($('categoryPhotoCaption'))$('categoryPhotoCaption').textContent=categoryMedia?'ภาพประกอบสร้างด้วย AI ไม่ใช่ภาพอาหารจริงจากร้าน · ราคาอ้างอิง รอยืนยันกับร้าน':'เลือกอาหารได้จากชื่อและรายละเอียดเมนู · หมวดนี้ยังไม่มีภาพประกอบที่ได้รับการตรวจสอบ';
   $('token').disabled=submitting;
   if($('helperProgressText'))$('helperProgressText').textContent=tally===8?'✓ เลือกจำนวนเสิร์ฟครบทั้ง 8 หมวดแล้ว กดบันทึกคะแนนเพื่อส่งเข้าระบบกลาง':`ครบโควตาแล้ว ${tally}/8 หมวด · ยังขาดหมวด ${keys.filter(k=>!done.includes(k)).join(', ')}`;
   $('categoryTabs').innerHTML=cats.map((cat,i)=>`<button type="button" role="tab" tabindex="${i===step?0:-1}" aria-selected="${i===step}" aria-label="หมวด ${cat.key} ${escapeHTML(cat.label)} เลือกแล้ว ${usedServings(selected,cat.key)} จาก ${quotaFor(cat.key)} เสิร์ฟ" class="category-tab ${i===step?'active':''} ${done.includes(cat.key)?'done':''}" data-tab="${i}">${cat.key}${done.includes(cat.key)?' ✓':''}</button>`).join('');
@@ -43,7 +46,7 @@ function render(focusId='',focusQty=false){
   $('voteForm').innerHTML=c.options.map(o=>{
     const qty=selected[c.key]?.[o.id]||0,unavailable=o.availabilityStatus==='unavailable',disabled=unavailable||(!qty&&used>=quota),max=quota-used+qty;
     const media=menuMediaFor(o.id);
-    const picture=media?`<img src="${media.src}" width="640" height="480" loading="lazy" decoding="async" alt="ภาพประกอบ AI: ${escapeHTML(o.name)}"><small class="menu-image-kind">ภาพประกอบ AI</small>`:`<span class="menu-placeholder"><span aria-hidden="true">◇</span><span>รอภาพเมนูจากร้าน</span><small>เมนูเฉพาะ · ${escapeHTML(o.id)}</small></span>`;
+    const picture=media?`<img src="${media.src}" width="640" height="480" loading="lazy" decoding="async" alt="ภาพประกอบ AI: ${escapeHTML(o.name)}"><small class="menu-image-kind">ภาพประกอบ AI</small>`:`<span class="menu-placeholder menu-artwork"><span aria-hidden="true">${escapeHTML(c.key)}</span><small>CCR AFTER HOURS · MENU ${escapeHTML(o.id)}</small></span>`;
     return `<div class="choice ${qty?'selected':''} ${disabled?'quota-disabled':''} ${unavailable?'unavailable':''}"><label class="serving-option"><span class="menu-media">${picture}</span><span class="menu-choice-head"><input type="checkbox" name="categoryPick" value="${o.id}" ${qty?'checked':''} ${disabled||submitting?'disabled':''}><span class="choice-title">${escapeHTML(o.name)}</span></span><span class="choice-meta"><span class="menu-id">${escapeHTML(o.id)}</span><span class="choice-price">${money(o.price*(qty||1)*billingMultiplier(c.key))}<small>${money(o.price)}/เสิร์ฟ${c.key==='H'?' × 2':''}</small></span></span>${o.note?`<span class="choice-desc">${escapeHTML(o.note)}</span>`:''}<span class="choice-state">${unavailable?'งดชั่วคราว':qty?`✓ เลือกแล้ว ${qty} เสิร์ฟ`:disabled?'ครบโควตาหมวดนี้แล้ว':'แตะเพื่อเลือก'}</span></label>${qty?`<div class="serving-control"><label for="qty-${o.id}">จำนวนเสิร์ฟ</label><div class="quantity-stepper"><button type="button" data-adjust="${o.id}" data-delta="-1" ${submitting?'disabled':''} aria-label="ลดจำนวนเสิร์ฟ ${escapeHTML(o.name)}">−</button><select id="qty-${o.id}" class="text-field" ${submitting?'disabled':''} data-quantity="${o.id}" aria-label="จำนวนเสิร์ฟ ${escapeHTML(o.name)}">${Array.from({length:max},(_,i)=>`<option value="${i+1}" ${qty===i+1?'selected':''}>${i+1} เสิร์ฟ</option>`).join('')}</select><button type="button" data-adjust="${o.id}" data-delta="1" ${submitting||qty>=max?'disabled':''} aria-label="เพิ่มจำนวนเสิร์ฟ ${escapeHTML(o.name)}">＋</button></div>${c.key==='H'?'<small>เลือก 1 เมนู · คิดราคา 2 เสิร์ฟ</small>':''}</div>`:''}</div>`;
   }).join('');
   const update=(id,qty,focusQty=false)=>{if(submitting)return;try{selected=setServing(selected,c.key,id,qty);saveDraft();render(id,focusQty);}catch(e){show(e.message,'bad');}};
